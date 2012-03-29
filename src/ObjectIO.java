@@ -19,6 +19,7 @@ class ObjectIO<V> {
 		return baos.toByteArray();
 	}
 
+	@SuppressWarnings("unchecked")
 	V fromByteArray(byte[] bytes) {
 		final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 		V t = null;

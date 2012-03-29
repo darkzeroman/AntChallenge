@@ -20,4 +20,16 @@ public class MapTile {
 		this.type = tileType;
 	}
 
+	public void setType(MyAnt.type tileType) {
+		this.type = tileType;
+	}
+
+	public int getAmountFood() {
+		return amountFood;
+	}
+
+	public void setAmountFood(int amountFood) {
+		this.amountFood = amountFood;
+	}
+
 }
