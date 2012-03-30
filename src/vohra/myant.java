@@ -1,3 +1,6 @@
+package vohra;
+
+
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -39,7 +42,8 @@ public class myant implements Ant {
 	public Action getAction(Surroundings surroundings) {
 		System.out.println("version 2.1");
 		round++;
-
+		if (round > 5)
+			mode = Mode.TOHOME;
 		if (!theone) {
 			theone = true;
 			isone = true;
@@ -72,6 +76,7 @@ public class myant implements Ant {
 		}
 		if (nextMove.getDirection() != null)
 			updateCurrLoc(nextMove.getDirection());
+		System.out.println("X: " + locX + " Y: " + locY);
 		return nextMove;
 	}
 
@@ -103,10 +108,16 @@ public class myant implements Ant {
 				mapTile.setType(type.WALL);
 			}
 		}
-
+		if (isone)
+			;
+		// printMap();
 	}
 
 	public Direction search(MapTile target) {
+
+		if (!isone)
+			;
+		// return Direction.SOUTH;
 
 		System.out.println("SEARCHING");
 		PriorityQueue<MapTile> pq = readyMap();
@@ -118,11 +129,12 @@ public class myant implements Ant {
 			if (u.distanceFromSource == Integer.MAX_VALUE) {
 				System.out.println("exiting after: " + count);
 				break;
-
+				// System.out.println("ERROR IN DJIKSTRA!");
+				// return lastDir;
 			}
 			u = pq.poll();
-			// if (u == target)
-			// break;
+			//if (u == target)
+				//break;
 			ArrayList<MapTile> al = findNeighbors(pq, u);
 			for (MapTile mapTile : al) {
 				int alt = u.distanceFromSource + 1;
@@ -149,10 +161,6 @@ public class myant implements Ant {
 			old = path.get(i);
 		}
 		System.out.println("Done Printing Path");
-		System.out.println("X: " + locX + " Y: " + locY);
-		
-		System.out.println("targetX: " + origin + " targetY: " + origin);
-//		printMap();
 		try {
 			Thread.sleep(1);
 		} catch (InterruptedException e) {
@@ -212,8 +220,8 @@ public class myant implements Ant {
 	public PriorityQueue<MapTile> readyMap() {
 		PriorityQueue<MapTile> pq = new PriorityQueue<MapTile>();
 
-		for (int j = 0; j < map.length; j++) {
-			for (int i = 0; i < map[j].length; i++) {
+		for (int i = 0; i < map.length; i++)
+			for (int j = 0; j < map[i].length; j++) {
 				// setting the distance from source
 				if (i == getAbsolute()[0] && j == getAbsolute()[1])
 					map[getAbsolute()[0]][getAbsolute()[1]].distanceFromSource = 0;
@@ -226,7 +234,6 @@ public class myant implements Ant {
 					pq.add(map[i][j]);
 
 			}
-		}
 		// System.out.println("PQ SIZE: " + pq.size());
 		return pq;
 	}

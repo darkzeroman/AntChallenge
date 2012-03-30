@@ -24,10 +24,11 @@ public class MyAntTests {
 		ant.map = new MapTile[3][3];
 
 		for (int i = 0; i < ant.map.length; i++)
-			for (int j = 0; j < ant.map[i].length; j++)
-				ant.map[i][j] = new MapTile(myant.type.UNEXPLORED);
-		//ant.map[0][0] = new MapTile(MyAnt.type.GRASS);
-
+			for (int j = 0; j < ant.map[i].length; j++) {
+				ant.map[j][i] = new MapTile(myant.type.UNEXPLORED);
+				ant.map[j][i].setLocation(j, i);
+			}
+		// ant.map[0][0] = new MapTile(MyAnt.type.GRASS);
 
 	}
 
@@ -36,8 +37,8 @@ public class MyAntTests {
 		testSurroundings tS = new testSurroundings();
 		ant.origin = 1;
 
-		ant.currLocX = 1;
-		ant.currLocY = 1;
+		ant.locX = 1;
+		ant.locY = 1;
 		ant.updatingMap(tS);
 		// printMap();
 		assertEquals(1, 1);
@@ -58,26 +59,28 @@ public class MyAntTests {
 	@Test
 	public void testSearch() {
 		testReadyMap();
+
 		ant.isone = true;
-		ant.currLocX = 0;
-		ant.currLocY = 1;
-		Direction dir = ant.search(ant.map[2][1]);
-		System.out
-				.println(ant.map[0][1].toString() + "prev: "
-						+ ant.map[0][1].prev + " dir: "
-						+ ant.map[0][1].prevDirection());
-		System.out
-				.println(ant.map[2][1].toString() + "prev: "
-						+ ant.map[2][1].prev + " dir: "
-						+ ant.map[2][1].prevDirection());
-		System.out
-				.println(ant.map[1][2].toString() + "prev: "
-						+ ant.map[1][2].prev + " dir: "
-						+ ant.map[1][2].prevDirection());
-		System.out
-				.println(ant.map[1][0].toString() + "prev: "
-						+ ant.map[1][0].prev + " dir: "
-						+ ant.map[1][0].prevDirection());
+		ant.origin = 1;
+		ant.locX = 1;
+		ant.locY = 2;
+		//printMap();
+		Direction dir = ant.search(ant.map[1][0]);
+		System.out.println(ant.map[0][1].toString() + "prev: "
+				+ ant.map[0][1].prev + " dir: " + ant.map[0][1].prevDirection()
+				+ " " + ant.dirForMapTile(ant.map[1][1], ant.map[0][1]));
+		System.out.println(ant.map[2][1].toString() + "prev: "
+				+ ant.map[2][1].prev + " dir: " + ant.map[2][1].prevDirection()
+				+ " " + ant.dirForMapTile(ant.map[1][1], ant.map[2][1]));
+
+		System.out.println(ant.map[1][2].toString() + "prev: "
+				+ ant.map[1][2].prev + " dir: " + ant.map[1][2].prevDirection()
+				+ " " + ant.dirForMapTile(ant.map[1][1], ant.map[1][2]));
+		;
+		System.out.println(ant.map[1][0].toString() + "prev: "
+				+ ant.map[1][0].prev + " dir: " + ant.map[1][0].prevDirection()
+				+ " " + ant.dirForMapTile(ant.map[1][1], ant.map[1][0]));
+		;
 
 		System.out.println(dir);
 		fail("Not yet implemented");
@@ -147,7 +150,7 @@ public class MyAntTests {
 			for (int j = 0; j < ant.map[i].length; j++) {
 				// HOME, WALL, UNEXPLORED, FOOD, GRASS
 
-				if (i == ant.currLocX && j == ant.currLocY)
+				if (i == ant.locX && j == ant.locY)
 					System.out.print("X");
 				else if (ant.map[i][j].type == type.WALL)
 					System.out.print("w");
