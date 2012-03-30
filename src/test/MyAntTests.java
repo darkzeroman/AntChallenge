@@ -23,13 +23,13 @@ public class MyAntTests {
 	public void setUp() throws Exception {
 		ant.map = new MapTile[3][3];
 
-		for (int i = 0; i < ant.map.length; i++)
-			for (int j = 0; j < ant.map[i].length; j++) {
+		for (int i = ant.map.length - 1; i >= 0; i--)
+			for (int j = ant.map[i].length - 1; j >= 0; j--) {
 				ant.map[j][i] = new MapTile(myant.type.UNEXPLORED);
-				ant.map[j][i].setLocation(j, i);
+				ant.map[j][i].setLocation(i, j);
 			}
 		// ant.map[0][0] = new MapTile(MyAnt.type.GRASS);
-
+		int x = 0;
 	}
 
 	@Test
@@ -60,12 +60,11 @@ public class MyAntTests {
 	public void testSearch() {
 		testReadyMap();
 
-		ant.isone = true;
 		ant.origin = 1;
 		ant.locX = 1;
-		ant.locY = 2;
-		//printMap();
-		Direction dir = ant.search(ant.map[1][0]);
+		ant.locY = 0;
+		// printMap();
+		Direction dir = ant.search(ant.map[2][1]);
 		System.out.println(ant.map[0][1].toString() + "prev: "
 				+ ant.map[0][1].prev + " dir: " + ant.map[0][1].prevDirection()
 				+ " " + ant.dirForMapTile(ant.map[1][1], ant.map[0][1]));

@@ -13,10 +13,10 @@ public class myant implements Ant {
 		HOME, WALL, UNEXPLORED, FOOD, GRASS
 	};
 
-	static boolean theone = false;
-	public boolean isone = false;
-	int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+	static int order = 0;
+	int antnum = 0;
 
+	int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 	public MapTile[][] map = new MapTile[40][40];
 	boolean initialized = false;
 	Direction lastDir = null;
@@ -33,19 +33,20 @@ public class myant implements Ant {
 	};
 
 	public myant() {
-		super();
+		this.antnum = order;
+		order++;
 	}
 
 	public Action getAction(Surroundings surroundings) {
-		System.out.println("version 2.1");
-		round++;
 
-		if (!theone) {
-			theone = true;
-			isone = true;
-		}
+		round++;
+//		if (round > 5)
+//			mode = Mode.TOHOME;
+
 		if (!initialized)
 			this.intialize();
+		System.out
+				.println("Current: " + antnum + " X: " + locX + " Y: " + locY);
 		Action nextMove = null;
 		updatingMap(surroundings);
 
@@ -66,12 +67,17 @@ public class myant implements Ant {
 			Direction dir = search(map[origin][origin]);
 			if (dir != null)
 				nextMove = Action.move(dir);
-			else
+			else {
 				nextMove = Action.HALT;
+				System.out.println("halting");
+			}
 			break;
 		}
-		if (nextMove.getDirection() != null)
+		if (nextMove.getDirection() != null) {
+			System.out.println("Ant: " + antnum + " Moving: "
+					+ nextMove.getDirection());
 			updateCurrLoc(nextMove.getDirection());
+		}
 		return nextMove;
 	}
 
@@ -80,7 +86,7 @@ public class myant implements Ant {
 			return;
 		Tile currTile = surroundings.getCurrentTile();
 
-		MapTile currMapTile = map[getAbsolute()[0]][getAbsolute()[1]];
+		MapTile currMapTile = map[locX][locY];
 		if (currTile.getAmountOfFood() > 0) {
 			currMapTile.setAmountFood(currTile.getAmountOfFood());
 			currMapTile.setType(type.FOOD);
@@ -91,9 +97,9 @@ public class myant implements Ant {
 		//
 		for (int i = 0; i < 4; i++) {
 			Tile temp = surroundings.getTile(Direction.values()[i]);
-			MapTile mapTile = map[(getAbsolute()[0] + offsets[i][0])][(getAbsolute()[1] + offsets[i][1])];
-			mapTile.setLocation((getAbsolute()[0] + offsets[i][0]),
-					(getAbsolute()[1] + offsets[i][1]));
+			MapTile mapTile = map[(locX + offsets[i][0])][(locY + offsets[i][1])];
+			// mapTile.setLocation((locX + offsets[i][0]), (locY +
+			// offsets[i][1]));
 			if (temp.getAmountOfFood() > 0) {
 				mapTile.setAmountFood(temp.getAmountOfFood());
 				mapTile.setType(type.FOOD);
@@ -107,8 +113,12 @@ public class myant implements Ant {
 	}
 
 	public Direction search(MapTile target) {
+		System.out.println("SEARCHING: " + antnum);
+		System.out.println("Current X: " + locX + " Y: " + locY);
+		System.out.println("Going to: " + origin + " " + origin);
+		if (target.x == locX && target.y == locY)
+			return null;
 
-		System.out.println("SEARCHING");
 		PriorityQueue<MapTile> pq = readyMap();
 		int count = 0;
 
@@ -118,11 +128,12 @@ public class myant implements Ant {
 			if (u.distanceFromSource == Integer.MAX_VALUE) {
 				System.out.println("exiting after: " + count);
 				break;
-
+				// System.out.println("ERROR IN DJIKSTRA!");
+				// return lastDir;
 			}
 			u = pq.poll();
-			// if (u == target)
-			// break;
+			if (u == target)
+				break;
 			ArrayList<MapTile> al = findNeighbors(pq, u);
 			for (MapTile mapTile : al) {
 				int alt = u.distanceFromSource + 1;
@@ -143,26 +154,22 @@ public class myant implements Ant {
 		}
 
 		System.out.println("Printing Path");
-		MapTile old = map[getAbsolute()[0]][getAbsolute()[1]];
+		MapTile old = map[locX][locY];
 		for (int i = 0; i < path.size(); i++) {
 			System.out.println(dirForMapTile(old, path.get(i)));
 			old = path.get(i);
 		}
 		System.out.println("Done Printing Path");
-		System.out.println("X: " + locX + " Y: " + locY);
-		
-		System.out.println("targetX: " + origin + " targetY: " + origin);
-//		printMap();
+
 		try {
-			Thread.sleep(1);
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// if (path.size() > 2)
 		if (path.size() > 0)
-			return dirForMapTile(map[getAbsolute()[0]][getAbsolute()[1]],
-					path.get(0));
+			return dirForMapTile(map[locX][locY], path.get(0));
 		else {
 			System.out.println("returning null");
 			return null;
@@ -172,9 +179,9 @@ public class myant implements Ant {
 
 	public Direction dirForMapTile(MapTile from, MapTile to) {
 		if ((from.x == to.x) && (from.y > to.y))
-			return Direction.NORTH;
-		else if ((from.x == to.x) && (from.y < to.y))
 			return Direction.SOUTH;
+		else if ((from.x == to.x) && (from.y < to.y))
+			return Direction.NORTH;
 		else if ((from.y == to.y) && (from.x > to.x))
 			return Direction.WEST;
 		else
@@ -212,11 +219,11 @@ public class myant implements Ant {
 	public PriorityQueue<MapTile> readyMap() {
 		PriorityQueue<MapTile> pq = new PriorityQueue<MapTile>();
 
-		for (int j = 0; j < map.length; j++) {
-			for (int i = 0; i < map[j].length; i++) {
+		for (int i = 0; i < map.length; i++)
+			for (int j = 0; j < map[i].length; j++) {
 				// setting the distance from source
-				if (i == getAbsolute()[0] && j == getAbsolute()[1])
-					map[getAbsolute()[0]][getAbsolute()[1]].distanceFromSource = 0;
+				if (i == locX && j == locY)
+					map[locX][locY].distanceFromSource = 0;
 				else
 					map[i][j].distanceFromSource = Integer.MAX_VALUE;
 				// setting the prev
@@ -226,17 +233,18 @@ public class myant implements Ant {
 					pq.add(map[i][j]);
 
 			}
-		}
 		// System.out.println("PQ SIZE: " + pq.size());
 		return pq;
 	}
 
 	public void intialize() {
 		initialized = true;
-		for (int i = 0; i < map.length; i++)
+		for (int i = map.length - 1; i >= 0; i--)
 			for (int j = 0; j < map[i].length; j++) {
-				map[i][j] = new MapTile(type.UNEXPLORED);
+				map[j][i] = new MapTile(myant.type.UNEXPLORED);
+				map[j][i].setLocation(j, i);
 			}
+
 		map[origin][origin].setType(type.HOME);
 		locX = origin;
 		locY = origin;
@@ -253,6 +261,7 @@ public class myant implements Ant {
 		switch (dir) {
 		case NORTH:
 			locY++;
+			break;
 		case EAST:
 			locX++;
 			break;
@@ -349,5 +358,9 @@ public class myant implements Ant {
 			}
 			System.out.println();
 		}
+	}
+
+	public MapTile getMapTileCoord(int x, int y) {
+		return map[x][y];
 	}
 }
