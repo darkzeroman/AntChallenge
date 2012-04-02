@@ -16,9 +16,9 @@ public class MapOps {
 
 		System.out.print("SEARCHING: " + ant.antnum);
 		System.out.println(" Current X: " + ant.locX + " Y: " + ant.locY
-				+ " Going to: " + target.x + " " + target.y);
+				+ " Going to: " + target.getXY()[0] + " " + target.getXY()[1]);
 
-		if (target.x == ant.locX && target.y == ant.locY) {
+		if (target.getXY()[0] == ant.locX && target.getXY()[1] == ant.locY) {
 			System.out.println("Sitting on top of target");
 			return null;
 		}

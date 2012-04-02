@@ -79,7 +79,7 @@ public class WorldMap implements Serializable {
 		Enumeration<Cell> e = knowledge.elements();
 		while (e.hasMoreElements()) {
 			Cell mT = e.nextElement();
-			mT.prepareForSearch();
+			mT.resetForSearch();
 			if (mT.x == locX && mT.y == locY) {
 				System.out.println("currently: " + mT);
 				mT.dist = 0;
