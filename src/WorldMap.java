@@ -1,5 +1,3 @@
-
-
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -22,11 +20,14 @@ public class WorldMap implements Serializable {
 	final int MAPSIZE;
 
 	public static Direction dirTo(Cell from, Cell to) {
-		if ((from.x == to.x) && (from.y > to.y))
+		if ((from.getXY()[0] == to.getXY()[0])
+				&& (from.getXY()[1] > to.getXY()[1]))
 			return Direction.NORTH;
-		else if ((from.x == to.x) && (from.y < to.y))
+		else if ((from.getXY()[0] == to.getXY()[0])
+				&& (from.getXY()[1] < to.getXY()[1]))
 			return Direction.SOUTH;
-		else if ((from.y == to.y) && (from.x > to.x))
+		else if ((from.getXY()[1] == to.getXY()[1])
+				&& (from.getXY()[0] > to.getXY()[0]))
 			return Direction.WEST;
 		else
 			return Direction.EAST;
@@ -78,17 +79,17 @@ public class WorldMap implements Serializable {
 
 		Enumeration<Cell> e = knowledge.elements();
 		while (e.hasMoreElements()) {
-			Cell mT = e.nextElement();
-			mT.resetForSearch();
-			if (mT.x == locX && mT.y == locY) {
-				System.out.println("currently: " + mT);
-				mT.dist = 0;
+			Cell cell = e.nextElement();
+			cell.resetForSearch();
+			if (cell.getXY()[0] == locX && cell.getXY()[1] == locY) {
+				System.out.println("currently: " + cell);
+				cell.dist = 0;
 			}
-			if (!checkUnexplored && mT.getType() != type.UNEXPLORED
-					&& mT.getType() != type.WALL)
-				pq.add(mT);
-			else if (checkUnexplored && mT.getType() != type.WALL)
-				pq.add(mT);
+			if (!checkUnexplored && cell.getType() != type.UNEXPLORED
+					&& cell.getType() != type.WALL)
+				pq.add(cell);
+			else if (checkUnexplored && cell.getType() != type.WALL)
+				pq.add(cell);
 		}
 		return pq;
 	}
@@ -112,34 +113,28 @@ public class WorldMap implements Serializable {
 		return sum;
 	}
 
-	public void markFalse() {
-		Enumeration<Cell> e = knowledge.elements();
-		while (e.hasMoreElements()) {
-			Cell mT = e.nextElement();
-			mT.mark = false;
-		}
-	}
-
 	public void merge(WorldMap other) {
 		Enumeration<Cell> e = other.knowledge.elements();
 		while (e.hasMoreElements()) {
 			Cell cell = e.nextElement();
-			// if this is unexplored and other isn't, copy type
-			int i = cell.getXY()[0], j = cell.getXY()[1];
-			if (get(i, j).getType() == type.UNEXPLORED
-					&& other.get(i, j).getType() != type.UNEXPLORED) {
-				get(i, j).setType(other.get(i, j).getType());
-				get(i, j).setAmntFood(other.get(i, j).getAmntFood());
+			int x = cell.getXY()[0], y = cell.getXY()[1];
+			// if local cell is unexplored and other isn't, copy type/food
+			if (get(x, y).getType() == type.UNEXPLORED
+					&& other.get(x, y).getType() != type.UNEXPLORED) {
+				get(x, y).setType(other.get(x, y).getType());
+				get(x, y).setAmntFood(other.get(x, y).getAmntFood());
 
-			} else if (other.get(i, j).getType() != type.UNEXPLORED
-					&& get(i, j).timeStamp < other.get(i, j).timeStamp)
-				get(i, j).setAmntFood(other.get(i, j).getAmntFood());
+			} else if (other.get(x, y).getType() != type.UNEXPLORED
+					&& get(x, y).timeStamp < other.get(x, y).timeStamp)
+				// if local info is older, copy the newer info
+				get(x, y).setAmntFood(other.get(x, y).getAmntFood());
 
 		}
 
 	}
 
 	public void update(Surroundings surroundings, int locX, int locY) {
+		// TODO remove
 		if (surroundings == null) {
 			System.out.println("why is surroundings null");
 			MyAnt.induceSleep(10 * 1000);
@@ -173,9 +168,11 @@ public class WorldMap implements Serializable {
 			return true;
 		} else if (tile.isTravelable() && tileAmountFood == 0
 				&& cell.getType() != type.HOME && cell.getType() != type.GRASS) {
+			// new info, set to grass
 			cell.setType(WorldMap.type.GRASS);
 			return true;
 		} else if (!tile.isTravelable() && tileAmountFood == 0) {
+
 			cell.setType(WorldMap.type.WALL);
 			return true;
 		}
