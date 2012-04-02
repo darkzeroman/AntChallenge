@@ -1,4 +1,5 @@
 
+
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -24,6 +25,14 @@ public class WorldMap implements Serializable {
 	final int MAPSIZE;
 	int[][] offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
 	boolean recentlyUpdated = true;
+
+	public boolean isRecentlyUpdated() {
+		return recentlyUpdated;
+	}
+
+	public void setRecentlyUpdated(boolean recentlyUpdated) {
+		this.recentlyUpdated = recentlyUpdated;
+	}
 
 	public WorldMap(int mapsize, int antnum, int origin) {
 		MAPSIZE = mapsize;
@@ -87,15 +96,21 @@ public class WorldMap implements Serializable {
 		while (e.hasMoreElements()) {
 			Cell cell = e.nextElement();
 			int x = cell.getXY()[0], y = cell.getXY()[1];
-			Cell otherCell = other.get(x, y);
-			// if local cell is unexplored and other isn't, take it
-			// if other cell is not unexplored and fresher, take it
-			if (otherCell.getType() != type.UNEXPLORED
-					&& (cell.getType() == type.UNEXPLORED || (cell.timeStamp < otherCell.timeStamp))) {
-				set(otherCell);
+			// if local cell is unexplored and other isn't, copy type/food
+			Cell localCell = get(x,y);
+			if (get(x, y).getType() == type.UNEXPLORED
+					&& other.get(x, y).getType() != type.UNEXPLORED) {
+				set(other.get(x, y));
+				recentlyUpdated = true;
+			} else if (other.get(x, y).getType() != type.UNEXPLORED
+					&& get(x, y).timeStamp < other.get(x, y).timeStamp) {
+				// if local info is older, copy the newer info
+				set(other.get(x, y));
 				recentlyUpdated = true;
 			}
+
 		}
+
 	}
 
 	public int sizeOfKnowledge() {
@@ -148,6 +163,10 @@ public class WorldMap implements Serializable {
 		}
 
 		return false;
+	}
+
+	public String toString() {
+		return this.knowledge.keySet().size() + "";
 	}
 
 }

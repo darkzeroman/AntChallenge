@@ -91,21 +91,26 @@ public class WorldMap implements Serializable {
 		return sum;
 	}
 
-	public boolean merge(WorldMap other) {
+	public void merge(WorldMap other) {
 		Enumeration<Cell> e = other.knowledge.elements();
 		while (e.hasMoreElements()) {
 			Cell cell = e.nextElement();
 			int x = cell.getXY()[0], y = cell.getXY()[1];
-			Cell otherCell = other.get(x, y);
-			// if local cell is unexplored and other isn't, take it
-			// if other cell is not unexplored and fresher, take it
-			if (otherCell.getType() != type.UNEXPLORED
-					&& (cell.getType() == type.UNEXPLORED || (cell.timeStamp < otherCell.timeStamp))) {
-				set(otherCell);
+			// if local cell is unexplored and other isn't, copy type/food
+			Cell localCell = get(x,y);
+			if (get(x, y).getType() == type.UNEXPLORED
+					&& other.get(x, y).getType() != type.UNEXPLORED) {
+				set(other.get(x, y));
+				recentlyUpdated = true;
+			} else if (other.get(x, y).getType() != type.UNEXPLORED
+					&& get(x, y).timeStamp < other.get(x, y).timeStamp) {
+				// if local info is older, copy the newer info
+				set(other.get(x, y));
 				recentlyUpdated = true;
 			}
+
 		}
-		return recentlyUpdated;
+
 	}
 
 	public int sizeOfKnowledge() {
@@ -158,6 +163,10 @@ public class WorldMap implements Serializable {
 		}
 
 		return false;
+	}
+
+	public String toString() {
+		return this.knowledge.keySet().size() + "";
 	}
 
 }

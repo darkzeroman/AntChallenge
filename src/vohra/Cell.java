@@ -69,7 +69,8 @@ public class Cell implements Comparable<Cell>, Serializable {
 	}
 
 	public String toString() {
-		return "[" + x + "," + y + "]";// cost: " + this.dist + " ";
+		return "[" + x + "," + y + "] type: " + this.type;
+		// cost: " + this.dist + " ";
 	}
 
 	public int compareTo(Cell cell) {

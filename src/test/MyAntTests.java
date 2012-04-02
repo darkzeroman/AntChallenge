@@ -152,6 +152,21 @@ public class MyAntTests {
 		map2.set(new Cell(WorldMap.type.GRASS, 0, 1));
 		map1.merge(map2);
 		assertTrue(map1.isRecentlyUpdated());
+
+		map1.setRecentlyUpdated(false);
+		map1.merge(map2);
+		assertFalse(map1.isRecentlyUpdated());
+
+		MyAnt.induceSleep(1, "test");
+		map2.set(new Cell(WorldMap.type.FOOD, 0, 1));
+		map1.merge(map2);
+		assertTrue(map1.isRecentlyUpdated());
+		
+		map1.setRecentlyUpdated(false);
+		map1.merge(map2);
+		assertFalse(map1.isRecentlyUpdated());
+		
+		
 	}
 
 	private class TestTile implements Tile {
