@@ -62,12 +62,12 @@ public class MapOps {
 		boolean checkUnexplored = false;
 		if (target.getType() == WorldMap.type.UNEXPLORED)
 			checkUnexplored = true;
-	
+
 		System.out.print("SEARCHING: " + ant.antnum);
 		System.out.println(" Current X: " + ant.getLocX() + " Y: "
 				+ ant.getLocY() + " Going to: " + target.getXY()[0] + " "
 				+ target.getXY()[1]);
-	
+
 		if (target.getXY()[0] == ant.getLocX()
 				&& target.getXY()[1] == ant.getLocY()) {
 			System.out.println("Sitting on top of target");
@@ -77,14 +77,14 @@ public class MapOps {
 				ant.getLocY(), checkUnexplored);
 		System.out.println("PQ: " + pq.size());
 		int count = 0;
-	
+
 		while (!pq.isEmpty()) {
 			count++;
 			Cell u = pq.peek();
 			if (u.dist == Integer.MAX_VALUE) {
 				System.out.println("exiting after: " + count);
 				break; // nothing past here is reachable
-	
+
 			}
 			u = pq.poll();
 			if (u == target) // reached target, can end
@@ -99,7 +99,7 @@ public class MapOps {
 						pq.add(mapTile);
 					else
 						throw new Error("Can't find element in PQ");
-	
+
 				}
 			}
 		}
@@ -111,7 +111,7 @@ public class MapOps {
 			ant.getCurrRoute().add(0, u);
 			u = u.prev;
 		}
-	
+
 		// System.out.print("Printing Path:  (size: " + ant.currRoute.size()
 		// + "): ");
 		// MapTile old = ant.map.get(ant.locX, ant.locY);
@@ -120,10 +120,10 @@ public class MapOps {
 		// old = ant.currRoute.get(i);
 		// }
 		// System.out.println();
-	
+
 		if (ant.getCurrRoute().size() > 0) {
 			// System.out.println("returning path");
-			return WorldMap.dirTo(ant.getMap()
+			return MapOps.dirTo(ant.getMap()
 					.get(ant.getLocX(), ant.getLocY()), ant.getCurrRoute()
 					.remove(0));
 		} else {
@@ -169,11 +169,38 @@ public class MapOps {
 		return list;
 	}
 
-	public boolean isNotTypes(Cell cell, WorldMap.type[] types) {
-		for (int i = 0; i < types.length; i++) {
-			if (cell.getType() == types[i])
-				return false;
+	public static Direction oppositeDir(Direction dir) {
+		if (dir == null) {
+			System.out.println("why is dir null");
+			MyAnt.induceSleep(10 * 1000);
 		}
-		return true;
+		switch (dir) {
+		case NORTH:
+			return Direction.SOUTH;
+		case EAST:
+			return Direction.WEST;
+		case SOUTH:
+			return Direction.NORTH;
+		case WEST:
+			return Direction.EAST;
+		default:
+			return null;
+		}
 	}
+
+	public static Direction dirTo(Cell from, Cell to) {
+		if ((from.getXY()[0] == to.getXY()[0])
+				&& (from.getXY()[1] > to.getXY()[1]))
+			return Direction.NORTH;
+		else if ((from.getXY()[0] == to.getXY()[0])
+				&& (from.getXY()[1] < to.getXY()[1]))
+			return Direction.SOUTH;
+		else if ((from.getXY()[1] == to.getXY()[1])
+				&& (from.getXY()[0] > to.getXY()[0]))
+			return Direction.WEST;
+		else
+			return Direction.EAST;
+	
+	}
+
 }

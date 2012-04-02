@@ -13,17 +13,14 @@ public class Cell implements Comparable<Cell>, Serializable {
 	private int amntFood = 0;
 	int origFood = 0;
 
-	public Cell(WorldMap.type tileType) {
+	public Cell(WorldMap.type tileType, int x, int y) {
 		this.setType(tileType);
 		timeStamp = System.currentTimeMillis();
-	}
-
-	public Cell(WorldMap.type tileType, int x, int y) {
-		this(tileType);
 		this.setXY(x, y);
 	}
 
 	public void resetForSearch() {
+		// used by BFS/Djikstra
 		this.dist = Integer.MAX_VALUE;
 		prev = null;
 		mark = false;

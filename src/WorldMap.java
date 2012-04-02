@@ -15,48 +15,12 @@ public class WorldMap implements Serializable {
 	}
 
 	private static final long serialVersionUID = 1L;
-	static int staticcount = 0;
-	final int MAPSIZE;
-
-	public static Direction dirTo(Cell from, Cell to) {
-		if ((from.getXY()[0] == to.getXY()[0])
-				&& (from.getXY()[1] > to.getXY()[1]))
-			return Direction.NORTH;
-		else if ((from.getXY()[0] == to.getXY()[0])
-				&& (from.getXY()[1] < to.getXY()[1]))
-			return Direction.SOUTH;
-		else if ((from.getXY()[1] == to.getXY()[1])
-				&& (from.getXY()[0] > to.getXY()[0]))
-			return Direction.WEST;
-		else
-			return Direction.EAST;
-
-	}
-
-	public static Direction oppositeDir(Direction dir) {
-		if (dir == null) {
-			System.out.println("why is dir null");
-			MyAnt.induceSleep(10 * 1000);
-		}
-		switch (dir) {
-		case NORTH:
-			return Direction.SOUTH;
-		case EAST:
-			return Direction.WEST;
-		case SOUTH:
-			return Direction.NORTH;
-		case WEST:
-			return Direction.EAST;
-		default:
-			return null;
-		}
-	}
-
-	public Hashtable<Point, Cell> knowledge;
 
 	int antnum;
 	int count;
+	public Hashtable<Point, Cell> knowledge;
 	LinkedList<Cell> lastChanges = new LinkedList<Cell>();
+	final int MAPSIZE;
 
 	int[][] offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
 
@@ -66,10 +30,47 @@ public class WorldMap implements Serializable {
 		MAPSIZE = mapsize;
 		this.antnum = antnum;
 		knowledge = new Hashtable<Point, Cell>();
-
 		get(origin, origin).setType(type.HOME);
-		count = staticcount;
-		staticcount++;
+
+	}
+
+	public PriorityQueue<Cell> beforeSearch(int locX, int locY,
+			boolean checkUnexplored) {
+		PriorityQueue<Cell> pq = new PriorityQueue<Cell>();
+
+		Enumeration<Cell> e = knowledge.elements();
+		while (e.hasMoreElements()) {
+			Cell cell = e.nextElement();
+			cell.resetForSearch();
+			if (cell.getXY()[0] == locX && cell.getXY()[1] == locY) {
+				cell.dist = 0;
+			}
+			if (!checkUnexplored && cell.getType() != type.UNEXPLORED
+					&& cell.getType() != type.WALL)
+				pq.add(cell);
+			else if (checkUnexplored && cell.getType() != type.WALL)
+				pq.add(cell);
+		}
+		return pq;
+	}
+
+	public Cell get(int row, int col) {
+		if (knowledge.get(new Point(row, col)) == null) {
+			Cell mT = new Cell(type.UNEXPLORED, row, col);
+			knowledge.put(new Point(row, col), mT);
+			return mT;
+		} else
+			return knowledge.get(new Point(row, col));
+	}
+
+	public int getTotalFoodFound() {
+		int sum = 0;
+		Enumeration<Cell> e = knowledge.elements();
+		while (e.hasMoreElements()) {
+			Cell cell = e.nextElement();
+			sum += cell.origFood;
+		}
+		return sum;
 	}
 
 	public void merge(WorldMap other) {
@@ -90,6 +91,10 @@ public class WorldMap implements Serializable {
 
 		}
 
+	}
+
+	public int sizeOfKnowledge() {
+		return knowledge.keySet().size();
 	}
 
 	public void update(Surroundings surroundings, int locX, int locY) {
@@ -136,49 +141,6 @@ public class WorldMap implements Serializable {
 		}
 
 		return false;
-	}
-
-	public PriorityQueue<Cell> beforeSearch(int locX, int locY,
-			boolean checkUnexplored) {
-		PriorityQueue<Cell> pq = new PriorityQueue<Cell>();
-	
-		Enumeration<Cell> e = knowledge.elements();
-		while (e.hasMoreElements()) {
-			Cell cell = e.nextElement();
-			cell.resetForSearch();
-			if (cell.getXY()[0] == locX && cell.getXY()[1] == locY) {
-				cell.dist = 0;
-			}
-			if (!checkUnexplored && cell.getType() != type.UNEXPLORED
-					&& cell.getType() != type.WALL)
-				pq.add(cell);
-			else if (checkUnexplored && cell.getType() != type.WALL)
-				pq.add(cell);
-		}
-		return pq;
-	}
-
-	public Cell get(int row, int col) {
-		if (knowledge.get(new Point(row, col)) == null) {
-			Cell mT = new Cell(type.UNEXPLORED, row, col);
-			knowledge.put(new Point(row, col), mT);
-			return mT;
-		} else
-			return knowledge.get(new Point(row, col));
-	}
-
-	public int getTotalFoodFound() {
-		int sum = 0;
-		Enumeration<Cell> e = knowledge.elements();
-		while (e.hasMoreElements()) {
-			Cell cell = e.nextElement();
-			sum += cell.origFood;
-		}
-		return sum;
-	}
-
-	public int sizeOfKnowledge() {
-		return knowledge.keySet().size();
 	}
 
 }

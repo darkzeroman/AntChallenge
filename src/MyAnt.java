@@ -25,7 +25,7 @@ public class MyAnt implements Ant {
 	private WorldMap map;
 	private Random rand = new Random(System.currentTimeMillis());
 	boolean carryingFood = false, isScout = false, firstAction = true;
-	Direction lastDir;
+	private Direction lastDir;
 	protected Mode mode;
 	private ArrayList<Cell> currRoute;
 	private ObjectIO<WorldMap> oio = new ObjectIO<WorldMap>();;
@@ -48,7 +48,7 @@ public class MyAnt implements Ant {
 
 	public Action getAction(Surroundings surroundings) {
 
-		// Scanner sc = new Scanner(System.in);
+		Scanner sc = new Scanner(System.in);
 		// while (!sc.nextLine().equals(""))
 		// ;
 
@@ -215,7 +215,7 @@ public class MyAnt implements Ant {
 
 	public Action nextRouteAction() {
 		if (currRoute.size() > 0)
-			return Action.move(WorldMap.dirTo(getCell(getLocX(), getLocY()),
+			return Action.move(MapOps.dirTo(getCell(getLocX(), getLocY()),
 					currRoute.remove(0)));
 		else
 			return null;
@@ -249,7 +249,7 @@ public class MyAnt implements Ant {
 	private Direction randomDir(Surroundings surroundings) {
 		boolean[] choices = new boolean[4];
 		int numChoices = 0;
-		Direction oppDir = WorldMap.oppositeDir(lastDir);
+		Direction oppDir = MapOps.oppositeDir(lastDir);
 		for (int i = 0; i < 4; i++) {
 			if ((oppDir != Direction.values()[i])
 					&& (surroundings.getTile(Direction.values()[i])
@@ -261,7 +261,7 @@ public class MyAnt implements Ant {
 		}
 		// if count is zero, we're stuck in a corner, so need to go back
 		if (numChoices == 0) {
-			return lastDir = WorldMap.oppositeDir(lastDir);
+			return lastDir = MapOps.oppositeDir(lastDir);
 		}
 		// change to a for loop at some point
 		int rInt = rand.nextInt(4);
