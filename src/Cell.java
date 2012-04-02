@@ -23,15 +23,15 @@ public class Cell implements Comparable<Cell>, Serializable {
 		this.setXY(x, y);
 	}
 
-	public int compareTo(Cell cell) {
-		return (this.dist - cell.dist);
-	}
-
 	public void resetForSearch() {
 		this.dist = Integer.MAX_VALUE;
 		prev = null;
 		mark = false;
 
+	}
+
+	public void mark() {
+		this.mark = true;
 	}
 
 	public void decrementAmntFood() {
@@ -49,10 +49,6 @@ public class Cell implements Comparable<Cell>, Serializable {
 		timeStamp = System.currentTimeMillis();
 	}
 
-	public void mark() {
-		this.mark = true;
-	}
-
 	public int[] getXY() {
 		return new int[] { x, y };
 	}
@@ -62,10 +58,6 @@ public class Cell implements Comparable<Cell>, Serializable {
 		this.y = y;
 	}
 
-	public String toString() {
-		return "[" + x + "," + y + "] cost: " + this.dist + " ";
-	}
-
 	public WorldMap.type getType() {
 		return type;
 	}
@@ -73,5 +65,13 @@ public class Cell implements Comparable<Cell>, Serializable {
 	public void setType(WorldMap.type tileType) {
 		this.type = tileType;
 
+	}
+
+	public String toString() {
+		return "[" + x + "," + y + "] cost: " + this.dist + " ";
+	}
+
+	public int compareTo(Cell cell) {
+		return (this.dist - cell.dist);
 	}
 }

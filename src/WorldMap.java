@@ -5,7 +5,6 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
-import ants.Action;
 import ants.Direction;
 import ants.Surroundings;
 import ants.Tile;
@@ -73,46 +72,6 @@ public class WorldMap implements Serializable {
 		staticcount++;
 	}
 
-	public PriorityQueue<Cell> beforeSearch(int locX, int locY,
-			boolean checkUnexplored) {
-		PriorityQueue<Cell> pq = new PriorityQueue<Cell>();
-
-		Enumeration<Cell> e = knowledge.elements();
-		while (e.hasMoreElements()) {
-			Cell cell = e.nextElement();
-			cell.resetForSearch();
-			if (cell.getXY()[0] == locX && cell.getXY()[1] == locY) {
-				System.out.println("currently: " + cell);
-				cell.dist = 0;
-			}
-			if (!checkUnexplored && cell.getType() != type.UNEXPLORED
-					&& cell.getType() != type.WALL)
-				pq.add(cell);
-			else if (checkUnexplored && cell.getType() != type.WALL)
-				pq.add(cell);
-		}
-		return pq;
-	}
-
-	public Cell get(int row, int col) {
-		if (knowledge.get(new Point(row, col)) == null) {
-			Cell mT = new Cell(type.UNEXPLORED, row, col);
-			knowledge.put(new Point(row, col), mT);
-			return mT;
-		} else
-			return knowledge.get(new Point(row, col));
-	}
-
-	public int getTotalFoodFound() {
-		int sum = 0;
-		Enumeration<Cell> e = knowledge.elements();
-		while (e.hasMoreElements()) {
-			Cell mT = e.nextElement();
-			sum += mT.origFood;
-		}
-		return sum;
-	}
-
 	public void merge(WorldMap other) {
 		Enumeration<Cell> e = other.knowledge.elements();
 		while (e.hasMoreElements()) {
@@ -142,7 +101,6 @@ public class WorldMap implements Serializable {
 		}
 
 		updateCell(get(locX, locY), surroundings.getCurrentTile());
-
 		// NESW
 		for (int i = 0; i < 4; i++) {
 			Tile temp = surroundings.getTile(Direction.values()[i]);
@@ -178,6 +136,45 @@ public class WorldMap implements Serializable {
 		}
 
 		return false;
+	}
+
+	public PriorityQueue<Cell> beforeSearch(int locX, int locY,
+			boolean checkUnexplored) {
+		PriorityQueue<Cell> pq = new PriorityQueue<Cell>();
+	
+		Enumeration<Cell> e = knowledge.elements();
+		while (e.hasMoreElements()) {
+			Cell cell = e.nextElement();
+			cell.resetForSearch();
+			if (cell.getXY()[0] == locX && cell.getXY()[1] == locY) {
+				cell.dist = 0;
+			}
+			if (!checkUnexplored && cell.getType() != type.UNEXPLORED
+					&& cell.getType() != type.WALL)
+				pq.add(cell);
+			else if (checkUnexplored && cell.getType() != type.WALL)
+				pq.add(cell);
+		}
+		return pq;
+	}
+
+	public Cell get(int row, int col) {
+		if (knowledge.get(new Point(row, col)) == null) {
+			Cell mT = new Cell(type.UNEXPLORED, row, col);
+			knowledge.put(new Point(row, col), mT);
+			return mT;
+		} else
+			return knowledge.get(new Point(row, col));
+	}
+
+	public int getTotalFoodFound() {
+		int sum = 0;
+		Enumeration<Cell> e = knowledge.elements();
+		while (e.hasMoreElements()) {
+			Cell cell = e.nextElement();
+			sum += cell.origFood;
+		}
+		return sum;
 	}
 
 	public int sizeOfKnowledge() {
