@@ -1,4 +1,5 @@
 package vohra;
+
 import java.io.Serializable;
 
 public class Cell implements Comparable<Cell>, Serializable {

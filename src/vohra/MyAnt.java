@@ -1,5 +1,4 @@
 package vohra;
-
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -52,11 +51,12 @@ public class MyAnt implements Ant {
 
 	public Action getAction(Surroundings surroundings) {
 		this.surroundings = surroundings;
+		round++;
+
 		Scanner sc = new Scanner(System.in);
 		// if (order > 2)
 		// while (!sc.nextLine().equals(""))
 		// ;
-		round++;
 
 		System.out.println("\nAnt Num: " + antnum + " mapSize: "
 				+ getMap().sizeOfKnowledge());
@@ -74,7 +74,7 @@ public class MyAnt implements Ant {
 
 		System.out.println(" Current " + getCurrCell());
 
-		getMap().update(surroundings, getLocX(), getLocY());
+		getMap().update(surroundings, locX, locY);
 
 		if (firstAction) {
 			firstAction = false;
@@ -140,9 +140,8 @@ public class MyAnt implements Ant {
 
 		}
 		// not in scout mode anymore, switch to food mode;
-		currRoute.clear();
-		mode = Mode.TOFOOD;
-		return modeToFood();
+		return changeMode(Mode.TOFOOD);
+
 	}
 
 	private Action modeToFood() {
@@ -170,11 +169,9 @@ public class MyAnt implements Ant {
 		} else if (!isAtHome() && currTileFood > 0 && !carryingFood) {
 			// ant is on food tile, gather
 			carryingFood = true;
-			mode = Mode.TOHOME;
 			getCurrCell().decrementAmntFood();
-			currRoute.clear();
 			System.out.println("GATHERING");
-			return Action.GATHER;
+			return changeModeAndAction(Mode.TOHOME, Action.GATHER);
 
 		} else if ((action = findFood("Food")) != null) {
 			// don't have a plan, so make one
@@ -183,8 +180,8 @@ public class MyAnt implements Ant {
 		}
 		System.out.println("Can't find food, going to explore");
 
-		mode = Mode.EXPLORE;
-		return modeExplore();
+		return changeMode(Mode.EXPLORE);
+
 	}
 
 	private Action modeExplore() {
@@ -196,53 +193,20 @@ public class MyAnt implements Ant {
 				&& findFood("Explore food") != null) {
 			// map was recently updated, see if food source exists nearby
 			getMap().recentlyUpdated = false;
-			mode = Mode.TOFOOD;
-			currRoute.clear();
-			modeToFood();
-		}
-
-		// not at home, and not carrying food and ant is on food
-		if (!isAtHome() && currTileFood > 0 && !carryingFood) {
-			System.out.println("FOUND FOOD");
-			carryingFood = true;
-			mode = Mode.TOHOME;
-			currRoute.clear();
-			getCurrCell().decrementAmntFood();
-			return Action.GATHER;
+			return changeMode(Mode.TOFOOD);
 		}
 
 		// get next step from route and check if it's travelable
 		if ((action = nextRouteAction()) != null)
 			return action;
 
-		// System.out.println("finding food");
-		// if ((action = findFood("explore food")) != null) {
-		// mode = Mode.TOFOOD;
-		// action = Action.HALT;
-		// return action;
-		// }
 		// try to find closest unexplored
-
-		System.out.println("unexplored");
+		System.out.println("looking for unexplored");
 		if ((action = findUnexplored("Exploring unexplored")) != null)
 			return action;
 
 		// if everything is explored, return to home
-		currRoute.clear();
-		mode = Mode.TOHOME;
-		return modeToHome();
-	}
-
-	public Action findFood(String error) {
-		return MapOps.newMakeRoute(this, WorldMap.type.FOOD, error);
-	}
-
-	private Action findUnexplored(String error) {
-		return MapOps.newMakeRoute(this, WorldMap.type.UNEXPLORED, error);
-	}
-
-	private Action findHome(String error) {
-		return MapOps.newMakeRoute(this, WorldMap.type.HOME, error);
+		return changeMode(Mode.TOHOME);
 	}
 
 	private Action modeToHome() {
@@ -252,48 +216,61 @@ public class MyAnt implements Ant {
 		if (isAtHome() && carryingFood) { // at home
 			carryingFood = false;
 			mode = Mode.TOFOOD;
-			currRoute.clear();
-			System.out.println("DROPPING OFF");
 			if (isScout && map.getTotalFoodFound() < 600) {
 				System.out.println("resetting countdown");
 				roundCountdown = 25;
 				mode = Mode.SCOUT;
 			}
-			return action = Action.DROP_OFF;
+			System.out.println("DROPPING OFF");
+			return changeModeAndAction(mode, Action.DROP_OFF);
 
 		}
 		// continue with path
 		if ((action = nextRouteAction()) != null)
 			return action;
 		else if (isAtHome() && !carryingFood) {
-			mode = Mode.EXPLORE;
-			return modeExplore();
-
+			induceSleep(10, "at home without food");
+			return changeMode(Mode.EXPLORE);
 		} else if ((action = findHome("TOHOME")) != null)
-			// make path
 			return action;
-
 		else
 			induceSleep(10, "No route && can't find home");
 		System.out.println("end home");
 		return null;
 	}
 
+	public Action changeMode(Mode mode) {
+		currRoute.clear();
+		this.mode = mode;
+		switch (mode) {
+		case SCOUT:
+			return modeScout();
+		case TOFOOD:
+			return modeToFood();
+		case EXPLORE:
+			return modeExplore();
+		case TOHOME:
+			return modeToHome();
+		default:
+			return null;
+		}
+	}
+
+	public Action changeModeAndAction(Mode mode, Action action) {
+		currRoute.clear();
+		this.mode = mode;
+		return action;
+	}
+
 	private Action nextRouteAction() {
 		Action action;
 		Cell fromCell = getCurrCell();
-
 		if (currRoute.size() > 0
 				&& (action = Action
 						.move(MapOps.dirTo(fromCell, currRoute.pop()))) != null)
 			if (checkIfTravelable(action))
 				return action;
 		return null;
-	}
-
-	private Cell getCurrCell() {
-		return getCell(getLocX(), getLocY());
-
 	}
 
 	public byte[] send() {
@@ -309,7 +286,7 @@ public class MyAnt implements Ant {
 	}
 
 	private boolean isAtHome() {
-		return (getLocX() == origin && getLocY() == origin);
+		return (locX == origin && locY == origin);
 	}
 
 	private boolean checkIfTravelable(Action action) {
@@ -350,6 +327,18 @@ public class MyAnt implements Ant {
 
 	}
 
+	public Action findFood(String error) {
+		return MapOps.newMakeRoute(this, WorldMap.type.FOOD, error);
+	}
+
+	public Action findUnexplored(String error) {
+		return MapOps.newMakeRoute(this, WorldMap.type.UNEXPLORED, error);
+	}
+
+	public Action findHome(String error) {
+		return MapOps.newMakeRoute(this, WorldMap.type.HOME, error);
+	}
+
 	private void updateCurrLoc(Direction dir) {
 		// Directions: NORTH, EAST, SOUTH, WEST;
 		switch (dir) {
@@ -369,6 +358,10 @@ public class MyAnt implements Ant {
 			System.out.println("Not valid move");
 			throw new RuntimeException("");
 		}
+	}
+
+	private Cell getCurrCell() {
+		return getCell(locX, locY);
 	}
 
 	public Cell getCell(int row, int col) {

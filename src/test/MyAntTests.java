@@ -136,6 +136,24 @@ public class MyAntTests {
 
 	}
 
+	@Test
+	public void testMapMerge() {
+		WorldMap map1 = new WorldMap(3, 1, 1);
+		WorldMap map2 = new WorldMap(3, 1, 1);
+
+		System.out.println(map1.isRecentlyUpdated());
+		assertTrue(map1.isRecentlyUpdated());
+		map1.setRecentlyUpdated(false);
+		assertFalse(map1.isRecentlyUpdated());
+
+		map1.merge(map2);
+		assertFalse(map1.isRecentlyUpdated());
+
+		map2.set(new Cell(WorldMap.type.GRASS, 0, 1));
+		map1.merge(map2);
+		assertTrue(map1.isRecentlyUpdated());
+	}
+
 	private class TestTile implements Tile {
 
 		@Override

@@ -208,6 +208,36 @@ public class MyAnt implements Ant {
 		return changeMode(Mode.TOHOME);
 	}
 
+	private Action modeToHome() {
+		Action action;
+		System.out.println("HOME MODE");
+
+		if (isAtHome() && carryingFood) { // at home
+			carryingFood = false;
+			mode = Mode.TOFOOD;
+			if (isScout && map.getTotalFoodFound() < 600) {
+				System.out.println("resetting countdown");
+				roundCountdown = 25;
+				mode = Mode.SCOUT;
+			}
+			System.out.println("DROPPING OFF");
+			return changeModeAndAction(mode, Action.DROP_OFF);
+
+		}
+		// continue with path
+		if ((action = nextRouteAction()) != null)
+			return action;
+		else if (isAtHome() && !carryingFood) {
+			induceSleep(10, "at home without food");
+			return changeMode(Mode.EXPLORE);
+		} else if ((action = findHome("TOHOME")) != null)
+			return action;
+		else
+			induceSleep(10, "No route && can't find home");
+		System.out.println("end home");
+		return null;
+	}
+
 	public Action changeMode(Mode mode) {
 		currRoute.clear();
 		this.mode = mode;
@@ -229,36 +259,6 @@ public class MyAnt implements Ant {
 		currRoute.clear();
 		this.mode = mode;
 		return action;
-	}
-
-	private Action modeToHome() {
-		Action action;
-		System.out.println("HOME MODE");
-
-		if (isAtHome() && carryingFood) { // at home
-			carryingFood = false;
-			mode = Mode.TOFOOD;
-			if (isScout && map.getTotalFoodFound() < 600) {
-				System.out.println("resetting countdown");
-				roundCountdown = 25;
-				mode = Mode.SCOUT;
-			}
-			System.out.println("DROPPING OFF");
-			return changeModeAndAction(mode, Action.DROP_OFF);
-
-		}
-		// continue with path
-		if ((action = nextRouteAction()) != null)
-			return action;
-		else if (isAtHome() && !carryingFood) {
-			return changeMode(Mode.EXPLORE);
-
-		} else if ((action = findHome("TOHOME")) != null)
-			return action;
-		else
-			induceSleep(10, "No route && can't find home");
-		System.out.println("end home");
-		return null;
 	}
 
 	private Action nextRouteAction() {

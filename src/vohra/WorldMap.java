@@ -1,4 +1,5 @@
 package vohra;
+
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -24,6 +25,14 @@ public class WorldMap implements Serializable {
 	final int MAPSIZE;
 	int[][] offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
 	boolean recentlyUpdated = true;
+
+	public boolean isRecentlyUpdated() {
+		return recentlyUpdated;
+	}
+
+	public void setRecentlyUpdated(boolean recentlyUpdated) {
+		this.recentlyUpdated = recentlyUpdated;
+	}
 
 	public WorldMap(int mapsize, int antnum, int origin) {
 		MAPSIZE = mapsize;
@@ -82,7 +91,7 @@ public class WorldMap implements Serializable {
 		return sum;
 	}
 
-	public void merge(WorldMap other) {
+	public boolean merge(WorldMap other) {
 		Enumeration<Cell> e = other.knowledge.elements();
 		while (e.hasMoreElements()) {
 			Cell cell = e.nextElement();
@@ -96,6 +105,7 @@ public class WorldMap implements Serializable {
 				recentlyUpdated = true;
 			}
 		}
+		return recentlyUpdated;
 	}
 
 	public int sizeOfKnowledge() {
