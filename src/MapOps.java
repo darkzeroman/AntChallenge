@@ -1,7 +1,10 @@
+
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
+import java.util.Stack;
 
 import ants.Action;
 import ants.Direction;
@@ -11,17 +14,44 @@ public class MapOps {
 
 	public static Action makeRoute(MyAnt ant, WorldMap.type type, String error) {
 		Cell target = MapOps.findClosest(ant, type);
+		System.out.println("target: " + target);
 		if (target != null) // try to make a path if it exists
 			return makeRoute(ant, target, error);
 		else
 			return null;
 	}
 
+	public static Action newMakeRoute(MyAnt ant, WorldMap.type type,
+			String error) {
+
+		Cell target = MapOps.findClosest(ant, type);
+		if (target == null)
+			return null;
+
+		ant.getCurrRoute().clear();
+		Cell u = target;
+		while (u.prev != null) {
+			ant.getCurrRoute().push(u);
+			u = u.prev;
+		}
+
+		if (ant.getCurrRoute().size() > 0) {
+			int x = ant.getLocX(), y = ant.getLocY();
+			Direction dir = MapOps.dirTo(ant.getMap().get(x, y), ant
+					.getCurrRoute().pop());
+			return Action.move(dir);
+		} else {
+			System.out.println("returning null PATH");
+			return null;
+		}
+
+	}
+
 	public static Action makeRoute(MyAnt ant, Cell target, String error) {
 		Action nextMove = null;
 		Direction dir = null;
 
-		if ((dir = MapOps.searchRoute(ant, target)) != null)
+		if ((dir = MapOps.makeRoute(ant, target)) != null)
 			nextMove = Action.move(dir);
 		else if (target != null && dir == null) {
 			// target exists, but no path to it, possibly coding error
@@ -33,6 +63,8 @@ public class MapOps {
 	}
 
 	public static Cell findClosest(MyAnt ant, WorldMap.type goalType) {
+		ant.getMap().beforeSearch(ant.getLocX(), ant.getLocY(),
+				goalType == WorldMap.type.UNEXPLORED);
 		// BFS Search
 		LinkedList<Cell> queue = new LinkedList<Cell>();
 		Cell startCell = ant.getCell(ant.getLocX(), ant.getLocY());
@@ -52,13 +84,14 @@ public class MapOps {
 				if (!cell.mark) {
 					cell.mark = true;
 					queue.add(cell);
+					cell.prev = t;
 				}
 			}
 		}
 		return null;
 	}
 
-	public static Direction searchRoute(MyAnt ant, Cell target) {
+	public static Direction makeRoute(MyAnt ant, Cell target) {
 		boolean checkUnexplored = false;
 		if (target.getType() == WorldMap.type.UNEXPLORED)
 			checkUnexplored = true;
@@ -112,20 +145,10 @@ public class MapOps {
 			u = u.prev;
 		}
 
-		// System.out.print("Printing Path:  (size: " + ant.currRoute.size()
-		// + "): ");
-		// MapTile old = ant.map.get(ant.locX, ant.locY);
-		// for (int i = 0; i < ant.currRoute.size(); i++) {
-		// System.out.print(WorldMap.dirTo(old, ant.currRoute.get(i)) + " ");
-		// old = ant.currRoute.get(i);
-		// }
-		// System.out.println();
-
 		if (ant.getCurrRoute().size() > 0) {
 			// System.out.println("returning path");
-			return MapOps.dirTo(ant.getMap()
-					.get(ant.getLocX(), ant.getLocY()), ant.getCurrRoute()
-					.remove(0));
+			return MapOps.dirTo(ant.getMap().get(ant.getLocX(), ant.getLocY()),
+					ant.getCurrRoute().remove(0));
 		} else {
 			System.out.println("returning null PATH");
 			return null;
@@ -169,38 +192,42 @@ public class MapOps {
 		return list;
 	}
 
+	public static void main(String[] args) {
+
+	}
+
 	public static Direction oppositeDir(Direction dir) {
 		if (dir == null) {
 			System.out.println("why is dir null");
-			MyAnt.induceSleep(10 * 1000);
+			MyAnt.induceSleep(10, "Why is Dir Null");
 		}
-		switch (dir) {
-		case NORTH:
-			return Direction.SOUTH;
-		case EAST:
-			return Direction.WEST;
-		case SOUTH:
-			return Direction.NORTH;
-		case WEST:
-			return Direction.EAST;
-		default:
-			return null;
-		}
+		return Direction.values()[(dir.ordinal() + 2) % 4];
 	}
 
 	public static Direction dirTo(Cell from, Cell to) {
-		if ((from.getXY()[0] == to.getXY()[0])
-				&& (from.getXY()[1] > to.getXY()[1]))
+		int fromX = from.getXY()[0], fromY = from.getXY()[1];
+		int toX = to.getXY()[0], toY = to.getXY()[1];
+
+		if ((fromX == toX) && (fromY > toY))
 			return Direction.NORTH;
-		else if ((from.getXY()[0] == to.getXY()[0])
-				&& (from.getXY()[1] < to.getXY()[1]))
+		else if ((fromX == toX) && (fromY < toY))
 			return Direction.SOUTH;
-		else if ((from.getXY()[1] == to.getXY()[1])
-				&& (from.getXY()[0] > to.getXY()[0]))
+		else if ((fromY == toY) && (fromX > toX))
 			return Direction.WEST;
 		else
 			return Direction.EAST;
-	
+
+	}
+
+	public void printPath(MyAnt ant) {
+		Stack<Cell> currRoute = ant.getCurrRoute();
+		System.out.print("Printing Path:  (size: " + currRoute.size() + "): ");
+		Cell old = ant.getCell(ant.getLocX(), ant.getLocY());
+		for (int i = 0; i < currRoute.size(); i++) {
+			System.out.print(dirTo(old, currRoute.get(i)) + " ");
+			old = currRoute.get(i);
+		}
+		System.out.println();
 	}
 
 }

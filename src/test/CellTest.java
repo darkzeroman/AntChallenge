@@ -19,9 +19,9 @@ public class CellTest {
 
 	@Test
 	public void testCompareTo() {
-		Cell a = new Cell(WorldMap.type.WALL);
+		Cell a = new Cell(WorldMap.type.WALL, 1, 1);
 		a.dist = 10;
-		Cell b = new Cell(WorldMap.type.GRASS);
+		Cell b = new Cell(WorldMap.type.GRASS, 1, 1);
 		b.dist = Integer.MAX_VALUE;
 		PriorityQueue<Cell> pq = new PriorityQueue<Cell>();
 		pq.add(a);

@@ -1,5 +1,4 @@
 package vohra;
-
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -7,69 +6,39 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
-import ants.Action;
 import ants.Direction;
 import ants.Surroundings;
 import ants.Tile;
 
 public class WorldMap implements Serializable {
-	public static enum type {
+	public enum type {
 		FOOD, GRASS, HOME, UNEXPLORED, WALL
 	}
 
 	private static final long serialVersionUID = 1L;
-	static int staticcount = 0;
-	final int MAPSIZE;
-
-	public static Direction dirTo(Cell from, Cell to) {
-		if ((from.x == to.x) && (from.y > to.y))
-			return Direction.NORTH;
-		else if ((from.x == to.x) && (from.y < to.y))
-			return Direction.SOUTH;
-		else if ((from.y == to.y) && (from.x > to.x))
-			return Direction.WEST;
-		else
-			return Direction.EAST;
-
-	}
-
-	public static Direction oppositeDir(Direction dir) {
-		if (dir == null) {
-			System.out.println("why is dir null");
-			MyAnt.induceSleep(10 * 1000);
-		}
-		switch (dir) {
-		case NORTH:
-			return Direction.SOUTH;
-		case EAST:
-			return Direction.WEST;
-		case SOUTH:
-			return Direction.NORTH;
-		case WEST:
-			return Direction.EAST;
-		default:
-			return null;
-		}
-	}
-
-	public Hashtable<Point, Cell> knowledge;
 
 	int antnum;
 	int count;
-	LinkedList<Cell> lastChanges = new LinkedList<Cell>();
 
+	public Hashtable<Point, Cell> knowledge;
+	final int MAPSIZE;
 	int[][] offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
-
-	boolean recentlyUpdated = false;
+	boolean recentlyUpdated = true;
 
 	public WorldMap(int mapsize, int antnum, int origin) {
 		MAPSIZE = mapsize;
 		this.antnum = antnum;
 		knowledge = new Hashtable<Point, Cell>();
-
 		get(origin, origin).setType(type.HOME);
-		count = staticcount;
-		staticcount++;
+
+	}
+
+	public void markFalse() {
+		Enumeration<Cell> e = knowledge.elements();
+		while (e.hasMoreElements()) {
+			Cell cell = e.nextElement();
+			cell.mark = false;
+		}
 	}
 
 	public PriorityQueue<Cell> beforeSearch(int locX, int locY,
@@ -78,81 +47,74 @@ public class WorldMap implements Serializable {
 
 		Enumeration<Cell> e = knowledge.elements();
 		while (e.hasMoreElements()) {
-			Cell mT = e.nextElement();
-			mT.prepareForSearch();
-			if (mT.x == locX && mT.y == locY) {
-				System.out.println("currently: " + mT);
-				mT.dist = 0;
+			Cell cell = e.nextElement();
+			cell.resetForSearch();
+			if (cell.getXY()[0] == locX && cell.getXY()[1] == locY) {
+				cell.dist = 0;
 			}
-			if (!checkUnexplored && mT.getType() != type.UNEXPLORED
-					&& mT.getType() != type.WALL)
-				pq.add(mT);
-			else if (checkUnexplored && mT.getType() != type.WALL)
-				pq.add(mT);
+			if (!checkUnexplored && cell.getType() != type.UNEXPLORED
+					&& cell.getType() != type.WALL)
+				pq.add(cell);
+			else if (checkUnexplored && cell.getType() != type.WALL)
+				pq.add(cell);
 		}
 		return pq;
 	}
 
 	public Cell get(int row, int col) {
-		if (knowledge.get(new Point(row, col)) == null) {
-			Cell mT = new Cell(type.UNEXPLORED, row, col);
-			knowledge.put(new Point(row, col), mT);
-			return mT;
-		} else
-			return knowledge.get(new Point(row, col));
+		Point coord = new Point(row, col);
+		if (knowledge.get(coord) == null)
+			knowledge.put(coord, new Cell(type.UNEXPLORED, row, col));
+		return knowledge.get(coord);
+	}
+
+	public void set(Cell cell) {
+		knowledge.put(new Point(cell.getXY()[0], cell.getXY()[1]), cell);
 	}
 
 	public int getTotalFoodFound() {
 		int sum = 0;
 		Enumeration<Cell> e = knowledge.elements();
 		while (e.hasMoreElements()) {
-			Cell mT = e.nextElement();
-			sum += mT.origFood;
+			Cell cell = e.nextElement();
+			sum += cell.origFood;
 		}
 		return sum;
-	}
-
-	public void markFalse() {
-		Enumeration<Cell> e = knowledge.elements();
-		while (e.hasMoreElements()) {
-			Cell mT = e.nextElement();
-			mT.mark = false;
-		}
 	}
 
 	public void merge(WorldMap other) {
 		Enumeration<Cell> e = other.knowledge.elements();
 		while (e.hasMoreElements()) {
 			Cell cell = e.nextElement();
-			// if this is unexplored and other isn't, copy type
-			int i = cell.getXY()[0], j = cell.getXY()[1];
-			if (get(i, j).getType() == type.UNEXPLORED
-					&& other.get(i, j).getType() != type.UNEXPLORED) {
-				get(i, j).setType(other.get(i, j).getType());
-				get(i, j).setAmntFood(other.get(i, j).getAmntFood());
-
-			} else if (other.get(i, j).getType() != type.UNEXPLORED
-					&& get(i, j).timeStamp < other.get(i, j).timeStamp)
-				get(i, j).setAmntFood(other.get(i, j).getAmntFood());
-
+			int x = cell.getXY()[0], y = cell.getXY()[1];
+			Cell otherCell = other.get(x, y);
+			// if local cell is unexplored and other isn't, take it
+			// if other cell is not unexplored and fresher, take it
+			if (otherCell.getType() != type.UNEXPLORED
+					&& (cell.getType() == type.UNEXPLORED || (cell.timeStamp < otherCell.timeStamp))) {
+				set(otherCell);
+				recentlyUpdated = true;
+			}
 		}
-
 	}
 
-	public void updateMap(Surroundings surroundings, int locX, int locY) {
+	public int sizeOfKnowledge() {
+		return knowledge.keySet().size();
+	}
+
+	public void update(Surroundings surroundings, int locX, int locY) {
+		// TODO remove
 		if (surroundings == null) {
-			System.out.println("why is surroundings null");
-			MyAnt.induceSleep(10 * 1000);
+			MyAnt.induceSleep(10, "Why is surroundings null");
 			return;
 		}
 
 		updateCell(get(locX, locY), surroundings.getCurrentTile());
-
 		// NESW
 		for (int i = 0; i < 4; i++) {
-			Tile temp = surroundings.getTile(Direction.values()[i]);
-			Cell mapTile = get((locX + offsets[i][0]), (locY + offsets[i][1]));
-			recentlyUpdated |= updateCell(mapTile, temp);
+			Tile tile = surroundings.getTile(Direction.values()[i]);
+			Cell cell = get((locX + offsets[i][0]), (locY + offsets[i][1]));
+			recentlyUpdated |= updateCell(cell, tile);
 		}
 
 	}
@@ -160,31 +122,32 @@ public class WorldMap implements Serializable {
 	// FOOD, GRASS, HOME, UNEXPLORED, WALL
 	public boolean updateCell(Cell cell, Tile tile) {
 		int tileAmountFood = tile.getAmountOfFood();
+
 		if (cell.getType() == type.FOOD && tileAmountFood == 0) {
 			// previously had food, now doesn't. so set to grass
 			cell.setAmntFood(tileAmountFood);
 			cell.setType(type.GRASS);
 			return true;
+
 		} else if (tileAmountFood > 0 && tileAmountFood != cell.getAmntFood()) {
 			// still has food, but amount has changed
 			cell.setAmntFood(tileAmountFood);
 			if (!(cell.getType() == WorldMap.type.HOME))
 				cell.setType(WorldMap.type.FOOD);
 			return true;
+
 		} else if (tile.isTravelable() && tileAmountFood == 0
 				&& cell.getType() != type.HOME && cell.getType() != type.GRASS) {
+			// new info, set to grass
 			cell.setType(WorldMap.type.GRASS);
 			return true;
+
 		} else if (!tile.isTravelable() && tileAmountFood == 0) {
 			cell.setType(WorldMap.type.WALL);
 			return true;
 		}
 
 		return false;
-	}
-
-	public int sizeOfKnowledge() {
-		return knowledge.keySet().size();
 	}
 
 }

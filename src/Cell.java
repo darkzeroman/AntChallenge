@@ -1,17 +1,20 @@
+
 import java.io.Serializable;
 
 public class Cell implements Comparable<Cell>, Serializable {
 
 	private static final long serialVersionUID = 1L;
+	// used by searches
 	public int dist = 0;
 	public boolean mark = false;
 	public Cell prev;
-	public long timeStamp;
 
+	public long timeStamp;
 	private WorldMap.type type;
 	private int x, y;
 	private int amntFood = 0;
 	int origFood = 0;
+	private int numAnts = 0;
 
 	public Cell(WorldMap.type tileType, int x, int y) {
 		this.setType(tileType);
@@ -65,10 +68,18 @@ public class Cell implements Comparable<Cell>, Serializable {
 	}
 
 	public String toString() {
-		return "[" + x + "," + y + "] cost: " + this.dist + " ";
+		return "[" + x + "," + y + "]";// cost: " + this.dist + " ";
 	}
 
 	public int compareTo(Cell cell) {
 		return (this.dist - cell.dist);
+	}
+
+	private int getNumAnts() {
+		return numAnts;
+	}
+
+	private void setNumAnts(int numAnts) {
+		this.numAnts = numAnts;
 	}
 }

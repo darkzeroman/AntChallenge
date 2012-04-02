@@ -3,10 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/ants.jar"/>
-<<<<<<< HEAD
-	<classpathentry kind="lib" path="C:/Users/01/workspace/AntChallenge/AntsSimulator.jar"/>
-=======
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
->>>>>>> be014838eaccc4cf0bf505acebe8682097009541
 	<classpathentry kind="output" path="bin"/>
 </classpath>
