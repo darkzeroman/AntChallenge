@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -51,9 +50,9 @@ public class MyAnt implements Ant {
 
 	public Action getAction(Surroundings surroundings) {
 
-//		Scanner sc = new Scanner(System.in);
-//		while (!sc.nextLine().equals(""))
-//			;
+		// Scanner sc = new Scanner(System.in);
+		// while (!sc.nextLine().equals(""))
+		// ;
 
 		round++;
 		System.out.println();
