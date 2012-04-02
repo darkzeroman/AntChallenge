@@ -1,10 +1,6 @@
 package vohra;
 
 
-import java.util.PriorityQueue;
-
-import ants.Direction;
-
 /**
  * 
  */
@@ -15,7 +11,7 @@ import ants.Direction;
  */
 public class MapTile implements Comparable<MapTile> {
 
-	public myant.type type;
+	public WorldMap.type type;
 	int amountFood = 0;
 	public int distanceFromSource = 0;
 	int x, y;
@@ -26,11 +22,11 @@ public class MapTile implements Comparable<MapTile> {
 
 	}
 
-	public MapTile(myant.type tileType) {
+	public MapTile(WorldMap.type tileType) {
 		this.type = tileType;
 	}
 
-	public void setType(myant.type tileType) {
+	public void setType(WorldMap.type tileType) {
 		this.type = tileType;
 
 	}

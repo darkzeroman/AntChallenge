@@ -11,25 +11,15 @@ import ants.Direction;
 import ants.Surroundings;
 import ants.Tile;
 
-import vohra.MapTile;
-import vohra.myant;
-import vohra.myant.type;
+import vohra.*;
 
 public class MyAntTests {
-	myant ant = new myant();
-	PriorityQueue<MapTile> pq;
+	MyAnt ant = new MyAnt(3, 1);
+
+	PriorityQueue<Cell> pq;
 
 	@Before
 	public void setUp() throws Exception {
-		ant.map = new MapTile[3][3];
-
-		for (int i = ant.map.length - 1; i >= 0; i--)
-			for (int j = ant.map[i].length - 1; j >= 0; j--) {
-				ant.map[j][i] = new MapTile(myant.type.UNEXPLORED);
-				ant.map[j][i].setLocation(i, j);
-			}
-		// ant.map[0][0] = new MapTile(MyAnt.type.GRASS);
-		int x = 0;
 	}
 
 	@Test
@@ -39,20 +29,21 @@ public class MyAntTests {
 
 		ant.locX = 1;
 		ant.locY = 1;
-		ant.updatingMap(tS);
+		ant.map.updateMap(tS, ant.locX, ant.locY);
 		// printMap();
+
 		assertEquals(1, 1);
 	}
 
 	@Test
 	public void testReadyMap() {
 		testUpdatingMap();
-		pq = ant.readyMap();
+		pq = ant.map.beforeSearch(ant.locX, ant.locY, false);
 		// System.out.println("pq size: " + pq.size());
-		assertEquals(ant.map[1][1].distanceFromSource, 0);
-		assertEquals(ant.map[0][0].distanceFromSource, Integer.MAX_VALUE);
+		assertEquals(ant.map.get(1, 1).dist, 0);
+		assertEquals(ant.map.get(1, 0).dist, Integer.MAX_VALUE);
 
-		assertEquals(pq.size(), 5);
+		assertEquals(pq.size(), 6);
 		// fail("Not yet implemented");
 	}
 
@@ -62,43 +53,88 @@ public class MyAntTests {
 
 		ant.origin = 1;
 		ant.locX = 1;
-		ant.locY = 0;
+		ant.locY = 1;
 		// printMap();
-		Direction dir = ant.search(ant.map[2][1]);
-		System.out.println(ant.map[0][1].toString() + "prev: "
-				+ ant.map[0][1].prev + " dir: " + ant.map[0][1].prevDirection()
-				+ " " + ant.dirForMapTile(ant.map[1][1], ant.map[0][1]));
-		System.out.println(ant.map[2][1].toString() + "prev: "
-				+ ant.map[2][1].prev + " dir: " + ant.map[2][1].prevDirection()
-				+ " " + ant.dirForMapTile(ant.map[1][1], ant.map[2][1]));
+		Direction dir = MapOps.search(ant, ant.map.get(1, 2));
+		assertEquals(dir, Direction.SOUTH);
+		dir = MapOps.search(ant, ant.map.get(2, 1));
+		assertEquals(dir, Direction.EAST);
+		dir = MapOps.search(ant, ant.map.get(1, 0));
+		assertEquals(dir, Direction.NORTH);
+		dir = MapOps.search(ant, ant.map.get(0, 1));
+		assertEquals(dir, Direction.WEST);
 
-		System.out.println(ant.map[1][2].toString() + "prev: "
-				+ ant.map[1][2].prev + " dir: " + ant.map[1][2].prevDirection()
-				+ " " + ant.dirForMapTile(ant.map[1][1], ant.map[1][2]));
-		;
-		System.out.println(ant.map[1][0].toString() + "prev: "
-				+ ant.map[1][0].prev + " dir: " + ant.map[1][0].prevDirection()
-				+ " " + ant.dirForMapTile(ant.map[1][1], ant.map[1][0]));
-		;
+		ant.locX = 0;
+		ant.locY = 1;
+		dir = MapOps.search(ant, ant.map.get(2, 1));
+		assertEquals(dir, Direction.EAST);
+
+		ant.locX = 1;
+		ant.locY = 1;
+		assertEquals(MapOps.search(ant, ant.map.get(2, 1)), Direction.EAST);
+
+		ant.locX = 0;
+		ant.locY = 1;
+		dir = MapOps.search(ant, ant.map.get(1, 2));
+		assertEquals(dir, Direction.EAST);
+
+		ant.locX = 1;
+		ant.locY = 1;
+		assertEquals(MapOps.search(ant, ant.map.get(1, 2)), Direction.SOUTH);
 
 		System.out.println(dir);
-		fail("Not yet implemented");
+		System.out.println(ant.map.sizeOfKnowledge());
+		// fail("Not yet implemented");
 	}
 
 	@Test
-	public void testDirForMapTile() {
+	public void testClosestUnexplored() {
+		testReadyMap();
 
-		fail("Not yet implemented");
+		ant.origin = 1;
+		ant.locX = 0;
+		ant.locY = 0;
+		// printMap();
+		ant.map.get(1, 0).setType(WorldMap.type.WALL);
+		ant.map.get(1, 1).setType(WorldMap.type.WALL);
+		ant.map.get(0, 2).setType(WorldMap.type.GRASS);
+		ant.map.get(0, 0).setType(WorldMap.type.GRASS);
+		ant.map.get(2, 2).setType(WorldMap.type.GRASS);
+
+		Cell cell = MapOps.findClosest(ant, WorldMap.type.UNEXPLORED);
+		System.out.println("target: " + cell);
+		Direction dir = MapOps.search(ant, cell);
+		System.out.println(dir);
+		assertEquals(dir, Direction.NORTH);
 	}
 
 	@Test
-	public void testFindAndUpdatePQ() {
-		fail("Not yet implemented");
+	public void testClosestFood() {
+		testReadyMap();
+
+		ant.origin = 1;
+		ant.locX = 1;
+		ant.locY = 2;
+		ant.getCell(1, 0).setAmntFood(100);
+		ant.getCell(1, 1).setAmntFood(100);
+
+		// printMap();
+		Cell cell = MapOps.findClosest(ant, WorldMap.type.FOOD);
+		System.out.println(cell);
+		Direction dir = MapOps.search(ant, cell);
+		System.out.println(dir);
+		assertEquals(Direction.WEST, dir);
 	}
 
 	@Test
-	public void testFindNeighbors() {
-		fail("Not yet implemented");
+	public void testMapInsert() {
+		Cell t1 = ant.getCell(1, 1);
+		System.out.println(ant.map.sizeOfKnowledge());
+		Cell t2 = ant.getCell(1, 1);
+		System.out.println(ant.map.sizeOfKnowledge());
+
+		System.out.println(t1 == t2);
+
 	}
 
 	@Test
@@ -142,29 +178,6 @@ public class MyAntTests {
 			return new TestTile();
 		}
 
-	}
-
-	private void printMap() {
-		for (int i = 0; i < ant.map.length; i++) {
-			for (int j = 0; j < ant.map[i].length; j++) {
-				// HOME, WALL, UNEXPLORED, FOOD, GRASS
-
-				if (i == ant.locX && j == ant.locY)
-					System.out.print("X");
-				else if (ant.map[i][j].type == type.WALL)
-					System.out.print("w");
-				else if (ant.map[i][j].type == type.GRASS)
-					System.out.print("x");
-				else if (ant.map[i][j].type == type.HOME)
-					System.out.print("H");
-				else if (ant.map[i][j].type == type.FOOD)
-					System.out.print("F");
-				else
-					System.out.print(" ");
-
-			}
-			System.out.println();
-		}
 	}
 
 }
