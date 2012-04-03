@@ -1,3 +1,5 @@
+
+
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
@@ -20,7 +22,7 @@ public class MyAnt implements Ant {
 		System.out.println("ran");
 	}
 
-	public int origin, round = 0, roundCountdown = 20, antnum = 0;
+	public int origin, round = 0, scoutSearchLimit = 20, antnum = 0;
 	private int locX, locY;
 	private WorldMap map;
 	private Random rand = new Random(System.currentTimeMillis());
@@ -57,6 +59,8 @@ public class MyAnt implements Ant {
 	}
 
 	public Action getAction(Surroundings surroundings) {
+		if (antnum == 3)
+			return Action.HALT;
 		this.surroundings = surroundings;
 		round++;
 		// if (order > 2)
@@ -78,13 +82,11 @@ public class MyAnt implements Ant {
 
 		getMap().update(surroundings, locX, locY);
 
-		if (firstAction) {
+		if (firstAction && isScout) {
 			firstAction = false;
 			return Action.HALT;
 		}
 		// Special Actions here
-		if (antnum == 2)
-			;// return action.HALT;
 
 		if (antnum < 3)
 			isScout = true;
@@ -132,10 +134,10 @@ public class MyAnt implements Ant {
 	private Action modeScout() {
 		Action action;
 		System.out.println("SCOUT MODE");
-		roundCountdown--;
+		scoutSearchLimit--;
 		// if still in scout mode, and if path exists follow it, otherwise
 		// make one
-		if (roundCountdown > 0) {
+		if (scoutSearchLimit > 0) {
 			if ((action = nextRouteAction()) != null)
 				return action;
 			else if ((action = findUnexplored("Scout Mode")) != null)
@@ -226,7 +228,7 @@ public class MyAnt implements Ant {
 			mode = Mode.TOFOOD;
 			if (isScout && map.getTotalFoodFound() < 650) {
 				System.out.println("resetting countdown");
-				roundCountdown = 25;
+				scoutSearchLimit = 20;
 				mode = Mode.SCOUT;
 			}
 			System.out.println("DROPPING OFF");
@@ -344,7 +346,8 @@ public class MyAnt implements Ant {
 	}
 
 	public Action findHome(String error) {
-		return MapOps.newMakeRoute(this, WorldMap.type.HOME, error);
+		return MapOps.makeRoute(this, WorldMap.type.HOME, error);
+		// return MapOps.newMakeRoute(this, WorldMap.type.HOME, error);
 	}
 
 	private void updateCurrLoc(Direction dir) {

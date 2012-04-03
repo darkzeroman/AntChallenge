@@ -55,33 +55,35 @@ public class MyAntTests {
 		ant.setXY(1, 1);
 
 		// printMap();
-		Direction dir = MapOps.makeRoute(ant, ant.getCell(1, 2));
+		Direction dir = MapOps.makeRouteDir(ant, ant.getCell(1, 2));
 		assertEquals(dir, Direction.SOUTH);
-		dir = MapOps.makeRoute(ant, ant.getMap().get(2, 1));
+		dir = MapOps.makeRouteDir(ant, ant.getMap().get(2, 1));
 		assertEquals(dir, Direction.EAST);
-		dir = MapOps.makeRoute(ant, ant.getCell(1, 0));
+		dir = MapOps.makeRouteDir(ant, ant.getCell(1, 0));
 		assertEquals(dir, Direction.NORTH);
-		dir = MapOps.makeRoute(ant, ant.getCell(0, 1));
+		dir = MapOps.makeRouteDir(ant, ant.getCell(0, 1));
 		assertEquals(dir, Direction.WEST);
 
 		ant.setXY(0, 1);
 
-		dir = MapOps.makeRoute(ant, ant.getCell(2, 1));
+		dir = MapOps.makeRouteDir(ant, ant.getCell(2, 1));
 		assertEquals(dir, Direction.EAST);
 
 		ant.setXY(1, 1);
 
-		assertEquals(MapOps.makeRoute(ant, ant.getCell(2, 1)), Direction.EAST);
+		assertEquals(MapOps.makeRouteDir(ant, ant.getCell(2, 1)),
+				Direction.EAST);
 
 		ant.setXY(0, 1);
-		dir = MapOps.makeRoute(ant, ant.getMap().get(1, 2));
+		dir = MapOps.makeRouteDir(ant, ant.getMap().get(1, 2));
 		assertEquals(dir, Direction.EAST);
 
 		ant.setXY(1, 1);
-		assertEquals(MapOps.makeRoute(ant, ant.getCell(1, 2)), Direction.SOUTH);
+		assertEquals(MapOps.makeRouteDir(ant, ant.getCell(1, 2)),
+				Direction.SOUTH);
 
 		System.out.println(dir);
-		System.out.println(ant.getMap().sizeOfKnowledge());
+		System.out.println(ant.getMap().numKnownTiles());
 		// fail("Not yet implemented");
 	}
 
@@ -104,7 +106,7 @@ public class MyAntTests {
 
 		Cell cell = MapOps.findClosest(ant, WorldMap.type.UNEXPLORED);
 		System.out.println("target: " + cell);
-		Direction dir = MapOps.makeRoute(ant, cell);
+		Direction dir = MapOps.makeRouteDir(ant, cell);
 		System.out.println(dir);
 		assertEquals(Direction.SOUTH, dir);
 	}
@@ -128,9 +130,9 @@ public class MyAntTests {
 	@Test
 	public void testMapInsert() {
 		Cell t1 = ant.getCell(1, 1);
-		System.out.println(ant.getMap().sizeOfKnowledge());
+		System.out.println(ant.getMap().numKnownTiles());
 		Cell t2 = ant.getCell(1, 1);
-		System.out.println(ant.getMap().sizeOfKnowledge());
+		System.out.println(ant.getMap().numKnownTiles());
 
 		System.out.println(t1 == t2);
 
@@ -141,32 +143,60 @@ public class MyAntTests {
 		WorldMap map1 = new WorldMap(3, 1, 1);
 		WorldMap map2 = new WorldMap(3, 1, 1);
 
-		System.out.println(map1.isRecentlyUpdated());
-		assertTrue(map1.isRecentlyUpdated());
-		map1.setRecentlyUpdated(false);
-		assertFalse(map1.isRecentlyUpdated());
+		System.out.println(map1.numKnownTiles());
+		assertTrue(map1.isUpdated());
+		map1.setUpdated(false);
+		assertFalse(map1.isUpdated());
 
 		map1.merge(map2);
-		assertFalse(map1.isRecentlyUpdated());
+		assertFalse(map1.isUpdated());
 
 		map2.set(new Cell(WorldMap.type.GRASS, 0, 1));
 		map1.merge(map2);
-		assertTrue(map1.isRecentlyUpdated());
+		assertTrue(map1.isUpdated());
 
-		map1.setRecentlyUpdated(false);
+		map1.setUpdated(false);
 		map1.merge(map2);
-		assertFalse(map1.isRecentlyUpdated());
+		assertFalse(map1.isUpdated());
 
 		MyAnt.induceSleep(1, "test");
 		map2.set(new Cell(WorldMap.type.FOOD, 0, 1));
 		map1.merge(map2);
-		assertTrue(map1.isRecentlyUpdated());
-		
-		map1.setRecentlyUpdated(false);
+		assertTrue(map1.isUpdated());
+
+		map1.setUpdated(false);
 		map1.merge(map2);
-		assertFalse(map1.isRecentlyUpdated());
+		assertFalse(map1.isUpdated());
+
+	}
+
+	@Test
+	public void testReturnPath() {
+
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 3; j++) {
+				ant.getCell(i,j).setType(WorldMap.type.GRASS);
+			}
+
+
+		ant.origin = 1;
+		ant.setXY(0, 0);
+
+		Direction dir = MapOps.makeRoute(ant, ant.getCell(1, 2),"").getDirection();
 		
-		
+		assertEquals(Direction.EAST, dir);
+
+
+		//ant.getCell(1, 0).setNumAnts(2);
+		ant.getCell(1, 1).setNumAnts(2);
+		//ant.getCell(2, 1).setNumAnts(2);
+		//ant.getCell(0, 1).setNumAnts(2);
+
+		//ant.getCell(1, 2).setNumAnts(2);
+		ant.setXY(1, 2);
+		dir = MapOps.makeRoute(ant, ant.getCell(0, 0),"").getDirection();
+		assertEquals(Direction.NORTH, dir);
+
 	}
 
 	private class TestTile implements Tile {

@@ -1,4 +1,5 @@
 
+
 import java.io.Serializable;
 
 public class Cell implements Comparable<Cell>, Serializable {
@@ -76,11 +77,11 @@ public class Cell implements Comparable<Cell>, Serializable {
 		return (this.dist - cell.dist);
 	}
 
-	private int getNumAnts() {
+	public int getNumAnts() {
 		return numAnts;
 	}
 
-	private void setNumAnts(int numAnts) {
+	public void setNumAnts(int numAnts) {
 		this.numAnts = numAnts;
 	}
 }

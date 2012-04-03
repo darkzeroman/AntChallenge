@@ -1,5 +1,5 @@
 package vohra;
-import java.util.ArrayList;
+
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
@@ -22,11 +22,11 @@ public class MyAnt implements Ant {
 		System.out.println("ran");
 	}
 
-	public int origin, round = 0, roundCountdown = 20, antnum = 0;
+	public int origin, round = 0, scoutSearchLimit = 20, antnum = 0;
 	private int locX, locY;
 	private WorldMap map;
 	private Random rand = new Random(System.currentTimeMillis());
-	boolean carryingFood = false, isScout = false, firstAction = true;
+	boolean hasFood = false, isScout = false, firstAction = true;
 	private Direction lastDir;
 	protected Mode mode;
 	private Stack<Cell> currRoute;
@@ -38,35 +38,41 @@ public class MyAnt implements Ant {
 	}
 
 	public MyAnt(int mapsize, int origin) {
+		// TODO remove
 		this.antnum = order;
 		order++;
+
 		this.origin = origin;
 		map = new WorldMap(mapsize, antnum, origin);
 		locX = locY = origin;
+
 		mode = Mode.EXPLORE;
 		currRoute = new Stack<Cell>();
 		lastDir = Direction.SOUTH;
 
 	}
 
+	private void waitForReturn() {
+		Scanner sc = new Scanner(System.in);
+		while (!sc.nextLine().equals(""))
+			;
+	}
+
 	public Action getAction(Surroundings surroundings) {
+		if (antnum == 3)
+			return Action.HALT;
 		this.surroundings = surroundings;
 		round++;
-
-		Scanner sc = new Scanner(System.in);
 		// if (order > 2)
-		// while (!sc.nextLine().equals(""))
-		// ;
 
 		System.out.println("\nAnt Num: " + antnum + " mapSize: "
-				+ getMap().sizeOfKnowledge());
+				+ getMap().numKnownTiles());
 		System.out.println("numAnts: "
 				+ surroundings.getCurrentTile().getNumAnts());
 
 		int currTileFood = surroundings.getCurrentTile().getAmountOfFood();
-
-		if (locX == origin && locY == origin && currTileFood == 0
-				&& surroundings.getCurrentTile().getNumAnts() == 3) {
+		int currTileNumAnts = surroundings.getCurrentTile().getNumAnts();
+		if (isAtHome() && currTileFood == 0 && currTileNumAnts == 3) {
 			isScout = true;
 			mode = Mode.SCOUT;
 			System.out.println("initial Scout Mode");
@@ -76,13 +82,11 @@ public class MyAnt implements Ant {
 
 		getMap().update(surroundings, locX, locY);
 
-		if (firstAction) {
+		if (firstAction && isScout) {
 			firstAction = false;
 			return Action.HALT;
 		}
 		// Special Actions here
-		if (antnum == 2)
-			;// return action.HALT;
 
 		if (antnum < 3)
 			isScout = true;
@@ -105,6 +109,7 @@ public class MyAnt implements Ant {
 			action = modeToHome();
 			break;
 		}
+
 		// updating local knowledge
 		if (action != null && action.getDirection() != null
 				&& checkIfTravelable(action) == false) {
@@ -129,10 +134,10 @@ public class MyAnt implements Ant {
 	private Action modeScout() {
 		Action action;
 		System.out.println("SCOUT MODE");
-		roundCountdown--;
+		scoutSearchLimit--;
 		// if still in scout mode, and if path exists follow it, otherwise
 		// make one
-		if (roundCountdown > 0) {
+		if (scoutSearchLimit > 0) {
 			if ((action = nextRouteAction()) != null)
 				return action;
 			else if ((action = findUnexplored("Scout Mode")) != null)
@@ -155,7 +160,7 @@ public class MyAnt implements Ant {
 		// if at food, pick it up
 		// don't have a plan, make one
 
-		if (getMap().recentlyUpdated && !currRoute.isEmpty()
+		if (getMap().updated && !currRoute.isEmpty()
 				&& currRoute.lastElement().getAmntFood() == 0) {
 			currRoute.clear();
 			System.out.println("need to replan");
@@ -166,16 +171,15 @@ public class MyAnt implements Ant {
 		if ((action = nextRouteAction()) != null) {
 			return action;
 
-		} else if (!isAtHome() && currTileFood > 0 && !carryingFood) {
+		} else if (!isAtHome() && currTileFood > 0 && !hasFood) {
 			// ant is on food tile, gather
-			carryingFood = true;
+			hasFood = true;
 			getCurrCell().decrementAmntFood();
 			System.out.println("GATHERING");
 			return changeModeAndAction(Mode.TOHOME, Action.GATHER);
 
 		} else if ((action = findFood("Food")) != null) {
 			// don't have a plan, so make one
-			System.out.println("making food plan and: " + carryingFood);
 			return action;
 		}
 		System.out.println("Can't find food, going to explore");
@@ -184,15 +188,19 @@ public class MyAnt implements Ant {
 
 	}
 
+	public boolean isNull(Object obj) {
+		return (obj == null);
+	}
+
 	private Action modeExplore() {
 		System.out.println("EXPLORE MODE");
 		Action action;
 		int currTileFood = surroundings.getCurrentTile().getAmountOfFood();
 
-		if (getMap().recentlyUpdated && currTileFood == 0
+		if (getMap().updated && currTileFood == 0
 				&& findFood("Explore food") != null) {
 			// map was recently updated, see if food source exists nearby
-			getMap().recentlyUpdated = false;
+			getMap().updated = false;
 			return changeMode(Mode.TOFOOD);
 		}
 
@@ -212,13 +220,15 @@ public class MyAnt implements Ant {
 	private Action modeToHome() {
 		Action action;
 		System.out.println("HOME MODE");
-
-		if (isAtHome() && carryingFood) { // at home
-			carryingFood = false;
+		// TODO remove
+		if (!hasFood)
+			induceSleep(20, "why without food?");
+		if (isAtHome()) { // at home
+			hasFood = false;
 			mode = Mode.TOFOOD;
-			if (isScout && map.getTotalFoodFound() < 600) {
+			if (isScout && map.getTotalFoodFound() < 650) {
 				System.out.println("resetting countdown");
-				roundCountdown = 25;
+				scoutSearchLimit = 20;
 				mode = Mode.SCOUT;
 			}
 			System.out.println("DROPPING OFF");
@@ -228,10 +238,7 @@ public class MyAnt implements Ant {
 		// continue with path
 		if ((action = nextRouteAction()) != null)
 			return action;
-		else if (isAtHome() && !carryingFood) {
-			induceSleep(10, "at home without food");
-			return changeMode(Mode.EXPLORE);
-		} else if ((action = findHome("TOHOME")) != null)
+		else if ((action = findHome("TOHOME")) != null)
 			return action;
 		else
 			induceSleep(10, "No route && can't find home");
@@ -239,7 +246,7 @@ public class MyAnt implements Ant {
 		return null;
 	}
 
-	public Action changeMode(Mode mode) {
+	private Action changeMode(Mode mode) {
 		currRoute.clear();
 		this.mode = mode;
 		switch (mode) {
@@ -256,7 +263,7 @@ public class MyAnt implements Ant {
 		}
 	}
 
-	public Action changeModeAndAction(Mode mode, Action action) {
+	private Action changeModeAndAction(Mode mode, Action action) {
 		currRoute.clear();
 		this.mode = mode;
 		return action;
@@ -274,13 +281,16 @@ public class MyAnt implements Ant {
 	}
 
 	public byte[] send() {
-		return oio.toByteArray(getMap());
+		long start = System.currentTimeMillis();
+		byte[] arr = oio.toByteArray(getMap());
+		System.out.println("To Serialize: " + getMap().numKnownTiles() + " "
+				+ (System.currentTimeMillis() - start));
+		return arr;
+
 	}
 
 	public void receive(byte[] data) {
 		WorldMap otherKnowledge = oio.fromByteArray(data);
-		System.out.println(this.antnum + " MERGING with: "
-				+ otherKnowledge.antnum);
 		getMap().merge(otherKnowledge);
 
 	}
@@ -336,7 +346,8 @@ public class MyAnt implements Ant {
 	}
 
 	public Action findHome(String error) {
-		return MapOps.newMakeRoute(this, WorldMap.type.HOME, error);
+		return MapOps.makeRoute(this, WorldMap.type.HOME, error);
+		// return MapOps.newMakeRoute(this, WorldMap.type.HOME, error);
 	}
 
 	private void updateCurrLoc(Direction dir) {

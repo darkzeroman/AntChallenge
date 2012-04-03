@@ -1,3 +1,4 @@
+
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -13,6 +14,8 @@ public class WorldMap implements Serializable {
 		FOOD, GRASS, HOME, UNEXPLORED, WALL
 	}
 
+	public int locX, locY;
+
 	private static final long serialVersionUID = 1L;
 	// for debugging, should be removed
 	int antnum;
@@ -23,20 +26,20 @@ public class WorldMap implements Serializable {
 	int[][] offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
 	boolean updated = true;
 
-	public boolean isRecentlyUpdated() {
-		return updated;
-	}
-
-	public void setRecentlyUpdated(boolean recentlyUpdated) {
-		this.updated = recentlyUpdated;
-	}
-
 	public WorldMap(int mapsize, int antnum, int origin) {
 		MAPSIZE = mapsize;
 		this.antnum = antnum;
 		knowledge = new Hashtable<Point, Cell>();
 		get(origin, origin).setType(type.HOME);
 
+	}
+
+	public boolean isUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(boolean updated) {
+		this.updated = updated;
 	}
 
 	public void markFalse() {
@@ -120,8 +123,7 @@ public class WorldMap implements Serializable {
 			return;
 		}
 
-		updated |= updateCell(get(locX, locY),
-				surroundings.getCurrentTile());
+		updated |= updateCell(get(locX, locY), surroundings.getCurrentTile());
 		// NESW
 		for (int i = 0; i < 4; i++) {
 			Tile tile = surroundings.getTile(Direction.values()[i]);
@@ -134,7 +136,8 @@ public class WorldMap implements Serializable {
 	// FOOD, GRASS, HOME, UNEXPLORED, WALL
 	public boolean updateCell(Cell cell, Tile tile) {
 		int tileAmountFood = tile.getAmountOfFood();
-
+		// TODO remove
+		cell.setNumAnts(tile.getNumAnts());
 		if (cell.getType() == type.FOOD && tileAmountFood == 0) {
 			// previously had food, now doesn't. so set to grass
 			cell.setAmntFood(tileAmountFood);
@@ -164,6 +167,15 @@ public class WorldMap implements Serializable {
 
 	public String toString() {
 		return this.knowledge.keySet().size() + "";
+	}
+
+	public void setLastXY(int x, int y) {
+		locX = x;
+		locY = y;
+	}
+
+	public boolean isSameLastXY(int x, int y) {
+		return (locX == x && locY == y);
 	}
 
 }

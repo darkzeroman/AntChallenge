@@ -1,10 +1,10 @@
 package vohra;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
+import java.util.Random;
 import java.util.Stack;
 
 import ants.Action;
@@ -20,6 +20,10 @@ public class MapOps {
 			return makeRoute(ant, target, error);
 		else
 			return null;
+	}
+
+	public static Direction makeRouteDir(MyAnt ant, Cell cell) {
+		return makeRoute(ant, cell, "").getDirection();
 	}
 
 	public static Action newMakeRoute(MyAnt ant, WorldMap.type type,
@@ -49,10 +53,11 @@ public class MapOps {
 	}
 
 	public static Action makeRoute(MyAnt ant, Cell target, String error) {
+
 		Action nextMove = null;
 		Direction dir = null;
 
-		if ((dir = MapOps.makeRoute(ant, target)) != null)
+		if ((dir = MapOps.djikstra(ant, target)) != null)
 			nextMove = Action.move(dir);
 		else if (target != null && dir == null) {
 			// target exists, but no path to it, possibly coding error
@@ -78,8 +83,10 @@ public class MapOps {
 			ArrayList<Cell> neighbors = findNeighbors(ant, t,
 					goalType == WorldMap.type.UNEXPLORED, null);
 
-			if (ant.isScout && ant.mode == MyAnt.Mode.SCOUT)
-				Collections.shuffle(neighbors);
+			if ((ant.mode == MyAnt.Mode.SCOUT)
+					|| (ant.mode == MyAnt.Mode.EXPLORE))
+				Collections.shuffle(neighbors,
+						new Random(System.currentTimeMillis()));
 
 			for (Cell cell : neighbors) {
 				if (!cell.mark) {
@@ -92,7 +99,7 @@ public class MapOps {
 		return null;
 	}
 
-	public static Direction makeRoute(MyAnt ant, Cell target) {
+	public static Direction djikstra(MyAnt ant, Cell target) {
 		boolean checkUnexplored = false;
 		if (target.getType() == WorldMap.type.UNEXPLORED)
 			checkUnexplored = true;
@@ -124,19 +131,25 @@ public class MapOps {
 			if (u == target) // reached target, can end
 				break;
 			ArrayList<Cell> al = findNeighbors(ant, u, checkUnexplored, pq);
-			for (Cell mapTile : al) {
-				int alt = u.dist + 1;
-				if (alt < mapTile.dist) {
-					mapTile.dist = alt;
-					mapTile.prev = u;
-					if (pq.remove(mapTile))
-						pq.add(mapTile);
+			for (Cell cell : al) {
+				int alt = u.dist + 2;
+				if (cell.getNumAnts() > 0) {
+					System.out.println("has ants!");
+					alt--;
+				}
+
+				if (alt < cell.dist) {
+					cell.dist = alt;
+					cell.prev = u;
+					if (pq.remove(cell))
+						pq.add(cell);
 					else
 						throw new Error("Can't find element in PQ");
 
 				}
 			}
 		}
+		System.out.println("TARGET COST: " + target.dist);
 		pq.clear();
 		// constructing path
 		ant.getCurrRoute().clear();
@@ -145,7 +158,7 @@ public class MapOps {
 			ant.getCurrRoute().add(0, u);
 			u = u.prev;
 		}
-
+		printPath(ant);
 		if (ant.getCurrRoute().size() > 0) {
 			// System.out.println("returning path");
 			return MapOps.dirTo(ant.getMap().get(ant.getLocX(), ant.getLocY()),
@@ -220,7 +233,7 @@ public class MapOps {
 
 	}
 
-	public void printPath(MyAnt ant) {
+	public static void printPath(MyAnt ant) {
 		Stack<Cell> currRoute = ant.getCurrRoute();
 		System.out.print("Printing Path:  (size: " + currRoute.size() + "): ");
 		Cell old = ant.getCell(ant.getLocX(), ant.getLocY());
