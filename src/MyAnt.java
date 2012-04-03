@@ -1,5 +1,3 @@
-
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
@@ -52,12 +50,11 @@ public class MyAnt implements Ant {
 	public Action getAction(Surroundings surroundings) {
 		this.surroundings = surroundings;
 		round++;
-
+		long start = System.currentTimeMillis();
 		Scanner sc = new Scanner(System.in);
 		// if (order > 2)
 		// while (!sc.nextLine().equals(""))
 		// ;
-
 		System.out.println("\nAnt Num: " + antnum + " mapSize: "
 				+ getMap().sizeOfKnowledge());
 		System.out.println("numAnts: "
@@ -105,6 +102,10 @@ public class MyAnt implements Ant {
 			action = modeToHome();
 			break;
 		}
+
+		System.out.println("Making Decision: "
+				+ (System.currentTimeMillis() - start));
+
 		// updating local knowledge
 		if (action != null && action.getDirection() != null
 				&& checkIfTravelable(action) == false) {
@@ -216,7 +217,7 @@ public class MyAnt implements Ant {
 		if (isAtHome() && carryingFood) { // at home
 			carryingFood = false;
 			mode = Mode.TOFOOD;
-			if (isScout && map.getTotalFoodFound() < 600) {
+			if (isScout && map.getTotalFoodFound() < 650) {
 				System.out.println("resetting countdown");
 				roundCountdown = 25;
 				mode = Mode.SCOUT;
@@ -239,7 +240,7 @@ public class MyAnt implements Ant {
 		return null;
 	}
 
-	public Action changeMode(Mode mode) {
+	private Action changeMode(Mode mode) {
 		currRoute.clear();
 		this.mode = mode;
 		switch (mode) {
@@ -256,7 +257,7 @@ public class MyAnt implements Ant {
 		}
 	}
 
-	public Action changeModeAndAction(Mode mode, Action action) {
+	private Action changeModeAndAction(Mode mode, Action action) {
 		currRoute.clear();
 		this.mode = mode;
 		return action;
@@ -274,14 +275,26 @@ public class MyAnt implements Ant {
 	}
 
 	public byte[] send() {
-		return oio.toByteArray(getMap());
+		long start = System.currentTimeMillis();
+		byte[] arr = oio.toByteArray(getMap());
+		System.out.println("To Serialize: " + getMap().sizeOfKnowledge() + " "
+				+ (System.currentTimeMillis() - start));
+		return arr;
+
 	}
 
 	public void receive(byte[] data) {
+
+		long start = System.currentTimeMillis();
 		WorldMap otherKnowledge = oio.fromByteArray(data);
+		System.out.println("To Reconstruct: "
+				+ otherKnowledge.sizeOfKnowledge() + " "
+				+ (System.currentTimeMillis() - start));
 		System.out.println(this.antnum + " MERGING with: "
 				+ otherKnowledge.antnum);
 		getMap().merge(otherKnowledge);
+		System.out.println("To Merge: " + getMap().sizeOfKnowledge() + " "
+				+ (System.currentTimeMillis() - start));
 
 	}
 

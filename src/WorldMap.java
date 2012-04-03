@@ -1,5 +1,4 @@
 
-
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -97,7 +96,7 @@ public class WorldMap implements Serializable {
 			Cell cell = e.nextElement();
 			int x = cell.getXY()[0], y = cell.getXY()[1];
 			// if local cell is unexplored and other isn't, copy type/food
-			Cell localCell = get(x,y);
+			Cell localCell = get(x, y);
 			if (get(x, y).getType() == type.UNEXPLORED
 					&& other.get(x, y).getType() != type.UNEXPLORED) {
 				set(other.get(x, y));

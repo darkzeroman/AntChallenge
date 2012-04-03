@@ -1,11 +1,10 @@
 
-
 import java.io.Serializable;
 
 public class Cell implements Comparable<Cell>, Serializable {
-
 	private static final long serialVersionUID = 1L;
-	// used by searches
+
+	// used by searches, public because meant to be overwritten
 	public int dist = 0;
 	public boolean mark = false;
 	public Cell prev;
