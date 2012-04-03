@@ -22,7 +22,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 		this.setXY(x, y);
 	}
 
-	public void resetForSearch() {
+	public void presearch() {
 		// used by BFS/Djikstra
 		this.dist = Integer.MAX_VALUE;
 		prev = null;
