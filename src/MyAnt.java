@@ -1,5 +1,4 @@
 
-
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
@@ -60,7 +59,8 @@ public class MyAnt implements Ant {
 
 	public Action getAction(Surroundings surroundings) {
 		if (antnum == 3)
-			return Action.HALT;
+			;
+		// return Action.HALT;
 		this.surroundings = surroundings;
 		round++;
 		// if (order > 2)
@@ -338,6 +338,7 @@ public class MyAnt implements Ant {
 	}
 
 	public Action findFood(String error) {
+		
 		return MapOps.newMakeRoute(this, WorldMap.type.FOOD, error);
 	}
 
