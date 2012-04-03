@@ -1,11 +1,10 @@
 
-
 import java.io.Serializable;
 
 public class Cell implements Comparable<Cell>, Serializable {
-
 	private static final long serialVersionUID = 1L;
-	// used by searches
+
+	// used by searches, public because meant to be overwritten
 	public int dist = 0;
 	public boolean mark = false;
 	public Cell prev;
@@ -23,7 +22,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 		this.setXY(x, y);
 	}
 
-	public void resetForSearch() {
+	public void presearch() {
 		// used by BFS/Djikstra
 		this.dist = Integer.MAX_VALUE;
 		prev = null;
