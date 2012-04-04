@@ -1,21 +1,23 @@
 import java.io.Serializable;
 
+import ants.Direction;
+
 public class Cell implements Comparable<Cell>, Serializable {
 	private static final long serialVersionUID = 1L;
-
+	public enum type {
+		FOOD, GRASS, HOME, UNEXPLORED, WALL
+	}
 	// used by searches, public because meant to be overwritten
 	public int dist = 0;
-	public boolean mark = false;
-	public Cell prev;
 
 	public long timeStamp;
-	private WorldMap.type type;
+	private type type;
 	private int x, y;
-	private int amntFood = 0;
+	private int amountOfFood = 0;
 	int origFood = 0;
-	private int numAnts = 0;
+	private int numOfAnts = 0;
 
-	public Cell(WorldMap.type tileType, int x, int y) {
+	public Cell(type tileType, int x, int y) {
 		this.setType(tileType);
 		timeStamp = System.currentTimeMillis();
 		this.setXY(x, y);
@@ -24,32 +26,38 @@ public class Cell implements Comparable<Cell>, Serializable {
 	public void presearch() {
 		// used by BFS/Djikstra
 		this.dist = Integer.MAX_VALUE;
-		prev = null;
-		mark = false;
 
 	}
 
-	public void mark() {
-		this.mark = true;
+	public Direction dirTo(Cell to) {
+		int fromX = this.x;
+		int fromY = this.y;
+		int toX = to.getX(), toY = to.getY();
+
+		if ((fromX == toX) && (fromY > toY))
+			return Direction.SOUTH;
+		else if ((fromX == toX) && (fromY < toY))
+			return Direction.NORTH;
+		else if ((fromY == toY) && (fromX > toX))
+			return Direction.WEST;
+		else
+			return Direction.EAST;
+
 	}
 
-	public void decrementAmountFood() {
-		this.amntFood--;
+	public void decrementFood() {
+		this.amountOfFood--;
 		this.timeStamp = System.currentTimeMillis();
 	}
 
-	public int getAmntFood() {
-		return amntFood;
+	public int getAmountOfFood() {
+		return amountOfFood;
 	}
 
-	public void setAmountFood(int amountFood) {
-		origFood = Math.max(amountFood, origFood);
-		this.amntFood = amountFood;
+	public void setAmountOfFood(int amountOfFood) {
+		origFood = Math.max(amountOfFood, origFood);
+		this.amountOfFood = amountOfFood;
 		timeStamp = System.currentTimeMillis();
-	}
-
-	public int[] getXY() {
-		return new int[] { x, y };
 	}
 
 	public void setXY(int x, int y) {
@@ -57,19 +65,27 @@ public class Cell implements Comparable<Cell>, Serializable {
 		this.y = y;
 	}
 
-	public WorldMap.type getType() {
+	public int getX() {
+		return x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public type getType() {
 		return type;
 	}
 
-	public void setType(WorldMap.type tileType) {
+	public void setType(type tileType) {
 		this.type = tileType;
 
 	}
 
 	public String toString() {
-		String temp = "[" + x + "," + y + "] type: " + this.type;
-		temp += " Amount of Food: " + this.amntFood + " NumAnts: "
-				+ this.numAnts;
+		String temp = "[" + x + "," + y + "], type: " + this.type;
+		temp += ", Amount of Food: " + this.amountOfFood + ", NumAnts: "
+				+ this.numOfAnts;
 		return temp;
 		// cost: " + this.dist + " ";
 	}
@@ -79,10 +95,10 @@ public class Cell implements Comparable<Cell>, Serializable {
 	}
 
 	public int getNumAnts() {
-		return numAnts;
+		return numOfAnts;
 	}
 
 	public void setNumAnts(int numAnts) {
-		this.numAnts = numAnts;
+		this.numOfAnts = numAnts;
 	}
 }
