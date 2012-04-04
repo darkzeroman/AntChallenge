@@ -1,5 +1,4 @@
 package vohra;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -135,7 +134,7 @@ public class MapOps {
 				int alt = u.dist + 2;
 				if (cell.getNumAnts() > 0) {
 					System.out.println("has ants!");
-					alt--;
+					 alt--;
 				}
 
 				if (alt < cell.dist) {
@@ -155,14 +154,14 @@ public class MapOps {
 		ant.getCurrRoute().clear();
 		Cell u = target;
 		while (u.prev != null) {
-			ant.getCurrRoute().add(0, u);
+			ant.getCurrRoute().push(u);
 			u = u.prev;
 		}
 		printPath(ant);
 		if (ant.getCurrRoute().size() > 0) {
 			// System.out.println("returning path");
 			return MapOps.dirTo(ant.getMap().get(ant.getLocX(), ant.getLocY()),
-					ant.getCurrRoute().remove(0));
+					ant.getCurrRoute().pop());
 		} else {
 			System.out.println("returning null PATH");
 			return null;

@@ -1,5 +1,4 @@
 package vohra;
-
 import java.io.Serializable;
 
 public class Cell implements Comparable<Cell>, Serializable {
@@ -35,7 +34,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 		this.mark = true;
 	}
 
-	public void decrementAmntFood() {
+	public void decrementAmountFood() {
 		this.amntFood--;
 		this.timeStamp = System.currentTimeMillis();
 	}
@@ -44,7 +43,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 		return amntFood;
 	}
 
-	public void setAmntFood(int amountFood) {
+	public void setAmountFood(int amountFood) {
 		origFood = Math.max(amountFood, origFood);
 		this.amntFood = amountFood;
 		timeStamp = System.currentTimeMillis();
@@ -69,7 +68,10 @@ public class Cell implements Comparable<Cell>, Serializable {
 	}
 
 	public String toString() {
-		return "[" + x + "," + y + "] type: " + this.type;
+		String temp = "[" + x + "," + y + "] type: " + this.type;
+		temp += " Amount of Food: " + this.amntFood + " NumAnts: "
+				+ this.numAnts;
+		return temp;
 		// cost: " + this.dist + " ";
 	}
 

@@ -1,5 +1,3 @@
-
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -135,7 +133,7 @@ public class MapOps {
 				int alt = u.dist + 2;
 				if (cell.getNumAnts() > 0) {
 					System.out.println("has ants!");
-					alt--;
+					 alt--;
 				}
 
 				if (alt < cell.dist) {
