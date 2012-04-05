@@ -1,4 +1,3 @@
-
 import java.awt.Point;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -31,9 +30,8 @@ public class MyAnt implements Ant {
 
 	private Direction lastDir;
 	private Mode mode;
-	private Stack<Cell> currRoute;
-	private ObjectIO<Knowledge> oio = new ObjectIO<Knowledge>();
-	Surroundings surroundings;
+	private final ObjectIO<Knowledge> oio = new ObjectIO<Knowledge>();
+	private Surroundings surroundings;
 
 	public MyAnt() {
 		// TODO remove
@@ -42,7 +40,6 @@ public class MyAnt implements Ant {
 		knowledge.setCurrLoc(new Point(0, 0));
 
 		this.mode = Mode.EXPLORE;
-		this.currRoute = new Stack<Cell>();
 		this.lastDir = Direction.SOUTH;
 
 	}
@@ -85,6 +82,8 @@ public class MyAnt implements Ant {
 
 		if (knowledge.antnum < 3)
 			isScout = true;
+		if (knowledge.antnum == 4)
+			return Action.HALT;
 
 		debugPrint(1, "Starting in Mode: " + mode);
 
@@ -150,9 +149,9 @@ public class MyAnt implements Ant {
 		// if at food, pick it up
 		// don't have a plan, make one
 
-		if (knowledge.isUpdated() && !currRoute.isEmpty()
-				&& currRoute.lastElement().getAmountOfFood() == 0) {
-			currRoute.clear();
+		if (knowledge.isUpdated() && !getCurrRoute().isEmpty()
+				&& getCurrRoute().lastElement().getAmountOfFood() == 0) {
+			getCurrRoute().clear();
 			debugPrint(1, "Target doesn't have food, need to replan");
 		}
 
@@ -232,7 +231,7 @@ public class MyAnt implements Ant {
 
 	private Action changeMode(Mode mode) {
 		debugPrint(1, "Changing from: " + this.mode + " to: " + mode);
-		currRoute.clear();
+		getCurrRoute().clear();
 		this.mode = mode;
 		switch (mode) {
 		case SCOUT:
@@ -253,7 +252,7 @@ public class MyAnt implements Ant {
 		String actionString = actionToString(action);
 		debugPrint(1, "Changing to Mode: " + mode + " and Action: "
 				+ actionString);
-		currRoute.clear();
+		getCurrRoute().clear();
 		this.mode = mode;
 		return action;
 	}
@@ -273,9 +272,9 @@ public class MyAnt implements Ant {
 	private Action nextRouteAction() {
 		Action action;
 
-		if (currRoute.size() > 0) {
+		if (getCurrRoute().size() > 0) {
 			Cell from = getCurrCell();
-			Cell to = currRoute.pop();
+			Cell to = getCurrRoute().pop();
 			Direction dir = from.dirTo(to);
 			action = Action.move(dir);
 			if (isActionValid(action))
@@ -285,9 +284,9 @@ public class MyAnt implements Ant {
 	}
 
 	public Direction nextRouteDir() {
-		if (currRoute.size() > 0) {
+		if (getCurrRoute().size() > 0) {
 			Cell from = getCurrCell();
-			Cell to = currRoute.pop();
+			Cell to = getCurrRoute().pop();
 			return from.dirTo(to);
 		}
 		return null;
@@ -350,16 +349,18 @@ public class MyAnt implements Ant {
 	}
 
 	public boolean foundFood(String error) {
-		return MapOps.newMakeRoute(this, Cell.type.FOOD, error);
+		return MapOps.makeRoute(this, Cell.CellType.FOOD, error);
 	}
 
 	public boolean foundUnexplored(String error) {
-		return MapOps.newMakeRoute(this, Cell.type.UNEXPLORED, error);
+		return MapOps.makeRoute(this, Cell.CellType.UNEXPLORED, error);
+
+		// return MapOps.newMakeRoute(this, Cell.CellType.UNEXPLORED, error);
 	}
 
 	public boolean foundHome(String error) {
-		// return MapOps.makeRoute(this, Knowledge.type.HOME, error);
-		return MapOps.newMakeRoute(this, Cell.type.HOME, error);
+		return MapOps.makeRoute(this, Cell.CellType.HOME, error);
+		// return MapOps.newMakeRoute(this, Cell.CellType.HOME, error);
 	}
 
 	public PriorityQueue<Cell> prepareForSearch(boolean checkUnexplored) {
@@ -412,7 +413,7 @@ public class MyAnt implements Ant {
 	}
 
 	public Stack<Cell> getCurrRoute() {
-		return this.currRoute;
+		return knowledge.getCurrRoute();
 	}
 
 	public void setXY(Point currLoc) {

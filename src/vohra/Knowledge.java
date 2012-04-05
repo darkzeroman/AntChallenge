@@ -26,7 +26,7 @@ public class Knowledge implements Serializable {
 		this.antnum = antnum;
 		this.map = new Hashtable<Point, Cell>();
 		currLoc = new Point(0, 0);
-		get(0, 0).setType(Cell.type.HOME);
+		get(0, 0).setType(Cell.CellType.HOME);
 
 	}
 
@@ -40,11 +40,11 @@ public class Knowledge implements Serializable {
 			Cell other = e.nextElement();
 			// if local cell is unexplored and other isn't, copy type/food
 			Cell local = get(other.getX(), other.getY());
-			if (local.getType() == Cell.type.UNEXPLORED
-					&& other.getType() != Cell.type.UNEXPLORED) {
+			if (local.getType() == Cell.CellType.UNEXPLORED
+					&& other.getType() != Cell.CellType.UNEXPLORED) {
 				set(other);
 				updated = true;
-			} else if (other.getType() != Cell.type.UNEXPLORED
+			} else if (other.getType() != Cell.CellType.UNEXPLORED
 					&& local.timeStamp < other.timeStamp) {
 				// if local info is older, copy the newer info
 				set(other);
@@ -77,29 +77,29 @@ public class Knowledge implements Serializable {
 		int tileAmountFood = tile.getAmountOfFood();
 		// TODO remove
 		cell.setNumAnts(tile.getNumAnts());
-		if (cell.getType() == Cell.type.FOOD && tileAmountFood == 0) {
+		if (cell.getType() == Cell.CellType.FOOD && tileAmountFood == 0) {
 			// previously had food, now doesn't. so set to grass
 			cell.setAmountOfFood(tileAmountFood);
-			cell.setType(Cell.type.GRASS);
+			cell.setType(Cell.CellType.GRASS);
 			return true;
 
 		} else if (tileAmountFood > 0
 				&& tileAmountFood != cell.getAmountOfFood()) {
 			// still has food, but amount has changed
 			cell.setAmountOfFood(tileAmountFood);
-			if (!(cell.getType() == Cell.type.HOME))
-				cell.setType(Cell.type.FOOD);
+			if (!(cell.getType() == Cell.CellType.HOME))
+				cell.setType(Cell.CellType.FOOD);
 			return true;
 
 		} else if (tile.isTravelable() && tileAmountFood == 0
-				&& cell.getType() != Cell.type.HOME
-				&& cell.getType() != Cell.type.GRASS) {
+				&& cell.getType() != Cell.CellType.HOME
+				&& cell.getType() != Cell.CellType.GRASS) {
 			// new info, set to grass
-			cell.setType(Cell.type.GRASS);
+			cell.setType(Cell.CellType.GRASS);
 			return true;
 
 		} else if (!tile.isTravelable() && tileAmountFood == 0) {
-			cell.setType(Cell.type.WALL);
+			cell.setType(Cell.CellType.WALL);
 			return true;
 		}
 
@@ -113,7 +113,7 @@ public class Knowledge implements Serializable {
 	public Cell get(int row, int col) {
 		Point coord = new Point(row, col);
 		if (map.get(coord) == null)
-			map.put(coord, new Cell(Cell.type.UNEXPLORED, row, col));
+			map.put(coord, new Cell(Cell.CellType.UNEXPLORED, row, col));
 		return map.get(coord);
 	}
 
@@ -179,10 +179,10 @@ public class Knowledge implements Serializable {
 			if (cell.getX() == currLoc.x && cell.getY() == currLoc.y) {
 				cell.dist = 0;
 			}
-			if (!checkUnexplored && cell.getType() != Cell.type.UNEXPLORED
-					&& cell.getType() != Cell.type.WALL)
+			if (!checkUnexplored && cell.getType() != Cell.CellType.UNEXPLORED
+					&& cell.getType() != Cell.CellType.WALL)
 				pq.add(cell);
-			else if (checkUnexplored && cell.getType() != Cell.type.WALL)
+			else if (checkUnexplored && cell.getType() != Cell.CellType.WALL)
 				pq.add(cell);
 		}
 		return pq;

@@ -14,11 +14,11 @@ public class MapOps {
 	static final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 	static Hashtable<Cell, Integer> dist = new Hashtable<Cell, Integer>();
 
-	public static boolean planRoute(MyAnt ant, Cell.type type, String error) {
+	public static boolean planRoute(MyAnt ant, Cell.CellType type, String error) {
 		return false;
 	}
 
-	public static boolean makeRoute(MyAnt ant, Cell.type type, String error) {
+	public static boolean makeRoute(MyAnt ant, Cell.CellType type, String error) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 		Cell target = MapOps.bfs(ant, type, prev);
 		System.out.println("target: " + target);
@@ -38,7 +38,7 @@ public class MapOps {
 			return false;
 	}
 
-	public static boolean newMakeRoute(MyAnt ant, Cell.type type, String error) {
+	public static boolean newMakeRoute(MyAnt ant, Cell.CellType type, String error) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = MapOps.bfs(ant, type, prev);
@@ -61,7 +61,7 @@ public class MapOps {
 		}
 	}
 
-	public static Cell bfs(MyAnt ant, Cell.type goalType,
+	public static Cell bfs(MyAnt ant, Cell.CellType goalType,
 			Hashtable<Cell, Cell> prev) {
 		// BFS Search
 		HashSet<Cell> markSet = new HashSet<Cell>();
@@ -75,7 +75,7 @@ public class MapOps {
 			if (t.getType() == goalType)
 				return t;
 			ArrayList<Cell> neighbors = findNeighbors(ant, t,
-					goalType == Cell.type.UNEXPLORED, null);
+					goalType == Cell.CellType.UNEXPLORED, null);
 
 			if ((ant.getMode() == MyAnt.Mode.SCOUT)
 					|| (ant.getMode() == MyAnt.Mode.EXPLORE))
@@ -97,7 +97,7 @@ public class MapOps {
 	public static void djikstra(MyAnt ant, Cell target,
 			Hashtable<Cell, Cell> prev) {
 		boolean includeUnexplored = false;
-		if (target.getType() == Cell.type.UNEXPLORED)
+		if (target.getType() == Cell.CellType.UNEXPLORED)
 			includeUnexplored = true;
 
 		MyAnt.debugPrint(1, "Searching Path:");
@@ -166,20 +166,20 @@ public class MapOps {
 
 			if (pq == null) { // for BFS search
 				if (includeUnexplored
-						&& neighborCell.getType() != Cell.type.WALL)
+						&& neighborCell.getType() != Cell.CellType.WALL)
 					list.add(neighborCell);
 				else if (!includeUnexplored
-						&& (neighborCell.getType() != Cell.type.UNEXPLORED)
-						&& (neighborCell.getType() != Cell.type.WALL))
+						&& (neighborCell.getType() != Cell.CellType.UNEXPLORED)
+						&& (neighborCell.getType() != Cell.CellType.WALL))
 					list.add(neighborCell);
 			} else if (pq != null) { // for Djikstra search
 				if (includeUnexplored
-						&& neighborCell.getType() != Cell.type.WALL
+						&& neighborCell.getType() != Cell.CellType.WALL
 						&& pq.contains(neighborCell))
 					list.add(neighborCell);
 				else if (!includeUnexplored
-						&& ((neighborCell.getType() != Cell.type.UNEXPLORED) && (neighborCell
-								.getType() != Cell.type.WALL))
+						&& ((neighborCell.getType() != Cell.CellType.UNEXPLORED) && (neighborCell
+								.getType() != Cell.CellType.WALL))
 						&& (pq.contains(neighborCell)))
 					list.add(neighborCell);
 			}

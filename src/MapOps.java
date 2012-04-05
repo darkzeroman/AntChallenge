@@ -13,14 +13,15 @@ public class MapOps {
 	static final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 	static Hashtable<Cell, Integer> dist = new Hashtable<Cell, Integer>();
 
-	public static boolean planRoute(MyAnt ant, Cell.type type, String error) {
+	public static boolean planRoute(MyAnt ant, Cell.CellType type) {
+
 		return false;
 	}
 
-	public static boolean makeRoute(MyAnt ant, Cell.type type, String error) {
+	public static boolean makeRoute(MyAnt ant, Cell.CellType type, String error) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 		Cell target = MapOps.bfs(ant, type, prev);
-		System.out.println("target: " + target);
+		MyAnt.debugPrint(1, "target: " + target);
 		if (target == null) // try to make a path if it exists
 			return false;
 		return makeRoute(ant, target, error);
@@ -37,7 +38,8 @@ public class MapOps {
 			return false;
 	}
 
-	public static boolean newMakeRoute(MyAnt ant, Cell.type type, String error) {
+	public static boolean newMakeRoute(MyAnt ant, Cell.CellType type,
+			String error) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = MapOps.bfs(ant, type, prev);
@@ -60,7 +62,7 @@ public class MapOps {
 		}
 	}
 
-	public static Cell bfs(MyAnt ant, Cell.type goalType,
+	public static Cell bfs(MyAnt ant, Cell.CellType goalType,
 			Hashtable<Cell, Cell> prev) {
 		// BFS Search
 		HashSet<Cell> markSet = new HashSet<Cell>();
@@ -74,7 +76,7 @@ public class MapOps {
 			if (t.getType() == goalType)
 				return t;
 			ArrayList<Cell> neighbors = findNeighbors(ant, t,
-					goalType == Cell.type.UNEXPLORED, null);
+					goalType == Cell.CellType.UNEXPLORED, null);
 
 			if ((ant.getMode() == MyAnt.Mode.SCOUT)
 					|| (ant.getMode() == MyAnt.Mode.EXPLORE))
@@ -96,7 +98,7 @@ public class MapOps {
 	public static void djikstra(MyAnt ant, Cell target,
 			Hashtable<Cell, Cell> prev) {
 		boolean includeUnexplored = false;
-		if (target.getType() == Cell.type.UNEXPLORED)
+		if (target.getType() == Cell.CellType.UNEXPLORED)
 			includeUnexplored = true;
 
 		MyAnt.debugPrint(1, "Searching Path:");
@@ -104,18 +106,18 @@ public class MapOps {
 				+ " " + target.getY());
 
 		if (target.getX() == ant.getLocX() && target.getY() == ant.getLocY()) {
-			System.out.println("Sitting on top of target");
+			MyAnt.debugPrint(1, "Sitting on top of target");
 			return;
 		}
 		PriorityQueue<Cell> pq = ant.prepareForSearch(includeUnexplored);
-		System.out.println("PQ: " + pq.size());
+		MyAnt.debugPrint(1, "PQ: " + pq.size());
 		int count = 0;
 
 		while (!pq.isEmpty()) {
 			count++;
 			Cell u = pq.peek();
 			if (u.dist == Integer.MAX_VALUE) {
-				System.out.println("exiting after: " + count);
+				MyAnt.debugPrint(1, "exiting after: " + count);
 				break; // nothing past here is reachable
 
 			}
@@ -126,7 +128,7 @@ public class MapOps {
 			for (Cell cell : al) {
 				int alt = u.dist + 2;
 				if (cell.getNumAnts() > 0) {
-					System.out.println("has ants!");
+					MyAnt.debugPrint(1, "has ants!");
 					alt--;
 				}
 
@@ -141,7 +143,7 @@ public class MapOps {
 				}
 			}
 		}
-		System.out.println("TARGET COST: " + target.dist);
+		MyAnt.debugPrint(1, "TARGET COST: " + target.dist);
 		pq.clear();
 		// constructing path
 		ant.getCurrRoute().clear();
@@ -165,20 +167,20 @@ public class MapOps {
 
 			if (pq == null) { // for BFS search
 				if (includeUnexplored
-						&& neighborCell.getType() != Cell.type.WALL)
+						&& neighborCell.getType() != Cell.CellType.WALL)
 					list.add(neighborCell);
 				else if (!includeUnexplored
-						&& (neighborCell.getType() != Cell.type.UNEXPLORED)
-						&& (neighborCell.getType() != Cell.type.WALL))
+						&& (neighborCell.getType() != Cell.CellType.UNEXPLORED)
+						&& (neighborCell.getType() != Cell.CellType.WALL))
 					list.add(neighborCell);
 			} else if (pq != null) { // for Djikstra search
 				if (includeUnexplored
-						&& neighborCell.getType() != Cell.type.WALL
+						&& neighborCell.getType() != Cell.CellType.WALL
 						&& pq.contains(neighborCell))
 					list.add(neighborCell);
 				else if (!includeUnexplored
-						&& ((neighborCell.getType() != Cell.type.UNEXPLORED) && (neighborCell
-								.getType() != Cell.type.WALL))
+						&& ((neighborCell.getType() != Cell.CellType.UNEXPLORED) && (neighborCell
+								.getType() != Cell.CellType.WALL))
 						&& (pq.contains(neighborCell)))
 					list.add(neighborCell);
 			}
@@ -207,7 +209,7 @@ public class MapOps {
 			MyAnt.debugPrint(1, old.dirTo(currRoute.get(i)) + " ");
 			old = currRoute.get(i);
 		}
-		System.out.println();
+		MyAnt.debugPrint(1, "");
 	}
 
 }

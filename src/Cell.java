@@ -4,20 +4,20 @@ import ants.Direction;
 
 public class Cell implements Comparable<Cell>, Serializable {
 	private static final long serialVersionUID = 1L;
-	public enum type {
+	public enum CellType {
 		FOOD, GRASS, HOME, UNEXPLORED, WALL
 	}
 	// used by searches, public because meant to be overwritten
 	public int dist = 0;
 
 	public long timeStamp;
-	private type type;
+	private CellType type;
 	private int x, y;
 	private int amountOfFood = 0;
 	int origFood = 0;
 	private int numOfAnts = 0;
 
-	public Cell(type tileType, int x, int y) {
+	public Cell(CellType tileType, int x, int y) {
 		this.setType(tileType);
 		timeStamp = System.currentTimeMillis();
 		this.setXY(x, y);
@@ -47,7 +47,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 
 	public void decrementFood() {
 		this.amountOfFood--;
-		this.timeStamp = System.currentTimeMillis();
+		this.timeStamp = System.nanoTime();
 	}
 
 	public int getAmountOfFood() {
@@ -73,11 +73,11 @@ public class Cell implements Comparable<Cell>, Serializable {
 		return y;
 	}
 
-	public type getType() {
+	public CellType getType() {
 		return type;
 	}
 
-	public void setType(type tileType) {
+	public void setType(CellType tileType) {
 		this.type = tileType;
 
 	}

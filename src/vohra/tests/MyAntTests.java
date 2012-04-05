@@ -109,11 +109,11 @@ public class MyAntTests {
 		int[][] grass = new int[][] { { 0, 0 }, { 0, 1 }, { 0, 2 }, { 0, 3 }, };
 
 		for (int[] arr : walls)
-			ant.getCell(arr[0], arr[1]).setType(Cell.type.WALL);
+			ant.getCell(arr[0], arr[1]).setType(Cell.CellType.WALL);
 		for (int[] arr : grass)
-			ant.getCell(arr[0], arr[1]).setType(Cell.type.GRASS);
+			ant.getCell(arr[0], arr[1]).setType(Cell.CellType.GRASS);
 
-		MapOps.newMakeRoute(ant, Cell.type.UNEXPLORED, "test");
+		MapOps.newMakeRoute(ant, Cell.CellType.UNEXPLORED, "test");
 		assertEquals(Direction.NORTH, ant.nextRouteDir());
 	}
 
@@ -127,7 +127,7 @@ public class MyAntTests {
 
 		ant.setXY(1, 1);
 		ant.getCell(0, 1).setAmountOfFood(100);
-		ant.getCell(0, 1).setType(Cell.type.FOOD);
+		ant.getCell(0, 1).setType(Cell.CellType.FOOD);
 		ant.getCell(1, 1).setAmountOfFood(100);
 
 		// printMap();
@@ -153,7 +153,7 @@ public class MyAntTests {
 		map1.merge(map2);
 		assertFalse(map1.isUpdated());
 
-		map2.set(new Cell(Cell.type.GRASS, 0, 1));
+		map2.set(new Cell(Cell.CellType.GRASS, 0, 1));
 		map1.merge(map2);
 		assertTrue(map1.isUpdated());
 
@@ -162,7 +162,7 @@ public class MyAntTests {
 		assertFalse(map1.isUpdated());
 
 		MyAnt.induceSleep(1, "test");
-		map2.set(new Cell(Cell.type.FOOD, 0, 1));
+		map2.set(new Cell(Cell.CellType.FOOD, 0, 1));
 		map1.merge(map2);
 		assertTrue(map1.isUpdated());
 
@@ -177,7 +177,7 @@ public class MyAntTests {
 
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++) {
-				ant.getCell(i, j).setType(Cell.type.GRASS);
+				ant.getCell(i, j).setType(Cell.CellType.GRASS);
 			}
 
 		ant.setXY(0, 0);

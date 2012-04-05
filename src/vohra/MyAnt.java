@@ -351,16 +351,16 @@ public class MyAnt implements Ant {
 	}
 
 	public boolean foundFood(String error) {
-		return MapOps.newMakeRoute(this, Cell.type.FOOD, error);
+		return MapOps.newMakeRoute(this, Cell.CellType.FOOD, error);
 	}
 
 	public boolean foundUnexplored(String error) {
-		return MapOps.newMakeRoute(this, Cell.type.UNEXPLORED, error);
+		return MapOps.newMakeRoute(this, Cell.CellType.UNEXPLORED, error);
 	}
 
 	public boolean foundHome(String error) {
 		// return MapOps.makeRoute(this, Knowledge.type.HOME, error);
-		return MapOps.newMakeRoute(this, Cell.type.HOME, error);
+		return MapOps.newMakeRoute(this, Cell.CellType.HOME, error);
 	}
 
 	public PriorityQueue<Cell> prepareForSearch(boolean checkUnexplored) {
