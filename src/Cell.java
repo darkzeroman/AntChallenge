@@ -1,3 +1,4 @@
+
 import java.awt.Point;
 import java.io.Serializable;
 
@@ -23,7 +24,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 	public Cell(CellType tileType, int x, int y) {
 		coord = new Point(x, y);
 		this.setType(tileType);
-		timeStamp = System.currentTimeMillis();
+		timeStamp = System.nanoTime();
 	}
 
 	public void presearch() {
@@ -60,7 +61,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 	public void setAmountOfFood(int amountOfFood) {
 		origFood = Math.max(amountOfFood, origFood);
 		this.amountOfFood = amountOfFood;
-		timeStamp = System.currentTimeMillis();
+		timeStamp = System.nanoTime();
 	}
 
 	public void setXY(int x, int y) {

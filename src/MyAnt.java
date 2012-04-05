@@ -1,3 +1,4 @@
+
 import java.awt.Point;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -21,7 +22,7 @@ public class MyAnt implements Ant {
 
 	private int scoutSearchLimit = 20;
 
-	private final Knowledge knowledge;
+	public final Knowledge knowledge;
 
 	private final ObjectIO<Knowledge> oio = new ObjectIO<Knowledge>();
 	private Surroundings surroundings;
@@ -343,17 +344,17 @@ public class MyAnt implements Ant {
 	}
 
 	public boolean foundFood(String error) {
-		return MapOps.makeRoute(knowledge, Cell.CellType.FOOD, error);
+		return MapOps.planRoute(knowledge, Cell.CellType.FOOD, new BFS());
 	}
 
 	public boolean foundUnexplored(String error) {
-		return MapOps.makeRoute(knowledge, Cell.CellType.UNEXPLORED, error);
+		return MapOps.planRoute(knowledge, Cell.CellType.UNEXPLORED, new BFS());
 
 		// return MapOps.newMakeRoute(this, Cell.CellType.UNEXPLORED, error);
 	}
 
 	public boolean foundHome(String error) {
-		return MapOps.makeRoute(knowledge, Cell.CellType.HOME, error);
+		return MapOps.planRoute(knowledge, Cell.CellType.HOME, new BFS());
 		// return MapOps.newMakeRoute(this, Cell.CellType.HOME, error);
 	}
 

@@ -1,5 +1,6 @@
 package vohra;
 import java.util.Hashtable;
+import java.util.Stack;
 
 public abstract class RoutePlanner {
 	static final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
@@ -17,5 +18,16 @@ public abstract class RoutePlanner {
 			u = prev.get(u);
 		}
 	}
-
+	
+	public void printPath(Knowledge knowledge) {
+		Stack<Cell> currRoute = knowledge.getCurrRoute();
+		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
+				+ "): ");
+		Cell old = knowledge.get(knowledge.getLocX(), knowledge.getLocY());
+		for (int i = 0; i < currRoute.size(); i++) {
+			MyAnt.debugPrint(1, old.dirTo(currRoute.get(i)) + " ");
+			old = currRoute.get(i);
+		}
+		MyAnt.debugPrint(1, "");
+	}
 }

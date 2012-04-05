@@ -1,4 +1,5 @@
 
+
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -35,9 +36,11 @@ public class Knowledge implements Serializable {
 	public Cell getCurrCell() {
 		return get(currLoc.x, currLoc.y);
 	}
-	public Knowledge.Mode getMode(){
+
+	public Knowledge.Mode getMode() {
 		return mode;
 	}
+
 	public Knowledge(int antnum) {
 		this.antnum = antnum;
 		this.map = new Hashtable<Point, Cell>();
@@ -167,6 +170,7 @@ public class Knowledge implements Serializable {
 
 	public void set(Cell cell) {
 		map.put(new Point(cell.getX(), cell.getY()), cell);
+		
 	}
 
 	public void setCurrLoc(Point currLoc) {

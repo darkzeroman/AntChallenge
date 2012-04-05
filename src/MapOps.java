@@ -1,3 +1,5 @@
+
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -16,6 +18,12 @@ public class MapOps {
 	public static boolean planRoute(Knowledge knowledge, Cell.CellType type,
 			RoutePlanner routePlanner) {
 		return routePlanner.makeRoute(knowledge, type);
+
+	}
+
+	public static boolean planRoute(Knowledge knowledge, Cell target,
+			RoutePlanner routePlanner) {
+		return routePlanner.makeRoute(knowledge, target);
 
 	}
 

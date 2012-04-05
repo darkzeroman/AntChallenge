@@ -1,3 +1,5 @@
+
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -80,9 +82,48 @@ public class BFS extends RoutePlanner {
 		return list;
 	}
 
+	public Cell bfs(Knowledge knowledge, Cell target, Hashtable<Cell, Cell> prev) {
+		boolean includeUnexplored = (target.getType() == Cell.CellType.UNEXPLORED);
+		// BFS Search
+		HashSet<Cell> markSet = new HashSet<Cell>();
+		LinkedList<Cell> queue = new LinkedList<Cell>();
+
+		Cell startCell = knowledge.getCurrCell();
+		markSet.add(startCell);
+		queue.add(startCell);
+		while (!queue.isEmpty()) {
+			Cell t = queue.remove();
+			if (t == target)
+				return t;
+			ArrayList<Cell> neighbors = findNeighbors(knowledge, t,
+					includeUnexplored);
+
+			if ((knowledge.getMode() == Knowledge.Mode.SCOUT)
+					|| (knowledge.getMode() == Knowledge.Mode.EXPLORE))
+				Collections.shuffle(neighbors,
+						new Random(System.currentTimeMillis()));
+
+			for (Cell cell : neighbors) {
+				if (!markSet.contains(cell)) {
+					markSet.add(cell);
+					queue.add(cell);
+					prev.put(cell, t);
+				}
+			}
+		}
+		// goalType doesn't exist
+		return null;
+	}
+
 	@Override
 	public boolean makeRoute(Knowledge knowledge, Cell target) {
-		// TODO Auto-generated method stub
-		return false;
+		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
+
+		bfs(knowledge, target, prev);
+		constructPath(knowledge, target, prev);
+		if (knowledge.getCurrRoute().size() > 0)
+			return true;
+		else
+			return false;
 	}
 }
