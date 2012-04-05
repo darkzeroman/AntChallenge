@@ -1,6 +1,5 @@
-
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -64,6 +63,7 @@ public class BFS extends RoutePlanner {
 
 		ArrayList<Cell> list = new ArrayList<Cell>();
 		for (int i = 0; i < 4; i++) { // for each cardinal direction
+
 			int xPos = cell.getX() + offsets[i][0];
 			int yPos = cell.getY() + offsets[i][1];
 			// exit if the requested cell is out of bounds
@@ -100,8 +100,7 @@ public class BFS extends RoutePlanner {
 
 			if ((knowledge.getMode() == Knowledge.Mode.SCOUT)
 					|| (knowledge.getMode() == Knowledge.Mode.EXPLORE))
-				Collections.shuffle(neighbors,
-						new Random(System.currentTimeMillis()));
+				Collections.shuffle(neighbors, new Random(System.nanoTime()));
 
 			for (Cell cell : neighbors) {
 				if (!markSet.contains(cell)) {

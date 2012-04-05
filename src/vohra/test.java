@@ -2,6 +2,7 @@ package vohra;
 
 import java.awt.Point;
 import java.util.Arrays;
+import java.util.Stack;
 
 public class test {
 
@@ -9,9 +10,9 @@ public class test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		final Point point = new Point(1, 1);
-		point.x = 2;
-		System.out.println(point);
+		Stack<Integer> s = new Stack<Integer>();
+		for (int i = 0; i < 10; i++)
+			s.push(i);
+		System.out.println(s.firstElement());
 	}
-
 }

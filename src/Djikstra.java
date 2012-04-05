@@ -1,6 +1,4 @@
 
-
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.PriorityQueue;
@@ -12,6 +10,8 @@ public class Djikstra extends RoutePlanner {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = MapOps.bfs(knowledge, type, prev);
+		if (target == null)
+			return false;
 		return makeRoute(knowledge, target);
 	}
 
@@ -19,7 +19,7 @@ public class Djikstra extends RoutePlanner {
 	public boolean makeRoute(Knowledge knowledge, Cell target) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 		printPath(knowledge);
-		MapOps.djikstra(knowledge, target, prev);
+		djikstra(knowledge, target, prev);
 		constructPath(knowledge, target, prev);
 		if (knowledge.getCurrRoute().size() > 0)
 			return true;

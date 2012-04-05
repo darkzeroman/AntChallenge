@@ -138,30 +138,41 @@ public class MyAntTests {
 		Knowledge map2 = new Knowledge(2);
 
 		assertEquals(map1.numKnownCells(), 1);
+		assertEquals(map2.numKnownCells(), 1);
+
 		assertTrue(map1.isUpdated());
 		map1.setUpdated(false);
 		assertFalse(map1.isUpdated());
 
 		map1.merge(map2);
 		assertTrue(map1.isUpdated());
-
+		assertEquals(map1.numKnownCells(), 1);
+		assertEquals(map2.numKnownCells(), 1);
+		
 		map2.set(new Cell(Cell.CellType.GRASS, 0, 1));
 		map1.merge(map2);
 		assertTrue(map1.isUpdated());
-
+		assertEquals(map1.numKnownCells(), 2);
+		assertEquals(map2.numKnownCells(), 2);
+		
+		
+		
 		map1.setUpdated(false);
 		map1.merge(map2);
 		assertFalse(map1.isUpdated());
 
 		map2.set(new Cell(Cell.CellType.FOOD, 2, 2));
-
 		map1.merge(map2);
-
+		assertEquals(map1.numKnownCells(), 3);
+		assertEquals(map2.numKnownCells(), 3);
 		assertTrue(map1.isUpdated());
 
 		map1.setUpdated(false);
 		map1.merge(map2);
 		assertFalse(map1.isUpdated());
+		
+		map1.updateMap(new testSurroundings(), 0, 0);
+		assertEquals(map1.numKnownCells(), 6);
 
 	}
 

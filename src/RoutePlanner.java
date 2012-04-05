@@ -3,7 +3,7 @@ import java.util.Hashtable;
 import java.util.Stack;
 
 public abstract class RoutePlanner {
-	static final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+	final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
 	public abstract boolean makeRoute(Knowledge knowledge, Cell.CellType type);
 
