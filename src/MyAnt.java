@@ -11,10 +11,6 @@ import ants.Surroundings;
 
 public class MyAnt implements Ant {
 
-	protected enum Mode {
-		EXPLORE, TOFOOD, TOHOME, SCOUT
-	}
-
 	static int order = 0;
 	static int DEBUG = 2;
 
@@ -23,24 +19,16 @@ public class MyAnt implements Ant {
 		System.out.println("compiled");
 	}
 
-	private int origin, round = 0, scoutSearchLimit = 20;
-	private final Knowledge knowledge;
-	private final Random rand = new Random(System.currentTimeMillis());
-	private boolean hasFood = false, isScout = false;
+	private int scoutSearchLimit = 20;
 
-	private Direction lastDir;
-	private Mode mode;
+	private final Knowledge knowledge;
+
 	private final ObjectIO<Knowledge> oio = new ObjectIO<Knowledge>();
 	private Surroundings surroundings;
 
 	public MyAnt() {
 		// TODO remove
-
 		knowledge = new Knowledge(order++);
-		knowledge.setCurrLoc(new Point(0, 0));
-
-		this.mode = Mode.EXPLORE;
-		this.lastDir = Direction.SOUTH;
 
 	}
 
@@ -59,7 +47,8 @@ public class MyAnt implements Ant {
 	public Action getAction(Surroundings surroundings) {
 
 		this.surroundings = surroundings;
-		round++;
+		knowledge.round++;
+
 		knowledge.updateMap(surroundings, getLocX(), getLocY());
 		// waitForReturn();
 
@@ -71,9 +60,9 @@ public class MyAnt implements Ant {
 		int currTileFood = surroundings.getCurrentTile().getAmountOfFood();
 		int currTileNumAnts = surroundings.getCurrentTile().getNumAnts();
 
-		if (isAtHome() && currTileFood == 0 && !isScout && currTileNumAnts == 3) {
-			isScout = true;
-			mode = Mode.SCOUT;
+		if (isAtHome() && currTileFood == 0 && !knowledge.isScout && currTileNumAnts == 3) {
+			knowledge.isScout = true;
+			knowledge.mode = Knowledge.Mode.SCOUT;
 			debugPrint(1, "Initial Scout Mode");
 			return Action.HALT;
 		}
@@ -81,15 +70,15 @@ public class MyAnt implements Ant {
 		// Special Actions here
 
 		if (knowledge.antnum < 3)
-			isScout = true;
+			knowledge.isScout = true;
 		if (knowledge.antnum == 4)
 			return Action.HALT;
 
-		debugPrint(1, "Starting in Mode: " + mode);
+		debugPrint(1, "Starting in Mode: " + knowledge.mode);
 
 		Action action = null;
 
-		switch (mode) {
+		switch (knowledge.mode) {
 		case SCOUT:
 			action = modeScout();
 			break;
@@ -107,9 +96,10 @@ public class MyAnt implements Ant {
 		// updating local knowledge
 		if (isActionValid(action)) {
 			if (action.getDirection() != null) {
-				this.lastDir = action.getDirection();
-				updateCurrLoc(lastDir);
-				debugPrint(1, "Moving: " + lastDir);
+				Direction direction = action.getDirection();
+				updateCurrLoc(direction);
+				debugPrint(1, "Moving: " + direction);
+				knowledge.lastDir = direction;
 			} else {
 				debugPrint(1, "Action: " + actionToString(action));
 			}
@@ -123,6 +113,7 @@ public class MyAnt implements Ant {
 	}
 
 	private Action modeScout() {
+
 		Action action;
 		scoutSearchLimit--;
 		// if still in scout mode, and if path exists follow it, otherwise
@@ -135,7 +126,7 @@ public class MyAnt implements Ant {
 
 		}
 		// not in scout mode anymore, switch to food mode;
-		return changeMode(Mode.TOFOOD);
+		return changeMode(Knowledge.Mode.TOFOOD);
 
 	}
 
@@ -159,20 +150,21 @@ public class MyAnt implements Ant {
 		if ((action = nextRouteAction()) != null) {
 			return action;
 
-		} else if (!isAtHome() && currTileFood > 0 && !hasFood) {
+		} else if (!isAtHome() && currTileFood > 0 && !knowledge.carryingFood) {
 			// ant is on food tile, gather
-			hasFood = true;
+			knowledge.carryingFood = true;
 			getCurrCell().decrementFood();
 			debugPrint(1, "GATHERING");
-			return changeModeAndAction(Mode.TOHOME, Action.GATHER);
+			return changeModeAndAction(Knowledge.Mode.TOHOME, Action.GATHER);
 
 		} else if ((foundFood("Food"))) {
 			// don't have a plan, so make one
 			return nextRouteAction();
 		}
 		debugPrint(1, "Can't find food, going to explore");
+		// order, hasFood, isScout, lastDir, mode, round,
 
-		return changeMode(Mode.EXPLORE);
+		return changeMode(Knowledge.Mode.EXPLORE);
 
 	}
 
@@ -184,7 +176,7 @@ public class MyAnt implements Ant {
 				&& foundFood("Explore food")) {
 			// map was recently updated, see if food source exists nearby
 			knowledge.setUpdated(false);
-			return changeMode(Mode.TOFOOD);
+			return changeMode(Knowledge.Mode.TOFOOD);
 		}
 
 		// get next step from route and check if it's travelable
@@ -196,24 +188,24 @@ public class MyAnt implements Ant {
 		if (foundUnexplored("Exploring unexplored"))
 			return nextRouteAction();
 		// if everything is explored, return to home
-		return changeMode(Mode.TOHOME);
+		return changeMode(Knowledge.Mode.TOHOME);
 	}
 
 	private Action modeToHome() {
 		Action action;
 		// TODO remove
-		if (!hasFood)
+		if (!knowledge.carryingFood)
 			debugPrint(2, "Why is ant trying to go home without food?");
 
 		if (isAtHome()) { // at home
-			hasFood = false;
-			mode = Mode.TOFOOD;
-			if (isScout && knowledge.getTotalFoodFound() < 650) {
+			knowledge.carryingFood = false;
+			knowledge.mode = Knowledge.Mode.TOFOOD;
+			if (knowledge.isScout && knowledge.getTotalFoodFound() < 650) {
 				debugPrint(1, "Resetting Countdown");
 				scoutSearchLimit = 20;
-				mode = Mode.SCOUT;
+				knowledge.mode = Knowledge.Mode.SCOUT;
 			}
-			return changeModeAndAction(mode, Action.DROP_OFF);
+			return changeModeAndAction(knowledge.mode, Action.DROP_OFF);
 
 		}
 		// continue with path
@@ -229,10 +221,10 @@ public class MyAnt implements Ant {
 		return null;
 	}
 
-	private Action changeMode(Mode mode) {
-		debugPrint(1, "Changing from: " + this.mode + " to: " + mode);
+	private Action changeMode(Knowledge.Mode mode) {
+		debugPrint(1, "Changing from: " + knowledge.mode + " to: " + mode);
 		getCurrRoute().clear();
-		this.mode = mode;
+		knowledge.mode = mode;
 		switch (mode) {
 		case SCOUT:
 			return modeScout();
@@ -248,12 +240,12 @@ public class MyAnt implements Ant {
 
 	}
 
-	private Action changeModeAndAction(Mode mode, Action action) {
+	private Action changeModeAndAction(Knowledge.Mode mode, Action action) {
 		String actionString = actionToString(action);
 		debugPrint(1, "Changing to Mode: " + mode + " and Action: "
 				+ actionString);
 		getCurrRoute().clear();
-		this.mode = mode;
+		knowledge.mode = mode;
 		return action;
 	}
 
@@ -308,7 +300,7 @@ public class MyAnt implements Ant {
 	}
 
 	private boolean isAtHome() {
-		return (getLocX() == origin && getLocY() == origin);
+		return (getLocX() == 0 && getLocY() == 0);
 	}
 
 	private boolean isActionValid(Action action) {
@@ -326,7 +318,7 @@ public class MyAnt implements Ant {
 	private Direction randomDir(Surroundings surroundings) {
 		boolean[] choices = new boolean[4];
 		int numChoices = 0;
-		Direction oppDir = MapOps.oppositeDir(lastDir);
+		Direction oppDir = MapOps.oppositeDir(knowledge.lastDir);
 		for (int i = 0; i < 4; i++) {
 			if ((oppDir != Direction.values()[i])
 					&& (surroundings.getTile(Direction.values()[i])
@@ -338,28 +330,30 @@ public class MyAnt implements Ant {
 		}
 		// if count is zero, we're stuck in a corner, so need to go back
 		if (numChoices == 0) {
-			return lastDir = MapOps.oppositeDir(lastDir);
+			return MapOps.oppositeDir(knowledge.lastDir);
 		}
+		Random rand = new Random(System.currentTimeMillis());
+
 		// change to a for loop at some point
 		int rInt = rand.nextInt(4);
 		while (!choices[rInt])
 			rInt = rand.nextInt(4);
-		return lastDir = Direction.values()[rInt];
+		return Direction.values()[rInt];
 
 	}
 
 	public boolean foundFood(String error) {
-		return MapOps.makeRoute(this, Cell.CellType.FOOD, error);
+		return MapOps.makeRoute(knowledge, Cell.CellType.FOOD, error);
 	}
 
 	public boolean foundUnexplored(String error) {
-		return MapOps.makeRoute(this, Cell.CellType.UNEXPLORED, error);
+		return MapOps.makeRoute(knowledge, Cell.CellType.UNEXPLORED, error);
 
 		// return MapOps.newMakeRoute(this, Cell.CellType.UNEXPLORED, error);
 	}
 
 	public boolean foundHome(String error) {
-		return MapOps.makeRoute(this, Cell.CellType.HOME, error);
+		return MapOps.makeRoute(knowledge, Cell.CellType.HOME, error);
 		// return MapOps.newMakeRoute(this, Cell.CellType.HOME, error);
 	}
 
@@ -367,8 +361,8 @@ public class MyAnt implements Ant {
 		return knowledge.beforeSearch(checkUnexplored);
 	}
 
-	public Mode getMode() {
-		return mode;
+	public Knowledge.Mode getMode() {
+		return knowledge.mode;
 	}
 
 	private void updateCurrLoc(Direction dir) {

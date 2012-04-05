@@ -1,3 +1,4 @@
+
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -11,25 +12,40 @@ import ants.Tile;
 
 public class Knowledge implements Serializable {
 
+	protected enum Mode {
+		EXPLORE, TOFOOD, TOHOME, SCOUT
+	}
+
 	private static final long serialVersionUID = 1L;
 
 	private final Point currLoc;
 	private final Hashtable<Point, Cell> map;
 	private final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
-
+	Direction lastDir;
 	private boolean updated = true;
+	public Mode mode;
+	private final Stack<Cell> currRoute;
+	boolean carryingFood = false;
+	boolean isScout = false;
+	int round;
 	// TODO for debugging, should be removed
 	int antnum;
 	int count;
 
-	private final Stack<Cell> currRoute;
-
+	public Cell getCurrCell() {
+		return get(currLoc.x, currLoc.y);
+	}
+	public Knowledge.Mode getMode(){
+		return mode;
+	}
 	public Knowledge(int antnum) {
 		this.antnum = antnum;
 		this.map = new Hashtable<Point, Cell>();
 		currRoute = new Stack<Cell>();
 		currLoc = new Point(0, 0);
 		get(0, 0).setType(Cell.CellType.HOME);
+		mode = Mode.EXPLORE;
+		lastDir = Direction.SOUTH;
 
 	}
 

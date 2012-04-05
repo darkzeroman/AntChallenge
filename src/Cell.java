@@ -1,26 +1,29 @@
+import java.awt.Point;
 import java.io.Serializable;
 
 import ants.Direction;
 
 public class Cell implements Comparable<Cell>, Serializable {
 	private static final long serialVersionUID = 1L;
+
 	public enum CellType {
 		FOOD, GRASS, HOME, UNEXPLORED, WALL
 	}
+
 	// used by searches, public because meant to be overwritten
 	public int dist = 0;
 
 	public long timeStamp;
 	private CellType type;
-	private int x, y;
+	private final Point coord;
 	private int amountOfFood = 0;
 	int origFood = 0;
 	private int numOfAnts = 0;
 
 	public Cell(CellType tileType, int x, int y) {
+		coord = new Point(x, y);
 		this.setType(tileType);
 		timeStamp = System.currentTimeMillis();
-		this.setXY(x, y);
 	}
 
 	public void presearch() {
@@ -30,8 +33,8 @@ public class Cell implements Comparable<Cell>, Serializable {
 	}
 
 	public Direction dirTo(Cell to) {
-		int fromX = this.x;
-		int fromY = this.y;
+		int fromX = this.coord.x;
+		int fromY = this.coord.y;
 		int toX = to.getX(), toY = to.getY();
 
 		if ((fromX == toX) && (fromY > toY))
@@ -61,16 +64,16 @@ public class Cell implements Comparable<Cell>, Serializable {
 	}
 
 	public void setXY(int x, int y) {
-		this.x = x;
-		this.y = y;
+		this.coord.x = x;
+		this.coord.y = y;
 	}
 
 	public int getX() {
-		return x;
+		return coord.x;
 	}
 
 	public int getY() {
-		return y;
+		return coord.y;
 	}
 
 	public CellType getType() {
@@ -83,7 +86,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 	}
 
 	public String toString() {
-		String temp = "[" + x + "," + y + "], type: " + this.type;
+		String temp = "[" + coord.x + "," + coord.y + "], type: " + this.type;
 		temp += ", Amount of Food: " + this.amountOfFood + ", NumAnts: "
 				+ this.numOfAnts;
 		return temp;
