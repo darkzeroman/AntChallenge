@@ -1,146 +1,140 @@
-
-
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Stack;
 
-import ants.Action;
 import ants.Direction;
 
 public class MapOps {
-	static int[][] offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
+	static final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+	static Hashtable<Cell, Integer> dist = new Hashtable<Cell, Integer>();
 
-	public static Action makeRoute(MyAnt ant, WorldMap.type type, String error) {
-		Cell target = MapOps.findClosest(ant, type);
-		System.out.println("target: " + target);
-		if (target != null) // try to make a path if it exists
-			return makeRoute(ant, target, error);
+	public static boolean planRoute(MyAnt ant, Cell.CellType type) {
+
+		return false;
+	}
+
+	public static boolean makeRoute(MyAnt ant, Cell.CellType type, String error) {
+		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
+		Cell target = MapOps.bfs(ant, type, prev);
+		MyAnt.debugPrint(1, "target: " + target);
+		if (target == null) // try to make a path if it exists
+			return false;
+		return makeRoute(ant, target, error);
+	}
+
+	public static boolean makeRoute(MyAnt ant, Cell target, String error) {
+		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
+		printPath(ant);
+		MapOps.djikstra(ant, target, prev);
+		constructPath(ant, target, prev);
+		if (ant.getCurrRoute().size() > 0)
+			return true;
 		else
-			return null;
+			return false;
 	}
 
-	public static Direction makeRouteDir(MyAnt ant, Cell cell) {
-		return makeRoute(ant, cell, "").getDirection();
-	}
-
-	public static Action newMakeRoute(MyAnt ant, WorldMap.type type,
+	public static boolean newMakeRoute(MyAnt ant, Cell.CellType type,
 			String error) {
+		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
-		Cell target = MapOps.findClosest(ant, type);
+		Cell target = MapOps.bfs(ant, type, prev);
 		if (target == null)
-			return null;
+			return false;
+		constructPath(ant, target, prev);
+		if (ant.getCurrRoute().size() > 0)
+			return true;
+		else
+			return false;
+	}
 
+	public static void constructPath(MyAnt ant, Cell target,
+			Hashtable<Cell, Cell> prev) {
 		ant.getCurrRoute().clear();
 		Cell u = target;
-		while (u.prev != null) {
+		while (prev.containsKey(u)) {
 			ant.getCurrRoute().push(u);
-			u = u.prev;
+			u = prev.get(u);
 		}
-
-		if (ant.getCurrRoute().size() > 0) {
-			int x = ant.getLocX(), y = ant.getLocY();
-			Direction dir = MapOps.dirTo(ant.getMap().get(x, y), ant
-					.getCurrRoute().pop());
-			return Action.move(dir);
-		} else {
-			System.out.println("returning null PATH");
-			return null;
-		}
-
 	}
 
-	public static Action makeRoute(MyAnt ant, Cell target, String error) {
-
-		Action nextMove = null;
-		Direction dir = null;
-
-		if ((dir = MapOps.djikstra(ant, target)) != null)
-			nextMove = Action.move(dir);
-		else if (target != null && dir == null) {
-			// target exists, but no path to it, possibly coding error
-			nextMove = Action.HALT;
-			System.out.println(error + " HALT, closest: " + target.toString());
-
-		}
-		return nextMove;
-	}
-
-	public static Cell findClosest(MyAnt ant, WorldMap.type goalType) {
-		ant.getMap().beforeSearch(ant.getLocX(), ant.getLocY(),
-				goalType == WorldMap.type.UNEXPLORED);
+	public static Cell bfs(MyAnt ant, Cell.CellType goalType,
+			Hashtable<Cell, Cell> prev) {
 		// BFS Search
+		HashSet<Cell> markSet = new HashSet<Cell>();
 		LinkedList<Cell> queue = new LinkedList<Cell>();
-		Cell startCell = ant.getCell(ant.getLocX(), ant.getLocY());
-		startCell.mark();
+
+		Cell startCell = ant.getCurrCell();
+		markSet.add(startCell);
 		queue.add(startCell);
 		while (!queue.isEmpty()) {
 			Cell t = queue.remove();
 			if (t.getType() == goalType)
 				return t;
 			ArrayList<Cell> neighbors = findNeighbors(ant, t,
-					goalType == WorldMap.type.UNEXPLORED, null);
+					goalType == Cell.CellType.UNEXPLORED, null);
 
-			if ((ant.mode == MyAnt.Mode.SCOUT)
-					|| (ant.mode == MyAnt.Mode.EXPLORE))
+			if ((ant.getMode() == MyAnt.Mode.SCOUT)
+					|| (ant.getMode() == MyAnt.Mode.EXPLORE))
 				Collections.shuffle(neighbors,
 						new Random(System.currentTimeMillis()));
 
 			for (Cell cell : neighbors) {
-				if (!cell.mark) {
-					cell.mark = true;
+				if (!markSet.contains(cell)) {
+					markSet.add(cell);
 					queue.add(cell);
-					cell.prev = t;
+					prev.put(cell, t);
 				}
 			}
 		}
+		// goalType doesn't exist
 		return null;
 	}
 
-	public static Direction djikstra(MyAnt ant, Cell target) {
-		boolean checkUnexplored = false;
-		if (target.getType() == WorldMap.type.UNEXPLORED)
-			checkUnexplored = true;
+	public static void djikstra(MyAnt ant, Cell target,
+			Hashtable<Cell, Cell> prev) {
+		boolean includeUnexplored = false;
+		if (target.getType() == Cell.CellType.UNEXPLORED)
+			includeUnexplored = true;
 
-		System.out.print("SEARCHING: " + ant.antnum);
-		System.out.println(" Current X: " + ant.getLocX() + " Y: "
-				+ ant.getLocY() + " Going to: " + target.getXY()[0] + " "
-				+ target.getXY()[1]);
+		MyAnt.debugPrint(1, "Searching Path:");
+		MyAnt.debugPrint(1, ant.toString() + " Going to: " + target.getX()
+				+ " " + target.getY());
 
-		if (target.getXY()[0] == ant.getLocX()
-				&& target.getXY()[1] == ant.getLocY()) {
-			System.out.println("Sitting on top of target");
-			return null;
+		if (target.getX() == ant.getLocX() && target.getY() == ant.getLocY()) {
+			MyAnt.debugPrint(1, "Sitting on top of target");
+			return;
 		}
-		PriorityQueue<Cell> pq = ant.getMap().beforeSearch(ant.getLocX(),
-				ant.getLocY(), checkUnexplored);
-		System.out.println("PQ: " + pq.size());
+		PriorityQueue<Cell> pq = ant.prepareForSearch(includeUnexplored);
+		MyAnt.debugPrint(1, "PQ: " + pq.size());
 		int count = 0;
 
 		while (!pq.isEmpty()) {
 			count++;
 			Cell u = pq.peek();
 			if (u.dist == Integer.MAX_VALUE) {
-				System.out.println("exiting after: " + count);
+				MyAnt.debugPrint(1, "exiting after: " + count);
 				break; // nothing past here is reachable
 
 			}
 			u = pq.poll();
 			if (u == target) // reached target, can end
 				break;
-			ArrayList<Cell> al = findNeighbors(ant, u, checkUnexplored, pq);
+			ArrayList<Cell> al = findNeighbors(ant, u, includeUnexplored, pq);
 			for (Cell cell : al) {
 				int alt = u.dist + 2;
 				if (cell.getNumAnts() > 0) {
-					System.out.println("has ants!");
+					MyAnt.debugPrint(1, "has ants!");
 					alt--;
 				}
 
 				if (alt < cell.dist) {
 					cell.dist = alt;
-					cell.prev = u;
+					prev.put(cell, u);
 					if (pq.remove(cell))
 						pq.add(cell);
 					else
@@ -149,55 +143,44 @@ public class MapOps {
 				}
 			}
 		}
-		System.out.println("TARGET COST: " + target.dist);
+		MyAnt.debugPrint(1, "TARGET COST: " + target.dist);
 		pq.clear();
 		// constructing path
 		ant.getCurrRoute().clear();
 		Cell u = target;
-		while (u.prev != null) {
+		while (prev.containsKey(u)) {
 			ant.getCurrRoute().push(u);
-			u = u.prev;
+			u = prev.get(u);
 		}
-		printPath(ant);
-		if (ant.getCurrRoute().size() > 0) {
-			// System.out.println("returning path");
-			return MapOps.dirTo(ant.getMap().get(ant.getLocX(), ant.getLocY()),
-					ant.getCurrRoute().pop());
-		} else {
-			System.out.println("returning null PATH");
-			return null;
-		}
+
 	}
 
 	public static ArrayList<Cell> findNeighbors(MyAnt ant, Cell cell,
-			boolean checkUnexplored, PriorityQueue<Cell> pq) {
+			boolean includeUnexplored, PriorityQueue<Cell> pq) {
 		ArrayList<Cell> list = new ArrayList<Cell>();
 		for (int i = 0; i < 4; i++) { // for each cardinal direction
-			int xPos = cell.getXY()[0] + offsets[i][0];
-			int yPos = cell.getXY()[1] + offsets[i][1];
+			int xPos = cell.getX() + offsets[i][0];
+			int yPos = cell.getY() + offsets[i][1];
 			// exit if the requested cell is out of bounds
-			if ((xPos < 0) || (yPos < 0) || (xPos >= ant.getMap().MAPSIZE)
-					|| (yPos >= ant.getMap().MAPSIZE))
-				continue;
 
 			Cell neighborCell = ant.getCell(xPos, yPos);
 
 			if (pq == null) { // for BFS search
-				if (checkUnexplored
-						&& neighborCell.getType() != WorldMap.type.WALL)
+				if (includeUnexplored
+						&& neighborCell.getType() != Cell.CellType.WALL)
 					list.add(neighborCell);
-				else if (!checkUnexplored
-						&& (neighborCell.getType() != WorldMap.type.UNEXPLORED)
-						&& (neighborCell.getType() != WorldMap.type.WALL))
+				else if (!includeUnexplored
+						&& (neighborCell.getType() != Cell.CellType.UNEXPLORED)
+						&& (neighborCell.getType() != Cell.CellType.WALL))
 					list.add(neighborCell);
 			} else if (pq != null) { // for Djikstra search
-				if (checkUnexplored
-						&& neighborCell.getType() != WorldMap.type.WALL
+				if (includeUnexplored
+						&& neighborCell.getType() != Cell.CellType.WALL
 						&& pq.contains(neighborCell))
 					list.add(neighborCell);
-				else if (!checkUnexplored
-						&& ((neighborCell.getType() != WorldMap.type.UNEXPLORED) && (neighborCell
-								.getType() != WorldMap.type.WALL))
+				else if (!includeUnexplored
+						&& ((neighborCell.getType() != Cell.CellType.UNEXPLORED) && (neighborCell
+								.getType() != Cell.CellType.WALL))
 						&& (pq.contains(neighborCell)))
 					list.add(neighborCell);
 			}
@@ -212,36 +195,21 @@ public class MapOps {
 
 	public static Direction oppositeDir(Direction dir) {
 		if (dir == null) {
-			System.out.println("why is dir null");
-			MyAnt.induceSleep(10, "Why is Dir Null");
+			MyAnt.debugPrint(2, "Why is Dir  Null");
 		}
 		return Direction.values()[(dir.ordinal() + 2) % 4];
 	}
 
-	public static Direction dirTo(Cell from, Cell to) {
-		int fromX = from.getXY()[0], fromY = from.getXY()[1];
-		int toX = to.getXY()[0], toY = to.getXY()[1];
-
-		if ((fromX == toX) && (fromY > toY))
-			return Direction.NORTH;
-		else if ((fromX == toX) && (fromY < toY))
-			return Direction.SOUTH;
-		else if ((fromY == toY) && (fromX > toX))
-			return Direction.WEST;
-		else
-			return Direction.EAST;
-
-	}
-
 	public static void printPath(MyAnt ant) {
 		Stack<Cell> currRoute = ant.getCurrRoute();
-		System.out.print("Printing Path:  (size: " + currRoute.size() + "): ");
+		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
+				+ "): ");
 		Cell old = ant.getCell(ant.getLocX(), ant.getLocY());
 		for (int i = 0; i < currRoute.size(); i++) {
-			System.out.print(dirTo(old, currRoute.get(i)) + " ");
+			MyAnt.debugPrint(1, old.dirTo(currRoute.get(i)) + " ");
 			old = currRoute.get(i);
 		}
-		System.out.println();
+		MyAnt.debugPrint(1, "");
 	}
 
 }

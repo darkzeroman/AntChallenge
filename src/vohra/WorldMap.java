@@ -1,4 +1,5 @@
 package vohra;
+
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -17,33 +18,25 @@ public class WorldMap implements Serializable {
 	public int locX, locY;
 
 	private static final long serialVersionUID = 1L;
-	// for debugging, should be removed
+	// TODO for debugging, should be removed
 	int antnum;
 	int count;
 
-	public Hashtable<Point, Cell> knowledge;
+	private Hashtable<Point, Cell> map;
 	final int MAPSIZE;
-	int[][] offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
+	final int[][] offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
 	boolean updated = true;
 
 	public WorldMap(int mapsize, int antnum, int origin) {
-		MAPSIZE = mapsize;
+		this.MAPSIZE = mapsize;
 		this.antnum = antnum;
-		knowledge = new Hashtable<Point, Cell>();
+		this.map = new Hashtable<Point, Cell>();
 		get(origin, origin).setType(type.HOME);
 
 	}
 
-	public boolean isUpdated() {
-		return updated;
-	}
-
-	public void setUpdated(boolean updated) {
-		this.updated = updated;
-	}
-
 	public void markFalse() {
-		Enumeration<Cell> e = knowledge.elements();
+		Enumeration<Cell> e = map.elements();
 		while (e.hasMoreElements()) {
 			Cell cell = e.nextElement();
 			cell.mark = false;
@@ -54,7 +47,7 @@ public class WorldMap implements Serializable {
 			boolean checkUnexplored) {
 		PriorityQueue<Cell> pq = new PriorityQueue<Cell>();
 
-		Enumeration<Cell> e = knowledge.elements();
+		Enumeration<Cell> e = map.elements();
 		while (e.hasMoreElements()) {
 			Cell cell = e.nextElement();
 			cell.presearch();
@@ -72,18 +65,18 @@ public class WorldMap implements Serializable {
 
 	public Cell get(int row, int col) {
 		Point coord = new Point(row, col);
-		if (knowledge.get(coord) == null)
-			knowledge.put(coord, new Cell(type.UNEXPLORED, row, col));
-		return knowledge.get(coord);
+		if (map.get(coord) == null)
+			map.put(coord, new Cell(type.UNEXPLORED, row, col));
+		return map.get(coord);
 	}
 
 	public void set(Cell cell) {
-		knowledge.put(new Point(cell.getXY()[0], cell.getXY()[1]), cell);
+		map.put(new Point(cell.getXY()[0], cell.getXY()[1]), cell);
 	}
 
 	public int getTotalFoodFound() {
 		int sum = 0;
-		Enumeration<Cell> e = knowledge.elements();
+		Enumeration<Cell> e = map.elements();
 		while (e.hasMoreElements()) {
 			sum += e.nextElement().origFood;
 		}
@@ -91,7 +84,7 @@ public class WorldMap implements Serializable {
 	}
 
 	public void merge(WorldMap other) {
-		Enumeration<Cell> e = other.knowledge.elements();
+		Enumeration<Cell> e = other.map.elements();
 		while (e.hasMoreElements()) {
 			Cell cell = e.nextElement();
 			int x = cell.getXY()[0], y = cell.getXY()[1];
@@ -112,11 +105,19 @@ public class WorldMap implements Serializable {
 
 	}
 
-	public int numKnownTiles() {
-		return knowledge.keySet().size();
+	public int numKnownCells() {
+		return map.keySet().size();
 	}
 
-	public void update(Surroundings surroundings, int locX, int locY) {
+	public boolean isUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(boolean updated) {
+		this.updated = updated;
+	}
+
+	public void updateMap(Surroundings surroundings, int locX, int locY) {
 		// TODO remove
 		if (surroundings == null) {
 			MyAnt.induceSleep(10, "Why is surroundings null");
@@ -140,13 +141,13 @@ public class WorldMap implements Serializable {
 		cell.setNumAnts(tile.getNumAnts());
 		if (cell.getType() == type.FOOD && tileAmountFood == 0) {
 			// previously had food, now doesn't. so set to grass
-			cell.setAmntFood(tileAmountFood);
+			cell.setAmountFood(tileAmountFood);
 			cell.setType(type.GRASS);
 			return true;
 
 		} else if (tileAmountFood > 0 && tileAmountFood != cell.getAmntFood()) {
 			// still has food, but amount has changed
-			cell.setAmntFood(tileAmountFood);
+			cell.setAmountFood(tileAmountFood);
 			if (!(cell.getType() == WorldMap.type.HOME))
 				cell.setType(WorldMap.type.FOOD);
 			return true;
@@ -166,7 +167,7 @@ public class WorldMap implements Serializable {
 	}
 
 	public String toString() {
-		return this.knowledge.keySet().size() + "";
+		return this.map.keySet().size() + "";
 	}
 
 	public void setLastXY(int x, int y) {
