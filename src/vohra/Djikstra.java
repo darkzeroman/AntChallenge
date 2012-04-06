@@ -12,6 +12,8 @@ public class Djikstra extends RoutePlanner {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = MapOps.bfs(knowledge, type, prev);
+		if (target == null)
+			return false;
 		return makeRoute(knowledge, target);
 	}
 
@@ -19,7 +21,7 @@ public class Djikstra extends RoutePlanner {
 	public boolean makeRoute(Knowledge knowledge, Cell target) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 		printPath(knowledge);
-		MapOps.djikstra(knowledge, target, prev);
+		djikstra(knowledge, target, prev);
 		constructPath(knowledge, target, prev);
 		if (knowledge.getCurrRoute().size() > 0)
 			return true;
@@ -97,12 +99,12 @@ public class Djikstra extends RoutePlanner {
 
 			// for Djikstra search
 			if (includeUnexplored
-					&& neighborCell.getType() != Cell.CellType.WALL
+					&& neighborCell.getType() != Cell.CellType.WATER
 					&& pq.contains(neighborCell))
 				list.add(neighborCell);
 			else if (!includeUnexplored
 					&& ((neighborCell.getType() != Cell.CellType.UNEXPLORED) && (neighborCell
-							.getType() != Cell.CellType.WALL))
+							.getType() != Cell.CellType.WATER))
 					&& (pq.contains(neighborCell)))
 				list.add(neighborCell);
 

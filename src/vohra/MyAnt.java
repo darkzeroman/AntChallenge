@@ -12,8 +12,8 @@ import ants.Surroundings;
 
 public class MyAnt implements Ant {
 
-	static int order = 0;
-	static int DEBUG = 2;
+	public static int order = 0;
+	public static final int DEBUG = 1;
 
 	public static void main(String[] args) {
 		new MyAnt();
@@ -46,22 +46,22 @@ public class MyAnt implements Ant {
 	}
 
 	public Action getAction(Surroundings surroundings) {
-
 		this.surroundings = surroundings;
 		knowledge.round++;
 
 		knowledge.updateMap(surroundings, getLocX(), getLocY());
 		// waitForReturn();
 
-		System.out.println();
+		debugPrint(1, "");
 		debugPrint(1, this.toString());
 		debugPrint(1, knowledge.toString());
 		debugPrint(1, getCurrCell().toString());
 
-		int currTileFood = surroundings.getCurrentTile().getAmountOfFood();
-		int currTileNumAnts = surroundings.getCurrentTile().getNumAnts();
+		int currCellFood = getCurrCell().getAmountOfFood();
+		int currCellNumAnts = getCurrCell().getNumAnts();
 
-		if (isAtHome() && currTileFood == 0 && !knowledge.isScout && currTileNumAnts == 3) {
+		if (isAtHome() && currCellFood == 0 && !knowledge.isScout
+				&& currCellNumAnts == 3) {
 			knowledge.isScout = true;
 			knowledge.mode = Knowledge.Mode.SCOUT;
 			debugPrint(1, "Initial Scout Mode");
@@ -73,7 +73,7 @@ public class MyAnt implements Ant {
 		if (knowledge.antnum < 3)
 			knowledge.isScout = true;
 		if (knowledge.antnum == 4)
-			return Action.HALT;
+			;// return Action.HALT;
 
 		debugPrint(1, "Starting in Mode: " + knowledge.mode);
 
@@ -102,7 +102,7 @@ public class MyAnt implements Ant {
 				debugPrint(1, "Moving: " + direction);
 				knowledge.lastDir = direction;
 			} else {
-				debugPrint(1, "Action: " + actionToString(action));
+				debugPrint(1, "Action: " + actionString(action));
 			}
 			return action;
 
@@ -114,7 +114,6 @@ public class MyAnt implements Ant {
 	}
 
 	private Action modeScout() {
-
 		Action action;
 		scoutSearchLimit--;
 		// if still in scout mode, and if path exists follow it, otherwise
@@ -132,7 +131,7 @@ public class MyAnt implements Ant {
 	}
 
 	private Action modeToFood() {
-		int currTileFood = surroundings.getCurrentTile().getAmountOfFood();
+		int currCellFood = getCurrCell().getAmountOfFood();
 
 		Action action;
 
@@ -140,18 +139,20 @@ public class MyAnt implements Ant {
 		// follow path
 		// if at food, pick it up
 		// don't have a plan, make one
-
+		knowledge.getCurrRoute().clear();
 		if (knowledge.isUpdated() && !getCurrRoute().isEmpty()
-				&& getCurrRoute().lastElement().getAmountOfFood() == 0) {
+				&& getCurrRoute().firstElement().getAmountOfFood() == 0) {
 			getCurrRoute().clear();
 			debugPrint(1, "Target doesn't have food, need to replan");
 		}
 
 		// if ant already has a goal, keep going
 		if ((action = nextRouteAction()) != null) {
+			// knowledge.getCurrRoute().clear();
+			foundFood("Food");
 			return action;
 
-		} else if (!isAtHome() && currTileFood > 0 && !knowledge.carryingFood) {
+		} else if (!isAtHome() && currCellFood > 0 && !knowledge.carryingFood) {
 			// ant is on food tile, gather
 			knowledge.carryingFood = true;
 			getCurrCell().decrementFood();
@@ -171,9 +172,9 @@ public class MyAnt implements Ant {
 
 	private Action modeExplore() {
 		Action action;
-		int currTileFood = surroundings.getCurrentTile().getAmountOfFood();
+		int currCellFood = getCurrCell().getAmountOfFood();
 
-		if (knowledge.isUpdated() && currTileFood == 0
+		if (knowledge.isUpdated() && currCellFood == 0
 				&& foundFood("Explore food")) {
 			// map was recently updated, see if food source exists nearby
 			knowledge.setUpdated(false);
@@ -201,9 +202,10 @@ public class MyAnt implements Ant {
 		if (isAtHome()) { // at home
 			knowledge.carryingFood = false;
 			knowledge.mode = Knowledge.Mode.TOFOOD;
-			if (knowledge.isScout && knowledge.getTotalFoodFound() < 650) {
+			if (knowledge.isScout && knowledge.numKnownCells() < 20 * 20 * .75) {
+				// && knowledge.getTotalFoodFound() < 650) {
 				debugPrint(1, "Resetting Countdown");
-				scoutSearchLimit = 20;
+				scoutSearchLimit = 35;
 				knowledge.mode = Knowledge.Mode.SCOUT;
 			}
 			return changeModeAndAction(knowledge.mode, Action.DROP_OFF);
@@ -242,15 +244,15 @@ public class MyAnt implements Ant {
 	}
 
 	private Action changeModeAndAction(Knowledge.Mode mode, Action action) {
-		String actionString = actionToString(action);
+
 		debugPrint(1, "Changing to Mode: " + mode + " and Action: "
-				+ actionString);
+				+ actionString(action));
 		getCurrRoute().clear();
 		knowledge.mode = mode;
 		return action;
 	}
 
-	private String actionToString(Action action) {
+	private String actionString(Action action) {
 		String actionString;
 		if (action == Action.DROP_OFF)
 			actionString = "Drop off";
@@ -296,6 +298,7 @@ public class MyAnt implements Ant {
 
 	public void receive(byte[] data) {
 		Knowledge otherKnowledge = oio.fromByteArray(data);
+		debugPrint(1, " Merging on: " + otherKnowledge);
 		knowledge.merge(otherKnowledge);
 
 	}
@@ -344,7 +347,7 @@ public class MyAnt implements Ant {
 	}
 
 	public boolean foundFood(String error) {
-		return MapOps.planRoute(knowledge, Cell.CellType.FOOD, new BFS());
+		return MapOps.planRoute(knowledge, Cell.CellType.FOOD, new AStar());
 	}
 
 	public boolean foundUnexplored(String error) {
@@ -354,7 +357,7 @@ public class MyAnt implements Ant {
 	}
 
 	public boolean foundHome(String error) {
-		return MapOps.planRoute(knowledge, Cell.CellType.HOME, new BFS());
+		return MapOps.planRoute(knowledge, Cell.CellType.HOME, new AStar());
 		// return MapOps.newMakeRoute(this, Cell.CellType.HOME, error);
 	}
 

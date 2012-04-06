@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import vohra.Cell;
+import vohra.Cell.CellType;
 import vohra.Knowledge;
 
 public class CellTest {
@@ -19,7 +20,7 @@ public class CellTest {
 
 	@Test
 	public void testCompareTo() {
-		Cell a = new Cell(Cell.CellType.WALL, 1, 1);
+		Cell a = new Cell(CellType.WATER, 1, 1);
 		a.dist = 10;
 		Cell b = new Cell(Cell.CellType.GRASS, 1, 1);
 		b.dist = Integer.MAX_VALUE;

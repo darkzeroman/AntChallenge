@@ -27,50 +27,11 @@ public class MapOps {
 
 	}
 
-	public static boolean makeRoute(Knowledge knowledge, Cell.CellType type,
-			String error) {
-		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
-		Cell target = MapOps.bfs(knowledge, type, prev);
-		MyAnt.debugPrint(1, "target: " + target);
-		if (target == null) // try to make a path if it exists
-			return false;
-		return makeRoute(knowledge, target, error);
-	}
-
-	public static boolean makeRoute(Knowledge knowledge, Cell target,
-			String error) {
-		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
-		printPath(knowledge);
-		MapOps.djikstra(knowledge, target, prev);
-		constructPath(knowledge, target, prev);
-		if (knowledge.getCurrRoute().size() > 0)
-			return true;
-		else
-			return false;
-	}
-
-	public static boolean newMakeRoute(Knowledge knowledge, Cell.CellType type,
-			String error) {
-		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
-
-		Cell target = MapOps.bfs(knowledge, type, prev);
-		if (target == null)
-			return false;
-		constructPath(knowledge, target, prev);
-		if (knowledge.getCurrRoute().size() > 0)
-			return true;
-		else
-			return false;
-	}
-
-	public static void constructPath(Knowledge knowledge, Cell target,
-			Hashtable<Cell, Cell> prev) {
-		knowledge.getCurrRoute().clear();
-		Cell u = target;
-		while (prev.containsKey(u)) {
-			knowledge.getCurrRoute().push(u);
-			u = prev.get(u);
+	public static Direction oppositeDir(Direction dir) {
+		if (dir == null) {
+			MyAnt.debugPrint(2, "Why is Dir  Null");
 		}
+		return Direction.values()[(dir.ordinal() + 2) % 4];
 	}
 
 	public static Cell bfs(Knowledge knowledge, Cell.CellType goalType,
@@ -106,69 +67,6 @@ public class MapOps {
 		return null;
 	}
 
-	public static void djikstra(Knowledge knowledge, Cell target,
-			Hashtable<Cell, Cell> prev) {
-		boolean includeUnexplored = false;
-		if (target.getType() == Cell.CellType.UNEXPLORED)
-			includeUnexplored = true;
-
-		MyAnt.debugPrint(1, "Searching Path:");
-		MyAnt.debugPrint(1,
-				knowledge.toString() + " Going to: " + target.getX() + " "
-						+ target.getY());
-
-		if (target.getX() == knowledge.getLocX()
-				&& target.getY() == knowledge.getLocY()) {
-			MyAnt.debugPrint(1, "Sitting on top of target");
-			return;
-		}
-		PriorityQueue<Cell> pq = knowledge.beforeSearch(includeUnexplored);
-		MyAnt.debugPrint(1, "PQ: " + pq.size());
-		int count = 0;
-
-		while (!pq.isEmpty()) {
-			count++;
-			Cell u = pq.peek();
-			if (u.dist == Integer.MAX_VALUE) {
-				MyAnt.debugPrint(1, "exiting after: " + count);
-				break; // nothing past here is reachable
-
-			}
-			u = pq.poll();
-			if (u == target) // reached target, can end
-				break;
-			ArrayList<Cell> al = findNeighbors(knowledge, u, includeUnexplored,
-					pq);
-			for (Cell cell : al) {
-				int alt = u.dist + 2;
-				if (cell.getNumAnts() > 0) {
-					MyAnt.debugPrint(1, "has ants!");
-					alt--;
-				}
-
-				if (alt < cell.dist) {
-					cell.dist = alt;
-					prev.put(cell, u);
-					if (pq.remove(cell))
-						pq.add(cell);
-					else
-						throw new Error("Can't find element in PQ");
-
-				}
-			}
-		}
-		MyAnt.debugPrint(1, "TARGET COST: " + target.dist);
-		pq.clear();
-		// constructing path
-		knowledge.getCurrRoute().clear();
-		Cell u = target;
-		while (prev.containsKey(u)) {
-			knowledge.getCurrRoute().push(u);
-			u = prev.get(u);
-		}
-
-	}
-
 	public static ArrayList<Cell> findNeighbors(Knowledge knowledge, Cell cell,
 			boolean includeUnexplored, PriorityQueue<Cell> pq) {
 		ArrayList<Cell> list = new ArrayList<Cell>();
@@ -181,20 +79,20 @@ public class MapOps {
 
 			if (pq == null) { // for BFS search
 				if (includeUnexplored
-						&& neighborCell.getType() != Cell.CellType.WALL)
+						&& neighborCell.getType() != Cell.CellType.WATER)
 					list.add(neighborCell);
 				else if (!includeUnexplored
 						&& (neighborCell.getType() != Cell.CellType.UNEXPLORED)
-						&& (neighborCell.getType() != Cell.CellType.WALL))
+						&& (neighborCell.getType() != Cell.CellType.WATER))
 					list.add(neighborCell);
 			} else if (pq != null) { // for Djikstra search
 				if (includeUnexplored
-						&& neighborCell.getType() != Cell.CellType.WALL
+						&& neighborCell.getType() != Cell.CellType.WATER
 						&& pq.contains(neighborCell))
 					list.add(neighborCell);
 				else if (!includeUnexplored
 						&& ((neighborCell.getType() != Cell.CellType.UNEXPLORED) && (neighborCell
-								.getType() != Cell.CellType.WALL))
+								.getType() != Cell.CellType.WATER))
 						&& (pq.contains(neighborCell)))
 					list.add(neighborCell);
 			}
@@ -205,25 +103,6 @@ public class MapOps {
 
 	public static void main(String[] args) {
 
-	}
-
-	public static Direction oppositeDir(Direction dir) {
-		if (dir == null) {
-			MyAnt.debugPrint(2, "Why is Dir  Null");
-		}
-		return Direction.values()[(dir.ordinal() + 2) % 4];
-	}
-
-	public static void printPath(Knowledge knowledge) {
-		Stack<Cell> currRoute = knowledge.getCurrRoute();
-		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
-				+ "): ");
-		Cell old = knowledge.get(knowledge.getLocX(), knowledge.getLocY());
-		for (int i = 0; i < currRoute.size(); i++) {
-			MyAnt.debugPrint(1, old.dirTo(currRoute.get(i)) + " ");
-			old = currRoute.get(i);
-		}
-		MyAnt.debugPrint(1, "");
 	}
 
 }

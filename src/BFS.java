@@ -1,10 +1,8 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 import java.util.Random;
 
 public class BFS extends RoutePlanner {
@@ -43,6 +41,7 @@ public class BFS extends RoutePlanner {
 
 			if ((knowledge.getMode() == Knowledge.Mode.SCOUT)
 					|| (knowledge.getMode() == Knowledge.Mode.EXPLORE))
+				// Collections.sort(neighbors, new CellComparator());
 				Collections.shuffle(neighbors,
 						new Random(System.currentTimeMillis()));
 
@@ -100,7 +99,8 @@ public class BFS extends RoutePlanner {
 
 			if ((knowledge.getMode() == Knowledge.Mode.SCOUT)
 					|| (knowledge.getMode() == Knowledge.Mode.EXPLORE))
-				Collections.shuffle(neighbors, new Random(System.nanoTime()));
+				Collections.sort(neighbors, new CellComparator());
+			// Collections.shuffle(neighbors, new Random(System.nanoTime()));
 
 			for (Cell cell : neighbors) {
 				if (!markSet.contains(cell)) {
@@ -116,6 +116,8 @@ public class BFS extends RoutePlanner {
 
 	@Override
 	public boolean makeRoute(Knowledge knowledge, Cell target) {
+		MyAnt.debugPrint(2, "Error");
+
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		bfs(knowledge, target, prev);
@@ -125,4 +127,5 @@ public class BFS extends RoutePlanner {
 		else
 			return false;
 	}
+
 }

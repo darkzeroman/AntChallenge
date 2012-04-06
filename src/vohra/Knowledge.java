@@ -1,5 +1,7 @@
 package vohra;
 
+
+
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -125,7 +127,7 @@ public class Knowledge implements Serializable {
 			return true;
 
 		} else if (!tile.isTravelable() && tileAmountFood == 0) {
-			cell.setType(Cell.CellType.WALL);
+			cell.setType(Cell.CellType.WATER);
 			return true;
 		}
 
@@ -207,9 +209,9 @@ public class Knowledge implements Serializable {
 				cell.dist = 0;
 			}
 			if (!checkUnexplored && cell.getType() != Cell.CellType.UNEXPLORED
-					&& cell.getType() != Cell.CellType.WALL)
+					&& cell.getType() != Cell.CellType.WATER)
 				pq.add(cell);
-			else if (checkUnexplored && cell.getType() != Cell.CellType.WALL)
+			else if (checkUnexplored && cell.getType() != Cell.CellType.WATER)
 				pq.add(cell);
 		}
 		return pq;

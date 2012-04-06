@@ -1,4 +1,5 @@
 package vohra;
+
 import java.awt.Point;
 import java.io.Serializable;
 
@@ -8,11 +9,14 @@ public class Cell implements Comparable<Cell>, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public enum CellType {
-		FOOD, GRASS, HOME, UNEXPLORED, WALL
+		FOOD, GRASS, HOME, UNEXPLORED, WATER,
 	}
 
 	// used by searches, public because meant to be overwritten
 	public int dist = 0;
+	public int f = 0;
+	public int g = 0;
+	public int h = 0;
 
 	public long timeStamp;
 	private CellType type;
@@ -20,6 +24,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 	private int amountOfFood = 0;
 	int origFood = 0;
 	private int numOfAnts = 0;
+	public long numOfAntsTimeStamp = 0;
 
 	public Cell(CellType tileType, int x, int y) {
 		coord = new Point(x, y);
@@ -69,6 +74,10 @@ public class Cell implements Comparable<Cell>, Serializable {
 		this.coord.y = y;
 	}
 
+	public Point getXY() {
+		return new Point(coord.x, coord.y);
+	}
+
 	public int getX() {
 		return coord.x;
 	}
@@ -81,16 +90,16 @@ public class Cell implements Comparable<Cell>, Serializable {
 		return type;
 	}
 
-	public void setType(CellType tileType) {
-		this.type = tileType;
+	public void setType(CellType type) {
+		this.type = type;
 
 	}
 
 	public String toString() {
-		String temp = "[" + coord.x + "," + coord.y + "], type: " + this.type;
+		String temp = "[" + coord.x + "," + coord.y + "] , type: " + this.type;
 		temp += ", Amount of Food: " + this.amountOfFood + ", NumAnts: "
 				+ this.numOfAnts;
-		return temp;
+		return temp.substring(0, 6).concat(" " + this.f);
 		// cost: " + this.dist + " ";
 	}
 
@@ -104,5 +113,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 
 	public void setNumAnts(int numAnts) {
 		this.numOfAnts = numAnts;
+		this.numOfAntsTimeStamp = System.nanoTime();
+
 	}
 }

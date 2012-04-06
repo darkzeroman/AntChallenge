@@ -1,11 +1,9 @@
 package vohra;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 import java.util.Random;
 
 public class BFS extends RoutePlanner {
@@ -44,6 +42,7 @@ public class BFS extends RoutePlanner {
 
 			if ((knowledge.getMode() == Knowledge.Mode.SCOUT)
 					|| (knowledge.getMode() == Knowledge.Mode.EXPLORE))
+				// Collections.sort(neighbors, new CellComparator());
 				Collections.shuffle(neighbors,
 						new Random(System.currentTimeMillis()));
 
@@ -64,6 +63,7 @@ public class BFS extends RoutePlanner {
 
 		ArrayList<Cell> list = new ArrayList<Cell>();
 		for (int i = 0; i < 4; i++) { // for each cardinal direction
+
 			int xPos = cell.getX() + offsets[i][0];
 			int yPos = cell.getY() + offsets[i][1];
 			// exit if the requested cell is out of bounds
@@ -72,11 +72,11 @@ public class BFS extends RoutePlanner {
 
 			// for BFS search
 			if (includeUnexplored
-					&& neighborCell.getType() != Cell.CellType.WALL)
+					&& neighborCell.getType() != Cell.CellType.WATER)
 				list.add(neighborCell);
 			else if (!includeUnexplored
 					&& (neighborCell.getType() != Cell.CellType.UNEXPLORED)
-					&& (neighborCell.getType() != Cell.CellType.WALL))
+					&& (neighborCell.getType() != Cell.CellType.WATER))
 				list.add(neighborCell);
 		}
 		return list;
@@ -100,8 +100,8 @@ public class BFS extends RoutePlanner {
 
 			if ((knowledge.getMode() == Knowledge.Mode.SCOUT)
 					|| (knowledge.getMode() == Knowledge.Mode.EXPLORE))
-				Collections.shuffle(neighbors,
-						new Random(System.currentTimeMillis()));
+				Collections.sort(neighbors, new CellComparator());
+			// Collections.shuffle(neighbors, new Random(System.nanoTime()));
 
 			for (Cell cell : neighbors) {
 				if (!markSet.contains(cell)) {
@@ -117,6 +117,8 @@ public class BFS extends RoutePlanner {
 
 	@Override
 	public boolean makeRoute(Knowledge knowledge, Cell target) {
+		//MyAnt.debugPrint(2, "Error");
+
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		bfs(knowledge, target, prev);
@@ -126,4 +128,5 @@ public class BFS extends RoutePlanner {
 		else
 			return false;
 	}
+
 }
