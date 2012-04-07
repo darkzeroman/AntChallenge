@@ -1,4 +1,5 @@
 package vohra;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -9,8 +10,8 @@ import java.util.Random;
 public class BFS extends RoutePlanner {
 
 	@Override
-	// public static boolean makeRoute(Knowledge knowledge, Cell.CellType type,
-	public boolean makeRoute(Knowledge knowledge, Cell.CellType type) {
+	// public static boolean makeRoute(Knowledge knowledge, Cell.TYPE type,
+	public boolean makeRoute(Knowledge knowledge, Cell.TYPE type) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = bfs(knowledge, type, prev);
@@ -23,9 +24,9 @@ public class BFS extends RoutePlanner {
 			return false;
 	}
 
-	public Cell bfs(Knowledge knowledge, Cell.CellType goalType,
+	public Cell bfs(Knowledge knowledge, Cell.TYPE goalType,
 			Hashtable<Cell, Cell> prev) {
-		boolean includeUnexplored = (goalType == Cell.CellType.UNEXPLORED);
+		boolean includeUnexplored = (goalType == Cell.TYPE.UNEXPLORED);
 		// BFS Search
 		HashSet<Cell> markSet = new HashSet<Cell>();
 		LinkedList<Cell> queue = new LinkedList<Cell>();
@@ -40,8 +41,8 @@ public class BFS extends RoutePlanner {
 			ArrayList<Cell> neighbors = findNeighbors(knowledge, t,
 					includeUnexplored);
 
-			if ((knowledge.getMode() == Knowledge.Mode.SCOUT)
-					|| (knowledge.getMode() == Knowledge.Mode.EXPLORE))
+			if ((knowledge.mode == Knowledge.MODE.SCOUT)
+					|| (knowledge.mode == Knowledge.MODE.EXPLORE))
 				// Collections.sort(neighbors, new CellComparator());
 				Collections.shuffle(neighbors,
 						new Random(System.currentTimeMillis()));
@@ -71,19 +72,18 @@ public class BFS extends RoutePlanner {
 			Cell neighborCell = knowledge.get(xPos, yPos);
 
 			// for BFS search
-			if (includeUnexplored
-					&& neighborCell.getType() != Cell.CellType.WATER)
+			if (includeUnexplored && neighborCell.getType() != Cell.TYPE.WATER)
 				list.add(neighborCell);
 			else if (!includeUnexplored
-					&& (neighborCell.getType() != Cell.CellType.UNEXPLORED)
-					&& (neighborCell.getType() != Cell.CellType.WATER))
+					&& (neighborCell.getType() != Cell.TYPE.UNEXPLORED)
+					&& (neighborCell.getType() != Cell.TYPE.WATER))
 				list.add(neighborCell);
 		}
 		return list;
 	}
 
 	public Cell bfs(Knowledge knowledge, Cell target, Hashtable<Cell, Cell> prev) {
-		boolean includeUnexplored = (target.getType() == Cell.CellType.UNEXPLORED);
+		boolean includeUnexplored = (target.getType() == Cell.TYPE.UNEXPLORED);
 		// BFS Search
 		HashSet<Cell> markSet = new HashSet<Cell>();
 		LinkedList<Cell> queue = new LinkedList<Cell>();
@@ -98,10 +98,9 @@ public class BFS extends RoutePlanner {
 			ArrayList<Cell> neighbors = findNeighbors(knowledge, t,
 					includeUnexplored);
 
-			if ((knowledge.getMode() == Knowledge.Mode.SCOUT)
-					|| (knowledge.getMode() == Knowledge.Mode.EXPLORE))
-				Collections.sort(neighbors, new CellComparator());
-			// Collections.shuffle(neighbors, new Random(System.nanoTime()));
+			if ((knowledge.mode == Knowledge.MODE.SCOUT)
+					|| (knowledge.mode == Knowledge.MODE.EXPLORE))
+				Collections.shuffle(neighbors, new Random(System.nanoTime()));
 
 			for (Cell cell : neighbors) {
 				if (!markSet.contains(cell)) {
@@ -117,7 +116,7 @@ public class BFS extends RoutePlanner {
 
 	@Override
 	public boolean makeRoute(Knowledge knowledge, Cell target) {
-		//MyAnt.debugPrint(2, "Error");
+		MyAnt.debugPrint(2, "Error");
 
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 

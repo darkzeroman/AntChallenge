@@ -1,3 +1,4 @@
+
 import java.awt.Point;
 import java.io.Serializable;
 
@@ -6,8 +7,8 @@ import ants.Direction;
 public class Cell implements Comparable<Cell>, Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public enum CellType {
-		FOOD, GRASS, HOME, UNEXPLORED, WALL
+	public enum TYPE {
+		FOOD, GRASS, HOME, UNEXPLORED, WATER
 	}
 
 	// used by searches, public because meant to be overwritten
@@ -17,14 +18,14 @@ public class Cell implements Comparable<Cell>, Serializable {
 	public int h = 0;
 
 	public long timeStamp;
-	private CellType type;
+	private TYPE type;
 	private final Point coord;
 	private int amountOfFood = 0;
 	int origFood = 0;
 	private int numOfAnts = 0;
 	public long numOfAntsTimeStamp = 0;
 
-	public Cell(CellType tileType, int x, int y) {
+	public Cell(TYPE tileType, int x, int y) {
 		coord = new Point(x, y);
 		this.setType(tileType);
 		timeStamp = System.nanoTime();
@@ -85,11 +86,11 @@ public class Cell implements Comparable<Cell>, Serializable {
 		return coord.y;
 	}
 
-	public CellType getType() {
+	public TYPE getType() {
 		return type;
 	}
 
-	public void setType(CellType type) {
+	public void setType(TYPE type) {
 		this.type = type;
 
 	}

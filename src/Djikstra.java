@@ -1,11 +1,14 @@
-import java.util.ArrayList;
+
+
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.PriorityQueue;
 
 public class Djikstra extends RoutePlanner {
 
 	@Override
-	public boolean makeRoute(Knowledge knowledge, Cell.CellType type) {
+	public boolean makeRoute(Knowledge knowledge, Cell.TYPE type) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = MapOps.bfs(knowledge, type, prev);
@@ -17,7 +20,7 @@ public class Djikstra extends RoutePlanner {
 	@Override
 	public boolean makeRoute(Knowledge knowledge, Cell target) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
-		printPath(knowledge);
+		// printPath(knowledge);
 		djikstra(knowledge, target, prev);
 		constructPath(knowledge, target, prev);
 		if (knowledge.getCurrRoute().size() > 0)
@@ -29,7 +32,7 @@ public class Djikstra extends RoutePlanner {
 	public void djikstra(Knowledge knowledge, Cell target,
 			Hashtable<Cell, Cell> prev) {
 		boolean includeUnexplored = false;
-		if (target.getType() == Cell.CellType.UNEXPLORED)
+		if (target.getType() == Cell.TYPE.UNEXPLORED)
 			includeUnexplored = true;
 
 		MyAnt.debugPrint(1, "Searching Path:");
@@ -37,12 +40,11 @@ public class Djikstra extends RoutePlanner {
 				knowledge.toString() + " Going to: " + target.getX() + " "
 						+ target.getY());
 
-		if (target.getX() == knowledge.getLocX()
-				&& target.getY() == knowledge.getLocY()) {
+		if (target.getX() == knowledge.x && target.getY() == knowledge.y) {
 			MyAnt.debugPrint(1, "Sitting on top of target");
 			return;
 		}
-		PriorityQueue<Cell> pq = knowledge.beforeSearch(includeUnexplored);
+		PriorityQueue<Cell> pq = knowledge.preSearch(includeUnexplored);
 		MyAnt.debugPrint(1, "PQ: " + pq.size());
 		int count = 0;
 
@@ -57,8 +59,13 @@ public class Djikstra extends RoutePlanner {
 			u = pq.poll();
 			if (u == target) // reached target, can end
 				break;
-			ArrayList<Cell> al = findNeighbors(knowledge, u, includeUnexplored,
-					pq);
+			LinkedList<Cell> al = MapOps.listNeighbors(knowledge, u,
+					includeUnexplored);
+			ListIterator<Cell> it = al.listIterator();
+			while (it.hasNext())
+				if (!pq.contains(it.next()))
+					it.remove();
+			
 			for (Cell cell : al) {
 				int alt = u.dist + 10;
 				if (cell.getNumAnts() > 0) {
@@ -84,30 +91,4 @@ public class Djikstra extends RoutePlanner {
 		constructPath(knowledge, target, prev);
 
 	}
-
-	public ArrayList<Cell> findNeighbors(Knowledge knowledge, Cell cell,
-			boolean includeUnexplored, PriorityQueue<Cell> pq) {
-		ArrayList<Cell> list = new ArrayList<Cell>();
-		for (int i = 0; i < 4; i++) { // for each cardinal direction
-			int xPos = cell.getX() + offsets[i][0];
-			int yPos = cell.getY() + offsets[i][1];
-			// exit if the requested cell is out of bounds
-
-			Cell neighborCell = knowledge.get(xPos, yPos);
-
-			// for Djikstra search
-			if (includeUnexplored
-					&& neighborCell.getType() != Cell.CellType.WALL
-					&& pq.contains(neighborCell))
-				list.add(neighborCell);
-			else if (!includeUnexplored
-					&& ((neighborCell.getType() != Cell.CellType.UNEXPLORED) && (neighborCell
-							.getType() != Cell.CellType.WALL))
-					&& (pq.contains(neighborCell)))
-				list.add(neighborCell);
-
-		}
-		return list;
-	}
-
 }

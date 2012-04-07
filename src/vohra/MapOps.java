@@ -1,13 +1,10 @@
 package vohra;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 import java.util.Random;
-import java.util.Stack;
 
 import ants.Direction;
 
@@ -15,7 +12,7 @@ public class MapOps {
 	static final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 	static Hashtable<Cell, Integer> dist = new Hashtable<Cell, Integer>();
 
-	public static boolean planRoute(Knowledge knowledge, Cell.CellType type,
+	public static boolean planRoute(Knowledge knowledge, Cell.TYPE type,
 			RoutePlanner routePlanner) {
 		return routePlanner.makeRoute(knowledge, type);
 
@@ -24,17 +21,15 @@ public class MapOps {
 	public static boolean planRoute(Knowledge knowledge, Cell target,
 			RoutePlanner routePlanner) {
 		return routePlanner.makeRoute(knowledge, target);
-
 	}
 
 	public static Direction oppositeDir(Direction dir) {
-		if (dir == null) {
+		if (dir == null)
 			MyAnt.debugPrint(2, "Why is Dir  Null");
-		}
 		return Direction.values()[(dir.ordinal() + 2) % 4];
 	}
 
-	public static Cell bfs(Knowledge knowledge, Cell.CellType goalType,
+	public static Cell bfs(Knowledge knowledge, Cell.TYPE goalType,
 			Hashtable<Cell, Cell> prev) {
 		// BFS Search
 		HashSet<Cell> markSet = new HashSet<Cell>();
@@ -47,11 +42,11 @@ public class MapOps {
 			Cell t = queue.remove();
 			if (t.getType() == goalType)
 				return t;
-			ArrayList<Cell> neighbors = findNeighbors(knowledge, t,
-					goalType == Cell.CellType.UNEXPLORED, null);
+			LinkedList<Cell> neighbors = listNeighbors(knowledge, t,
+					goalType == Cell.TYPE.UNEXPLORED);
 
-			if ((knowledge.getMode() == Knowledge.Mode.SCOUT)
-					|| (knowledge.getMode() == Knowledge.Mode.EXPLORE))
+			if ((knowledge.mode == Knowledge.MODE.SCOUT)
+					|| (knowledge.mode == Knowledge.MODE.EXPLORE))
 				Collections.shuffle(neighbors,
 						new Random(System.currentTimeMillis()));
 
@@ -67,42 +62,23 @@ public class MapOps {
 		return null;
 	}
 
-	public static ArrayList<Cell> findNeighbors(Knowledge knowledge, Cell cell,
-			boolean includeUnexplored, PriorityQueue<Cell> pq) {
-		ArrayList<Cell> list = new ArrayList<Cell>();
+	public static LinkedList<Cell> listNeighbors(Knowledge knowledge,
+			Cell cell, boolean includeUnexplored) {
+		LinkedList<Cell> neighborsList = new LinkedList<Cell>();
 		for (int i = 0; i < 4; i++) { // for each cardinal direction
 			int xPos = cell.getX() + offsets[i][0];
 			int yPos = cell.getY() + offsets[i][1];
-			// exit if the requested cell is out of bounds
 
 			Cell neighborCell = knowledge.get(xPos, yPos);
 
-			if (pq == null) { // for BFS search
-				if (includeUnexplored
-						&& neighborCell.getType() != Cell.CellType.WATER)
-					list.add(neighborCell);
-				else if (!includeUnexplored
-						&& (neighborCell.getType() != Cell.CellType.UNEXPLORED)
-						&& (neighborCell.getType() != Cell.CellType.WATER))
-					list.add(neighborCell);
-			} else if (pq != null) { // for Djikstra search
-				if (includeUnexplored
-						&& neighborCell.getType() != Cell.CellType.WATER
-						&& pq.contains(neighborCell))
-					list.add(neighborCell);
-				else if (!includeUnexplored
-						&& ((neighborCell.getType() != Cell.CellType.UNEXPLORED) && (neighborCell
-								.getType() != Cell.CellType.WATER))
-						&& (pq.contains(neighborCell)))
-					list.add(neighborCell);
+			if (neighborCell.getType() != Cell.TYPE.WATER) {
+				if (includeUnexplored)
+					neighborsList.add(neighborCell);
+				else if (neighborCell.getType() != Cell.TYPE.UNEXPLORED)
+					neighborsList.add(neighborCell);
 			}
-
 		}
-		return list;
-	}
-
-	public static void main(String[] args) {
-
+		return neighborsList;
 	}
 
 }

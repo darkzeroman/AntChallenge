@@ -1,18 +1,13 @@
-
-
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-// TODO: Use some kind of custom serializer/deserializer instead of this heavy
-// weight
 class ObjectIO<V> {
 	byte[] toByteArray(V obj) {
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			final ObjectOutputStream oos = new ObjectOutputStream(baos);
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
 			oos.writeObject(obj);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -35,4 +30,5 @@ class ObjectIO<V> {
 		}
 		return t;
 	}
+
 }

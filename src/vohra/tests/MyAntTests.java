@@ -1,7 +1,6 @@
 package vohra.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.PriorityQueue;
@@ -13,16 +12,17 @@ import org.junit.Test;
 import vohra.AStar;
 import vohra.BFS;
 import vohra.Cell;
+import vohra.Cell.TYPE;
 import vohra.Knowledge;
 import vohra.MapOps;
 import vohra.MyAnt;
-import vohra.Cell.CellType;
 import ants.Action;
 import ants.Direction;
 import ants.Surroundings;
 import ants.Tile;
 
 public class MyAntTests {
+
 	MyAnt ant = new MyAnt();
 
 	PriorityQueue<Cell> pq;
@@ -35,7 +35,7 @@ public class MyAntTests {
 	public void testUpdatingMap() {
 		testSurroundings tS = new testSurroundings();
 		Knowledge knowledge = new Knowledge(1);
-		knowledge.updateMap(tS, ant.getLocX(), ant.getLocY());
+		knowledge.updateMap(tS);
 		// printMap();
 
 		assertEquals(1, 1);
@@ -46,7 +46,7 @@ public class MyAntTests {
 		testUpdatingMap();
 		Knowledge knowledge = new Knowledge(1);
 		knowledge.get(0, 1);
-		pq = knowledge.beforeSearch(true);
+		pq = knowledge.preSearch(true);
 		// System.out.println("pq size: " + pq.size());
 		assertEquals(knowledge.get(0, 0).dist, 0);
 		assertEquals(knowledge.get(0, 1).dist, Integer.MAX_VALUE);
@@ -59,37 +59,46 @@ public class MyAntTests {
 	public void testSearch() {
 		testReadyMap();
 
-		ant.setXY(0, 0);
-
+		ant.knowledge.x = 0;
+		ant.knowledge.y = 0;
 		// printMap();
 		MapOps.planRoute(ant.knowledge, ant.getCell(0, 1), new BFS());
-		assertEquals(Direction.NORTH, ant.nextRouteDir());
+		assertEquals(Direction.NORTH, nextRouteDir(ant.knowledge));
 
 		MapOps.planRoute(ant.knowledge, ant.getCell(1, 0), new BFS());
-		assertEquals(ant.nextRouteDir(), Direction.EAST);
+		assertEquals(nextRouteDir(ant.knowledge), Direction.EAST);
 
 		MapOps.planRoute(ant.knowledge, ant.getCell(0, -1), new BFS());
-		assertEquals(ant.nextRouteDir(), Direction.SOUTH);
+		assertEquals(nextRouteDir(ant.knowledge), Direction.SOUTH);
 
 		MapOps.planRoute(ant.knowledge, ant.getCell(-1, 0), new BFS());
-		assertEquals(ant.nextRouteDir(), Direction.WEST);
+		assertEquals(nextRouteDir(ant.knowledge), Direction.WEST);
 
-		ant.setXY(0, 1);
+		ant.knowledge.setXY(0, 1);
 		MapOps.planRoute(ant.knowledge, ant.getCell(2, 1), new BFS());
-		assertEquals(ant.nextRouteDir(), Direction.EAST);
+		assertEquals(nextRouteDir(ant.knowledge), Direction.EAST);
 
-		ant.setXY(1, 1);
+		ant.knowledge.setXY(1, 1);
 		MapOps.planRoute(ant.knowledge, ant.getCell(2, 1), new BFS());
-		assertEquals(ant.nextRouteDir(), Direction.EAST);
+		assertEquals(nextRouteDir(ant.knowledge), Direction.EAST);
 
 		// fail("Not yet implemented");
+	}
+
+	private Direction nextRouteDir(Knowledge knowledge) {
+		if (knowledge.getCurrRoute().size() > 0) {
+			Cell from = knowledge.getCurrCell();
+			Cell to = knowledge.getCurrRoute().pop();
+			return from.dirTo(to);
+		}
+		return null;
 	}
 
 	@Test
 	public void testClosestUnexplored() {
 		testReadyMap();
 		ant = new MyAnt();
-		ant.setXY(0, 0);
+		ant.knowledge.setXY(0, 0);
 		// printMap();
 
 		// U W U W U
@@ -104,12 +113,12 @@ public class MyAntTests {
 		int[][] grass = new int[][] { { 0, 0 }, { 0, 1 }, { 0, 2 }, { 0, 3 }, };
 
 		for (int[] arr : walls)
-			ant.getCell(arr[0], arr[1]).setType(Cell.CellType.WATER);
+			ant.getCell(arr[0], arr[1]).setType(Cell.TYPE.WATER);
 		for (int[] arr : grass)
-			ant.getCell(arr[0], arr[1]).setType(Cell.CellType.GRASS);
+			ant.getCell(arr[0], arr[1]).setType(Cell.TYPE.GRASS);
 
-		MapOps.planRoute(ant.knowledge, Cell.CellType.UNEXPLORED, new BFS());
-		assertEquals(Direction.NORTH, ant.nextRouteDir());
+		MapOps.planRoute(ant.knowledge, Cell.TYPE.UNEXPLORED, new BFS());
+		assertEquals(Direction.NORTH, nextRouteDir(ant.knowledge));
 	}
 
 	public static Direction dir(Action action) {
@@ -120,14 +129,14 @@ public class MyAntTests {
 	public void testClosestFood() {
 		testReadyMap();
 
-		ant.setXY(1, 1);
+		ant.knowledge.setXY(1, 1);
 		ant.getCell(0, 1).setAmountOfFood(100);
-		ant.getCell(0, 1).setType(Cell.CellType.FOOD);
+		ant.getCell(0, 1).setType(Cell.TYPE.FOOD);
 		ant.getCell(1, 1).setAmountOfFood(100);
 
 		// printMap();
-		ant.foundFood("error");
-		// assertEquals(Direction.WEST, ant.nextRouteDir());
+		ant.canFindFood();
+		// assertEquals(Direction.WEST, nextRouteDir(ant.knowledge);
 		assertTrue(true);
 	}
 
@@ -137,89 +146,48 @@ public class MyAntTests {
 	}
 
 	@Test
-	public void testMapMerge() {
-		Knowledge map1 = new Knowledge(1);
-		Knowledge map2 = new Knowledge(2);
-
-		assertEquals(map1.numKnownCells(), 1);
-		assertEquals(map2.numKnownCells(), 1);
-
-		assertTrue(map1.isUpdated());
-		map1.setUpdated(false);
-		assertFalse(map1.isUpdated());
-
-		map1.merge(map2);
-		assertTrue(map1.isUpdated());
-		assertEquals(map1.numKnownCells(), 1);
-		assertEquals(map2.numKnownCells(), 1);
-
-		map2.set(new Cell(Cell.CellType.GRASS, 0, 1));
-		map1.merge(map2);
-		assertTrue(map1.isUpdated());
-		assertEquals(map1.numKnownCells(), 2);
-		assertEquals(map2.numKnownCells(), 2);
-
-		map1.setUpdated(false);
-		map1.merge(map2);
-		assertFalse(map1.isUpdated());
-
-		map2.set(new Cell(Cell.CellType.FOOD, 2, 2));
-		map1.merge(map2);
-		assertEquals(map1.numKnownCells(), 3);
-		assertEquals(map2.numKnownCells(), 3);
-		assertTrue(map1.isUpdated());
-
-		map1.setUpdated(false);
-		map1.merge(map2);
-		assertFalse(map1.isUpdated());
-
-		map1.updateMap(new testSurroundings(), 0, 0);
-		assertEquals(map1.numKnownCells(), 6);
-
-	}
-
-	@Test
 	public void testReturnPath() {
 
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++) {
-				ant.getCell(i, j).setType(Cell.CellType.GRASS);
+				ant.getCell(i, j).setType(Cell.TYPE.GRASS);
 			}
+		ant.getCell(2, 2).setType(Cell.TYPE.FOOD);
 
-		ant.setXY(0, 0);
+		ant.knowledge.setXY(0, 0);
 
-		MapOps.planRoute(ant.knowledge, ant.getCell(2, 1), new BFS());
-		// assertEquals(Direction.NORTH, ant.nextRouteDir());
+		MapOps.planRoute(ant.knowledge, Cell.TYPE.FOOD, new BFS());
+		this.printPath(ant.knowledge);
+		// assertEquals(Direction.NORTH, nextRouteDir(ant.knowledge);
 
 		// ant.getCell(1, 0).setNumAnts(2);
-		ant.getCell(1, 1).setNumAnts(2);
 		// ant.getCell(2, 1).setNumAnts(2);
 		// ant.getCell(0, 1).setNumAnts(2);
 
 		// ant.getCell(1, 2).setNumAnts(2);
-		ant.setXY(2, 1);
-		MapOps.planRoute(ant.knowledge, ant.getCell(0, 0), new BFS());
-		// assertEquals(Direction.WEST, ant.nextRouteDir());
+		ant.knowledge.setXY(2, 1);
+		// MapOps.planRoute(ant.knowledge, ant.getCell(0, 0), new Djikstra());
+		// assertEquals(Direction.WEST, nextRouteDir(ant.knowledge);
 	}
 
 	@Test
 	public void testAStar() {
 		testReadyMap();
 
-		ant.setXY(0, 0);
+		ant.knowledge.setXY(0, 0);
 
 		// printMap();
 		MapOps.planRoute(ant.knowledge, ant.getCell(1, 0), new AStar());
-		assertEquals(Direction.EAST, ant.nextRouteDir());
+		assertEquals(Direction.EAST, nextRouteDir(ant.knowledge));
 
 		MapOps.planRoute(ant.knowledge, ant.getCell(0, 1), new AStar());
-		assertEquals(Direction.NORTH, ant.nextRouteDir());
+		assertEquals(Direction.NORTH, nextRouteDir(ant.knowledge));
 
 		MapOps.planRoute(ant.knowledge, ant.getCell(0, -1), new AStar());
-		assertEquals(Direction.SOUTH, ant.nextRouteDir());
+		assertEquals(Direction.SOUTH, nextRouteDir(ant.knowledge));
 
 		MapOps.planRoute(ant.knowledge, ant.getCell(-1, 0), new AStar());
-		assertEquals(Direction.WEST, ant.nextRouteDir());
+		assertEquals(Direction.WEST, nextRouteDir(ant.knowledge));
 
 	}
 
@@ -229,30 +197,30 @@ public class MyAntTests {
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++) {
 				Cell cell = ant.knowledge.get(i, j);
-				cell.setType(CellType.GRASS);
+				cell.setType(TYPE.GRASS);
 
 			}
 
 		ant.knowledge.getCurrRoute().clear();
-		ant.setXY(0, 0);
-		//ant.getCell(1, 0).setNumAnts(100);
+		ant.knowledge.setXY(0, 0);
+		// ant.getCell(1, 0).setNumAnts(100);
 		// ant.getCell(2, 0).setNumAnts(100);
 
 		// ant.getCell(2, 2).setNumAnts(100);
 
-		MapOps.planRoute(ant.knowledge, ant.getCell(2 ,2), new AStar());
+		MapOps.planRoute(ant.knowledge, ant.getCell(2, 2), new AStar());
 		printPath(ant.knowledge);
-		assertEquals(Direction.EAST, ant.nextRouteDir());
-		assertEquals(Direction.EAST, ant.nextRouteDir());
-		assertEquals(Direction.EAST, ant.nextRouteDir());
-//		ant.setXY(4, 0);
-//		assertEquals(Direction.NORTH, ant.nextRouteDir());
-//		assertEquals(Direction.NORTH, ant.nextRouteDir());
-//		assertEquals(Direction.NORTH, ant.nextRouteDir());
-//
-//		ant.setXY(4, 4);
-//		//MapOps.planRoute(ant.knowledge, ant.getCell(0, 0), new AStar());
-//		printPath(ant.knowledge);
+		assertEquals(Direction.EAST, nextRouteDir(ant.knowledge));
+		assertEquals(Direction.EAST, nextRouteDir(ant.knowledge));
+		assertEquals(Direction.EAST, nextRouteDir(ant.knowledge));
+		// ant.setXY(4, 0);
+		// assertEquals(Direction.NORTH, nextRouteDir(ant.knowledge);
+		// assertEquals(Direction.NORTH, nextRouteDir(ant.knowledge);
+		// assertEquals(Direction.NORTH, nextRouteDir(ant.knowledge);
+		//
+		// ant.setXY(4, 4);
+		// //MapOps.planRoute(ant.knowledge, ant.getCell(0, 0), new AStar());
+		// printPath(ant.knowledge);
 
 	}
 
@@ -262,22 +230,22 @@ public class MyAntTests {
 		for (int i = 0; i < 4; i++)
 			for (int j = 0; j < 4; j++) {
 				Cell cell = ant.knowledge.get(i, j);
-				cell.setType(CellType.GRASS);
+				cell.setType(TYPE.GRASS);
 			}
 
 		ant.knowledge.getCurrRoute().clear();
-		ant.setXY(0, 0);
+		ant.knowledge.setXY(0, 0);
 
-		ant.getCell(0, 2).setType(Cell.CellType.WATER);
-		ant.getCell(0, 3).setType(Cell.CellType.WATER);
-		ant.getCell(0, 4).setType(Cell.CellType.WATER);
+		ant.getCell(0, 2).setType(Cell.TYPE.WATER);
+		ant.getCell(0, 3).setType(Cell.TYPE.WATER);
+		ant.getCell(0, 4).setType(Cell.TYPE.WATER);
 		// ant.getCell(2, 0).setNumAnts(10);
 		for (int i = 0; i < 10; i++) {
 			MapOps.planRoute(ant.knowledge, ant.getCell(3, 3), new AStar());
 			printPath(ant.knowledge);
 
 		}
-		ant.setXY(3, 4);
+		ant.knowledge.setXY(3, 4);
 
 		MapOps.planRoute(ant.knowledge, ant.getCell(0, 0), new AStar());
 
@@ -288,16 +256,16 @@ public class MyAntTests {
 		ant = new MyAnt();
 		for (int i = 0; i < 5; i++)
 			for (int j = 0; j < 5; j++) {
-				ant.knowledge.set(new Cell(CellType.GRASS, i, j));
-				
+				ant.knowledge.set(new Cell(TYPE.GRASS, i, j));
+
 			}
 
 		ant.knowledge.getCurrRoute().clear();
-		ant.setXY(3, 3);
+		ant.knowledge.setXY(3, 3);
 
-		// ant.getCell(2, 0).setType(Cell.CellType.WATER);
-		// ant.getCell(1, 0).setType(Cell.CellType.WATER);
-		// ant.getCell(1, 1).setType(Cell.CellType.WATER);
+		// ant.getCell(2, 0).setType(Cell.TYPE.WATER);
+		// ant.getCell(1, 0).setType(Cell.TYPE.WATER);
+		// ant.getCell(1, 1).setType(Cell.TYPE.WATER);
 
 		// ant.getCell(2, 0).setNumAnts(10);
 		for (int i = 0; i < 1; i++) {
@@ -315,7 +283,7 @@ public class MyAntTests {
 					.pop());
 
 		}
-		ant.setXY(0, 0);
+		ant.knowledge.setXY(0, 0);
 
 		MapOps.planRoute(ant.knowledge, ant.getCell(2, 3), new AStar());
 		// printPath(ant.knowledge);
@@ -326,7 +294,7 @@ public class MyAntTests {
 		Stack<Cell> currRoute = knowledge.getCurrRoute();
 		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
 				+ "): ");
-		Cell old = knowledge.get(knowledge.getLocX(), knowledge.getLocY());
+		Cell old = knowledge.get(knowledge.x, knowledge.y);
 		for (int i = currRoute.size() - 1; i >= 0; i--) {
 			MyAnt.debugPrint(1, old.dirTo(currRoute.get(i)) + " ");
 			old = currRoute.get(i);

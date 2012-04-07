@@ -1,3 +1,5 @@
+
+
 /**
  * 
  */
@@ -13,7 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
-import vohra.Cell.CellType;
+import vohra.Cell.TYPE;
 
 /**
  * @author dkz
@@ -24,10 +26,10 @@ public class AStar extends RoutePlanner {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see vohra.RoutePlanner#makeRoute(vohra.Knowledge, vohra.Cell.CellType)
+	 * @see vohra.RoutePlanner#makeRoute(vohra.Knowledge, vohra.Cell.TYPE)
 	 */
 	@Override
-	public boolean makeRoute(Knowledge knowledge, Cell.CellType type) {
+	public boolean makeRoute(Knowledge knowledge, Cell.TYPE type) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = MapOps.bfs(knowledge, type, prev);
@@ -69,7 +71,7 @@ public class AStar extends RoutePlanner {
 		HashSet<Cell> closedSet = new HashSet<Cell>();
 		LinkedList<Cell> openSet = new LinkedList<Cell>();
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
-		knowledge.beforeSearch(false);
+		knowledge.preSearch(false);
 		Cell start = knowledge.getCurrCell();
 		openSet.add(start);
 
@@ -87,8 +89,8 @@ public class AStar extends RoutePlanner {
 				return true;
 			}
 			closedSet.add(currCell);
-			ArrayList<Cell> al = MapOps.findNeighbors(knowledge, currCell,
-					target.getType() == Cell.CellType.UNEXPLORED, null);
+			LinkedList<Cell> al = MapOps.listNeighbors(knowledge, currCell,
+					target.getType() == Cell.TYPE.UNEXPLORED);
 			Collections.shuffle(al);
 			for (Cell neighbor : al) {
 				if (closedSet.contains(neighbor))
@@ -139,8 +141,8 @@ public class AStar extends RoutePlanner {
 			System.out.println(currNode.cell);
 			closedSet.add(currNode.cell);
 
-			ArrayList<Cell> al = MapOps.findNeighbors(knowledge, currNode.cell,
-					target.getType() == Cell.CellType.UNEXPLORED, null);
+			LinkedList<Cell> al = MapOps.listNeighbors(knowledge, currNode.cell,
+					target.getType() == Cell.TYPE.UNEXPLORED);
 
 			for (Cell neighborCell : al) {
 				if (closedSet.contains(neighborCell))
