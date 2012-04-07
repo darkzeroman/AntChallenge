@@ -223,7 +223,7 @@ public class MyAnt implements Ant {
 					debugPrint(3, "currSize: "
 							+ knowledge.getCurrRoute().size() + ", back: "
 							+ knowledge.backHomeRoute.size());
-					
+
 					printPath(knowledge.getCurrRoute());
 					printPath(knowledge.backHomeRoute);
 
@@ -232,12 +232,13 @@ public class MyAnt implements Ant {
 						switchRoutes();
 
 						debugPrint(3, "switching routes");
+						waitForReturn();
+
 
 					}
 				}
 
 			}
-			//waitForReturn();
 
 			return nextRouteAction();
 
@@ -401,7 +402,10 @@ public class MyAnt implements Ant {
 	public boolean foundFood(String error) {
 		boolean retValue = MapOps.planRoute(knowledge, Cell.CellType.FOOD,
 				new Djikstra());
-		this.prepareBackHomeRoute();
+		if (knowledge.mode == Knowledge.Mode.TOFOOD)
+			this.prepareBackHomeRoute();
+		else
+			knowledge.backHomeRoute.clear();
 		return retValue;
 	}
 
