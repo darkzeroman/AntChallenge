@@ -69,10 +69,11 @@ public class MyAnt implements Ant {
 
 		// Special Actions here
 
-		if (knowledge.antnum < 3)
-			knowledge.isScout = true;
+		// if (knowledge.antnum < 2)
+		// knowledge.isScout = true;
 		if (knowledge.antnum == 4)
-			;// return Action.HALT;
+			;
+		// return Action.HALT;
 
 		debugPrint(1, "Starting in Mode: " + knowledge.mode);
 
@@ -148,7 +149,6 @@ public class MyAnt implements Ant {
 		// if ant already has a goal, keep going
 		if ((action = nextRouteAction()) != null) {
 			// knowledge.getCurrRoute().clear();
-			foundFood("Food");
 			return action;
 
 		} else if (!isAtHome() && currCellFood > 0 && !knowledge.carryingFood) {
@@ -162,6 +162,7 @@ public class MyAnt implements Ant {
 			// don't have a plan, so make one
 			return nextRouteAction();
 		}
+
 		debugPrint(1, "Can't find food, going to explore");
 		// order, hasFood, isScout, lastDir, mode, round,
 
@@ -201,20 +202,35 @@ public class MyAnt implements Ant {
 		if (isAtHome()) { // at home
 			knowledge.carryingFood = false;
 			knowledge.mode = Knowledge.Mode.TOFOOD;
-			if (knowledge.isScout && knowledge.numKnownCells() < 20 * 20 * .75) {
+			if (knowledge.isScout && knowledge.getTotalFoodFound() < 650) {
 				// && knowledge.getTotalFoodFound() < 650) {
 				debugPrint(1, "Resetting Countdown");
-				scoutSearchLimit = 35;
+				scoutSearchLimit = 25;
 				knowledge.mode = Knowledge.Mode.SCOUT;
 			}
 			return changeModeAndAction(knowledge.mode, Action.DROP_OFF);
-
 		}
+
 		// continue with path
+
 		debugPrint(1, "continuing with home path");
 		if ((action = nextRouteAction()) != null)
 			return action;
 		else if (foundHome("TOHOME")) {
+			if (knowledge.backHomeRoute.size() > 0
+					&& knowledge.backHomeRoute.firstElement().getType() == Cell.CellType.HOME) {
+				debugPrint(1, "we have a path home");
+
+				if (knowledge.getCurrRoute().size() == knowledge.backHomeRoute
+						.size()) {
+					switchRoutes();
+					debugPrint(1, "switching routes");
+					waitForReturn();
+
+				}
+
+			}
+
 			return nextRouteAction();
 
 		} else
@@ -249,6 +265,23 @@ public class MyAnt implements Ant {
 		getCurrRoute().clear();
 		knowledge.mode = mode;
 		return action;
+	}
+
+	public void prepareBackHomeRoute() {
+		knowledge.backHomeRoute.push(knowledge.get(0, 0));
+		for (int i = knowledge.getCurrRoute().size() - 1; i >= 0; i--) {
+			knowledge.backHomeRoute.push(knowledge.getCurrRoute().get(i));
+		}
+		knowledge.backHomeRoute.pop();
+	}
+
+	public void switchRoutes() {
+		knowledge.getCurrRoute().clear();
+		for (int i = knowledge.backHomeRoute.size() - 1; i >= 0; i--) {
+			knowledge.getCurrRoute().push(knowledge.backHomeRoute.get(i));
+		}
+		knowledge.backHomeRoute.clear();
+		int x = 5;
 	}
 
 	private String actionString(Action action) {
@@ -346,17 +379,23 @@ public class MyAnt implements Ant {
 	}
 
 	public boolean foundFood(String error) {
-		return MapOps.planRoute(knowledge, Cell.CellType.FOOD, new AStar());
+		boolean retValue = MapOps.planRoute(knowledge, Cell.CellType.FOOD,
+				new Djikstra());
+		for (int i = knowledge.getCurrRoute().size() - 1; i >= 0; i--) {
+			knowledge.backHomeRoute.push(knowledge.getCurrRoute().get(i));
+		}
+		return retValue;
 	}
 
 	public boolean foundUnexplored(String error) {
-		return MapOps.planRoute(knowledge, Cell.CellType.UNEXPLORED, new AStar());
+		return MapOps.planRoute(knowledge, Cell.CellType.UNEXPLORED,
+				new Djikstra());
 
 		// return MapOps.newMakeRoute(this, Cell.CellType.UNEXPLORED, error);
 	}
 
 	public boolean foundHome(String error) {
-		return MapOps.planRoute(knowledge, Cell.CellType.HOME, new AStar());
+		return MapOps.planRoute(knowledge, Cell.CellType.HOME, new Djikstra());
 		// return MapOps.newMakeRoute(this, Cell.CellType.HOME, error);
 	}
 

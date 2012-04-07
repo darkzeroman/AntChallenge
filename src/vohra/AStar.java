@@ -40,27 +40,28 @@ public class AStar extends RoutePlanner {
 	}
 
 	public int h(Cell from, Cell to, Cell before, Hashtable<Cell, Cell> prev) {
-		if ((from.getX() == 3) && (from.getY() == 0))
-			System.out.println();
+		
 		int h = Math.abs(from.getX() - to.getX())
 				+ Math.abs((from.getY() - to.getY()));
+	
 		if (from.getNumAnts() > 0
 				&& (System.nanoTime() - from.numOfAntsTimeStamp) < 3 * Math
 						.pow(10, 9))
 			h += 0;
 		else
-			h += 10;
+			h += 0;
 
 		if (before != null) {
 			Cell beforebefore;
 			if ((beforebefore = prev.get(before)) != null) {
 				if (beforebefore.dirTo(before) == before.dirTo(from)) {
-					h -= 5;
+					h = 0;
 				} else
-					h += 10;
+					h += 2; // not the same direction
 			} else
-				h += 5;
-		}
+				h += 2; // no befrebefore
+		} else
+			; // no before
 		return h;
 
 	}
@@ -89,35 +90,75 @@ public class AStar extends RoutePlanner {
 			if (currCell == target) {
 				// printPathlol(prev, target);
 				constructPath(knowledge, target, prev);
-
 				return true;
 			}
 			closedSet.add(currCell);
 			ArrayList<Cell> al = MapOps.findNeighbors(knowledge, currCell,
-					target.getType() == Cell.CellType.UNEXPLORED, null);
+					false, null);
 			Collections.shuffle(al);
 			for (Cell neighbor : al) {
 				if (closedSet.contains(neighbor))
 					continue;
-				int tentative_g_score = currCell.f;
-				boolean tentative_is_better = false;
 				if (!openSet.contains(neighbor)) {
 					openSet.add(neighbor);
-					neighbor.h = this.h(neighbor, target, currCell, prev);
-					tentative_is_better = true;
-				} else if (tentative_g_score < neighbor.g)
-					tentative_is_better = true;
-				else
-					tentative_is_better = false;
-				if (tentative_is_better) {
 					prev.put(neighbor, currCell);
-					neighbor.g = tentative_g_score;
+					neighbor.g = currCell.g + 100;
+					neighbor.h = this.h(neighbor, target, currCell, prev);
+					neighbor.f = neighbor.g + neighbor.h;
+
+				} else if (currCell.g + 100 < neighbor.g) {
+					prev.put(neighbor, currCell);
+					neighbor.g = currCell.g + 100;
 					neighbor.f = neighbor.g + neighbor.h;
 				}
 
 			}
 			// printPathlol(prev, currCell);
+		}
+		return false;
+	}
 
+	public boolean try2(Knowledge knowledge, Cell target) {
+		HashSet<Cell> closedSet = new HashSet<Cell>();
+		LinkedList<Cell> openSet = new LinkedList<Cell>();
+		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
+
+		Cell start = knowledge.getCurrCell();
+		openSet.add(start);
+
+		start.g = 0;
+		start.h = this.h(start, target, null, prev);
+		start.f = start.g + start.h;
+		while (!openSet.isEmpty()) {
+			Collections.sort(openSet, new Comp());
+
+			Cell currCell = openSet.poll();
+			if (currCell == target) {
+				// printPathlol(prev, target);
+				constructPath(knowledge, target, prev);
+				return true;
+			}
+			closedSet.add(currCell);
+			ArrayList<Cell> al = MapOps.findNeighbors(knowledge, currCell,
+					false, null);
+			Collections.shuffle(al);
+			for (Cell neighbor : al) {
+				if (closedSet.contains(neighbor))
+					continue;
+				if (!openSet.contains(neighbor)) {
+					openSet.add(neighbor);
+					prev.put(neighbor, currCell);
+					neighbor.g = currCell.f;
+					neighbor.h = this.h(neighbor, target, currCell, prev);
+
+				} else if (currCell.g < neighbor.g) {
+					prev.put(neighbor, currCell);
+					neighbor.g = currCell.f;
+					neighbor.f = neighbor.g + neighbor.h;
+				}
+
+			}
+			// printPathlol(prev, currCell);
 		}
 		return false;
 	}

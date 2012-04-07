@@ -1,5 +1,3 @@
-
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.PriorityQueue;
@@ -62,10 +60,11 @@ public class Djikstra extends RoutePlanner {
 			ArrayList<Cell> al = findNeighbors(knowledge, u, includeUnexplored,
 					pq);
 			for (Cell cell : al) {
-				int alt = u.dist + 2;
+				int alt = u.dist + 10;
 				if (cell.getNumAnts() > 0) {
 					MyAnt.debugPrint(1, "has ants!");
-					alt--;
+					alt = u.dist + 1;
+					;
 				}
 
 				if (alt < cell.dist) {

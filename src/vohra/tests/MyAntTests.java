@@ -226,8 +226,8 @@ public class MyAntTests {
 	@Test
 	public void testAStarWithAnts() {
 		ant = new MyAnt();
-		for (int i = 0; i < 5; i++)
-			for (int j = 0; j < 5; j++) {
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 3; j++) {
 				Cell cell = ant.knowledge.get(i, j);
 				cell.setType(CellType.GRASS);
 
@@ -235,34 +235,32 @@ public class MyAntTests {
 
 		ant.knowledge.getCurrRoute().clear();
 		ant.setXY(0, 0);
-		ant.getCell(1, 0).setNumAnts(100);
+		//ant.getCell(1, 0).setNumAnts(100);
 		// ant.getCell(2, 0).setNumAnts(100);
 
 		// ant.getCell(2, 2).setNumAnts(100);
 
-		MapOps.planRoute(ant.knowledge, ant.getCell(4, 4), new AStar());
+		MapOps.planRoute(ant.knowledge, ant.getCell(2 ,2), new AStar());
 		printPath(ant.knowledge);
 		assertEquals(Direction.EAST, ant.nextRouteDir());
 		assertEquals(Direction.EAST, ant.nextRouteDir());
 		assertEquals(Direction.EAST, ant.nextRouteDir());
-		assertEquals(Direction.EAST, ant.nextRouteDir());
-		ant.setXY(4, 0);
-		assertEquals(Direction.NORTH, ant.nextRouteDir());
-		assertEquals(Direction.NORTH, ant.nextRouteDir());
-		assertEquals(Direction.NORTH, ant.nextRouteDir());
-		assertEquals(Direction.NORTH, ant.nextRouteDir());
-
-		ant.setXY(4, 4);
-		MapOps.planRoute(ant.knowledge, ant.getCell(0, 0), new AStar());
-		printPath(ant.knowledge);
+//		ant.setXY(4, 0);
+//		assertEquals(Direction.NORTH, ant.nextRouteDir());
+//		assertEquals(Direction.NORTH, ant.nextRouteDir());
+//		assertEquals(Direction.NORTH, ant.nextRouteDir());
+//
+//		ant.setXY(4, 4);
+//		//MapOps.planRoute(ant.knowledge, ant.getCell(0, 0), new AStar());
+//		printPath(ant.knowledge);
 
 	}
 
 	@Test
 	public void testAStarWithAnts2() {
 		ant = new MyAnt();
-		for (int i = 0; i < 5; i++)
-			for (int j = 0; j < 5; j++) {
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 4; j++) {
 				Cell cell = ant.knowledge.get(i, j);
 				cell.setType(CellType.GRASS);
 			}
@@ -275,7 +273,7 @@ public class MyAntTests {
 		ant.getCell(0, 4).setType(Cell.CellType.WATER);
 		// ant.getCell(2, 0).setNumAnts(10);
 		for (int i = 0; i < 10; i++) {
-			MapOps.planRoute(ant.knowledge, ant.getCell(3, 4), new AStar());
+			MapOps.planRoute(ant.knowledge, ant.getCell(3, 3), new AStar());
 			printPath(ant.knowledge);
 
 		}
@@ -290,14 +288,16 @@ public class MyAntTests {
 		ant = new MyAnt();
 		for (int i = 0; i < 5; i++)
 			for (int j = 0; j < 5; j++) {
-				Cell cell = ant.knowledge.get(i, j);
-				cell.setType(CellType.GRASS);
+				ant.knowledge.set(new Cell(CellType.GRASS, i, j));
+				
 			}
 
 		ant.knowledge.getCurrRoute().clear();
-		ant.setXY(2, 3);
+		ant.setXY(3, 3);
 
-		ant.getCell(2, 0).setType(Cell.CellType.WATER);
+		// ant.getCell(2, 0).setType(Cell.CellType.WATER);
+		// ant.getCell(1, 0).setType(Cell.CellType.WATER);
+		// ant.getCell(1, 1).setType(Cell.CellType.WATER);
 
 		// ant.getCell(2, 0).setNumAnts(10);
 		for (int i = 0; i < 1; i++) {

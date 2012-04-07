@@ -47,7 +47,7 @@ public class AStar extends RoutePlanner {
 						.pow(10, 9))
 			h += 0;
 		else
-			h += 0;
+			h += 5;
 
 		Cell beforebefore;
 		if (before != null && (beforebefore = prev.get(before)) != null
@@ -69,7 +69,7 @@ public class AStar extends RoutePlanner {
 		HashSet<Cell> closedSet = new HashSet<Cell>();
 		LinkedList<Cell> openSet = new LinkedList<Cell>();
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
-
+		knowledge.beforeSearch(false);
 		Cell start = knowledge.getCurrCell();
 		openSet.add(start);
 

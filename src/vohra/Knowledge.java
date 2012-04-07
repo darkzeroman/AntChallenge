@@ -1,7 +1,5 @@
 package vohra;
 
-
-
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -28,6 +26,8 @@ public class Knowledge implements Serializable {
 	private boolean updated = true;
 	public Mode mode;
 	private final Stack<Cell> currRoute;
+	public Stack<Cell> backHomeRoute;
+
 	boolean carryingFood = false;
 	boolean isScout = false;
 	int round;
@@ -47,6 +47,8 @@ public class Knowledge implements Serializable {
 		this.antnum = antnum;
 		this.map = new Hashtable<Point, Cell>();
 		currRoute = new Stack<Cell>();
+		backHomeRoute = new Stack<Cell>();
+
 		currLoc = new Point(0, 0);
 		get(0, 0).setType(Cell.CellType.HOME);
 		mode = Mode.EXPLORE;
@@ -172,7 +174,7 @@ public class Knowledge implements Serializable {
 
 	public void set(Cell cell) {
 		map.put(new Point(cell.getX(), cell.getY()), cell);
-		
+
 	}
 
 	public void setCurrLoc(Point currLoc) {

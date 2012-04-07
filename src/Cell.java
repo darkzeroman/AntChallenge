@@ -33,6 +33,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 	public void presearch() {
 		// used by BFS/Djikstra
 		this.dist = Integer.MAX_VALUE;
+		this.f = this.g = this.h = 0;
 
 	}
 
