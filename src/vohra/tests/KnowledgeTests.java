@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Stack;
+import java.util.PriorityQueue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,18 +14,31 @@ import org.junit.Test;
 import vohra.Cell;
 import vohra.CellComparator;
 import vohra.Knowledge;
-import vohra.MyAnt;
+import ants.Direction;
+import ants.Surroundings;
+import ants.Tile;
 
 public class KnowledgeTests {
 
-	@Before
-	public void setUp() throws Exception {
-		ArrayList<Cell> test = new ArrayList<Cell>();
-		test.add(new Cell(Cell.TYPE.GRASS, 1, 1));
-		test.add(new Cell(Cell.TYPE.FOOD, 4, 4));
+	@Test
+	public void testReadyMap() {
+		PriorityQueue<Cell> pq;
 
-		Collections.sort(test, new CellComparator());
-		System.out.println(test.get(0));
+		Knowledge knowledge = new Knowledge(1);
+		knowledge.get(0, 1);
+		pq = knowledge.preSearch(true);
+		assertEquals(0, knowledge.get(0, 0).dist);
+		assertEquals(Integer.MAX_VALUE, knowledge.get(0, 1).dist);
+
+		assertEquals(2, pq.size());
+	}
+
+	@Test
+	public void testUpdatingMap() {
+		testSurroundings tS = new testSurroundings();
+		Knowledge knowledge = new Knowledge(1);
+		knowledge.updateMap(tS);
+		assertEquals(5, knowledge.numKnownCells());
 	}
 
 	@Test
@@ -67,23 +80,52 @@ public class KnowledgeTests {
 
 	}
 
-	public void printPathCells(Knowledge knowledge) {
-		System.out.println();
-		for (int i = 0; i < knowledge.getCurrRoute().size(); i++)
-			System.out.print(knowledge.getCurrRoute().get(i) + " ");
-		System.out.println();
+	@Test
+	public void testDistanceComparator() {
+		ArrayList<Cell> test = new ArrayList<Cell>();
+		test.add(new Cell(Cell.TYPE.GRASS, 1, 1));
+		test.add(new Cell(Cell.TYPE.FOOD, 4, 4));
+
+		Collections.sort(test, new CellComparator());
+		assertEquals(Cell.TYPE.GRASS, test.get(0).getType());
 	}
 
-	public void printPath(Knowledge knowledge) {
-		Stack<Cell> currRoute = knowledge.getCurrRoute();
-		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
-				+ "): ");
-		Cell old = knowledge.get(knowledge.x, knowledge.y);
-		for (int i = currRoute.size() - 1; i >= 0; i--) {
-			MyAnt.debugPrint(1, old.dirTo(currRoute.get(i)) + " ");
-			old = currRoute.get(i);
+	private class TestTile implements Tile {
+
+		@Override
+		public int getAmountOfFood() {
+			// TODO Auto-generated method stub
+			return 0;
 		}
-		MyAnt.debugPrint(1, "");
+
+		@Override
+		public int getNumAnts() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public boolean isTravelable() {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+	}
+
+	private class testSurroundings implements Surroundings {
+
+		@Override
+		public Tile getCurrentTile() {
+			// TODO Auto-generated method stub
+			return new TestTile();
+		}
+
+		@Override
+		public Tile getTile(Direction direction) {
+			// TODO Auto-generated method stub
+			return new TestTile();
+		}
+
 	}
 
 }

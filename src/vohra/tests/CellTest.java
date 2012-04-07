@@ -13,11 +13,6 @@ import vohra.Knowledge;
 
 public class CellTest {
 
-	@Before
-	public void setUp() throws Exception {
-		Cell a;
-	}
-
 	@Test
 	public void testCompareTo() {
 		Cell a = new Cell(TYPE.WATER, 1, 1);

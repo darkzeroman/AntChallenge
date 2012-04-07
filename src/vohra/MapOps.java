@@ -12,15 +12,10 @@ public class MapOps {
 	static final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 	static Hashtable<Cell, Integer> dist = new Hashtable<Cell, Integer>();
 
-	public static boolean planRoute(Knowledge knowledge, Cell.TYPE type,
-			RoutePlanner routePlanner) {
-		return routePlanner.makeRoute(knowledge, type);
+	public static boolean makePlan(Knowledge knowledge, Cell.TYPE type,
+			Planner planner) {
+		return planner.makePlan(knowledge, type);
 
-	}
-
-	public static boolean planRoute(Knowledge knowledge, Cell target,
-			RoutePlanner routePlanner) {
-		return routePlanner.makeRoute(knowledge, target);
 	}
 
 	public static Direction oppositeDir(Direction dir) {
@@ -45,8 +40,8 @@ public class MapOps {
 			LinkedList<Cell> neighbors = listNeighbors(knowledge, t,
 					goalType == Cell.TYPE.UNEXPLORED);
 
-			if ((knowledge.mode == Knowledge.MODE.SCOUT)
-					|| (knowledge.mode == Knowledge.MODE.EXPLORE))
+			if ((knowledge.getMode() == Knowledge.MODE.SCOUT)
+					|| (knowledge.getMode() == Knowledge.MODE.EXPLORE))
 				Collections.shuffle(neighbors,
 						new Random(System.currentTimeMillis()));
 
