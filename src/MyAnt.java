@@ -20,19 +20,16 @@ public class MyAnt implements Ant {
 	}
 
 	private int scoutSearchLimit = 20;
-
 	public final Knowledge knowledge;
-
 	private final ObjectIO<Knowledge> oio = new ObjectIO<Knowledge>();
 	private Surroundings surroundings;
 
 	public MyAnt() {
 		// TODO remove
 		knowledge = new Knowledge(order++);
-
 	}
 
-	int count = 2;
+	int count = 1;
 
 	private void waitForReturn() {
 		if (count == 0) {
@@ -139,7 +136,6 @@ public class MyAnt implements Ant {
 		// follow path
 		// if at food, pick it up
 		// don't have a plan, make one
-		knowledge.getCurrRoute().clear();
 		if (knowledge.isUpdated() && !getCurrRoute().isEmpty()
 				&& getCurrRoute().firstElement().getAmountOfFood() == 0) {
 			getCurrRoute().clear();
@@ -148,7 +144,6 @@ public class MyAnt implements Ant {
 
 		// if ant already has a goal, keep going
 		if ((action = nextRouteAction()) != null) {
-			// knowledge.getCurrRoute().clear();
 			return action;
 
 		} else if (!isAtHome() && currCellFood > 0 && !knowledge.carryingFood) {
@@ -228,17 +223,21 @@ public class MyAnt implements Ant {
 					debugPrint(3, "currSize: "
 							+ knowledge.getCurrRoute().size() + ", back: "
 							+ knowledge.backHomeRoute.size());
+					
+					printPath(knowledge.getCurrRoute());
+					printPath(knowledge.backHomeRoute);
 
 					if (knowledge.getCurrRoute().size() == knowledge.backHomeRoute
 							.size()) {
 						switchRoutes();
+
 						debugPrint(3, "switching routes");
 
 					}
 				}
 
 			}
-			waitForReturn();
+			//waitForReturn();
 
 			return nextRouteAction();
 
@@ -246,6 +245,17 @@ public class MyAnt implements Ant {
 			debugPrint(2, "No route && can't find home");
 		debugPrint(1, "End Home");
 		return null;
+	}
+
+	public void printPath(Stack<Cell> currRoute) {
+		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
+				+ "): ");
+		Cell old = knowledge.get(knowledge.getLocX(), knowledge.getLocY());
+		for (int i = currRoute.size() - 1; i >= 0; i--) {
+			MyAnt.debugPrint(1, old + " to: " + currRoute.get(i));
+			old = currRoute.get(i);
+		}
+		MyAnt.debugPrint(1, "");
 	}
 
 	private Action changeMode(Knowledge.Mode mode) {

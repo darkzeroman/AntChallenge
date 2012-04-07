@@ -98,7 +98,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 		String temp = "[" + coord.x + "," + coord.y + "], type: " + this.type;
 		temp += ", Amount of Food: " + this.amountOfFood + ", NumAnts: "
 				+ this.numOfAnts;
-		return temp;
+		return temp.substring(0, 6);
 		// cost: " + this.dist + " ";
 	}
 
