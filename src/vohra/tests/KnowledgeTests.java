@@ -1,7 +1,9 @@
 package vohra.tests;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Stack;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +14,7 @@ import vohra.Cell.CellType;
 import vohra.CellComparator;
 import vohra.Knowledge;
 import vohra.MapOps;
+import vohra.MyAnt;
 
 public class KnowledgeTests {
 
@@ -33,10 +36,16 @@ public class KnowledgeTests {
 				knowledge.get(i, j).setType(Cell.CellType.GRASS);
 			}
 		MapOps.planRoute(knowledge, knowledge.get(3, 3), new BFS());
+		// System.out.println(knowledge.getCurrRoute().pop());
+		printPathCells(knowledge);
+		knowledge.setCurrLoc(new Point(3, 3));
 		prepareBackHomeRoute(knowledge);
-		System.out.println(knowledge.backHomeRoute.firstElement());
+
 		switchRoutes(knowledge);
-		int x = 5;
+		printPathCells(knowledge);
+		
+		System.out.println(knowledge.getCurrRoute().firstElement());
+		// System.out.println("pop: " + knowledge.getCurrRoute().pop());
 	}
 
 	public void prepareBackHomeRoute(Knowledge knowledge) {
@@ -49,10 +58,30 @@ public class KnowledgeTests {
 
 	public void switchRoutes(Knowledge knowledge) {
 		knowledge.getCurrRoute().clear();
-		for (int i = knowledge.backHomeRoute.size() - 1; i >= 0; i--) {
+		for (int i = 0; i < knowledge.backHomeRoute.size(); i++) {
 			knowledge.getCurrRoute().push(knowledge.backHomeRoute.get(i));
 		}
+		//knowledge.getCurrRoute().pop();
 		int x = 5;
+	}
+
+	public void printPathCells(Knowledge knowledge) {
+		System.out.println();
+		for (int i = 0; i < knowledge.getCurrRoute().size(); i++)
+			System.out.print(knowledge.getCurrRoute().get(i) + " ");
+		System.out.println();
+	}
+
+	public void printPath(Knowledge knowledge) {
+		Stack<Cell> currRoute = knowledge.getCurrRoute();
+		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
+				+ "): ");
+		Cell old = knowledge.get(knowledge.getLocX(), knowledge.getLocY());
+		for (int i = currRoute.size() - 1; i >= 0; i--) {
+			MyAnt.debugPrint(1, old.dirTo(currRoute.get(i)) + " ");
+			old = currRoute.get(i);
+		}
+		MyAnt.debugPrint(1, "");
 	}
 
 }

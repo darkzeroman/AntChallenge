@@ -172,6 +172,7 @@ public class MyAnt implements Ant {
 
 	private Action modeExplore() {
 		Action action;
+
 		int currCellFood = getCurrCell().getAmountOfFood();
 
 		if (knowledge.isUpdated() && currCellFood == 0
@@ -217,19 +218,27 @@ public class MyAnt implements Ant {
 		if ((action = nextRouteAction()) != null)
 			return action;
 		else if (foundHome("TOHOME")) {
-			if (knowledge.backHomeRoute.size() > 0
-					&& knowledge.backHomeRoute.firstElement().getType() == Cell.CellType.HOME) {
-				debugPrint(1, "we have a path home");
+			if (knowledge.backHomeRoute.size() > 0) {
+				debugPrint(
+						3,
+						"first element: "
+								+ knowledge.backHomeRoute.firstElement());
+				if (knowledge.backHomeRoute.firstElement().getType() == Cell.CellType.HOME) {
+					debugPrint(3, "we have a path home");
+					debugPrint(3, "currSize: "
+							+ knowledge.getCurrRoute().size() + ", back: "
+							+ knowledge.backHomeRoute.size());
 
-				if (knowledge.getCurrRoute().size() == knowledge.backHomeRoute
-						.size()) {
-					switchRoutes();
-					debugPrint(1, "switching routes");
-					waitForReturn();
+					if (knowledge.getCurrRoute().size() == knowledge.backHomeRoute
+							.size()) {
+						switchRoutes();
+						debugPrint(3, "switching routes");
 
+					}
 				}
 
 			}
+			waitForReturn();
 
 			return nextRouteAction();
 
@@ -268,6 +277,7 @@ public class MyAnt implements Ant {
 	}
 
 	public void prepareBackHomeRoute() {
+		knowledge.backHomeRoute.clear();
 		knowledge.backHomeRoute.push(knowledge.get(0, 0));
 		for (int i = knowledge.getCurrRoute().size() - 1; i >= 0; i--) {
 			knowledge.backHomeRoute.push(knowledge.getCurrRoute().get(i));
@@ -277,10 +287,10 @@ public class MyAnt implements Ant {
 
 	public void switchRoutes() {
 		knowledge.getCurrRoute().clear();
-		for (int i = knowledge.backHomeRoute.size() - 1; i >= 0; i--) {
+		for (int i = 0; i < knowledge.backHomeRoute.size(); i++) {
 			knowledge.getCurrRoute().push(knowledge.backHomeRoute.get(i));
 		}
-		knowledge.backHomeRoute.clear();
+		// knowledge.getCurrRoute().pop();
 		int x = 5;
 	}
 
@@ -381,9 +391,7 @@ public class MyAnt implements Ant {
 	public boolean foundFood(String error) {
 		boolean retValue = MapOps.planRoute(knowledge, Cell.CellType.FOOD,
 				new Djikstra());
-		for (int i = knowledge.getCurrRoute().size() - 1; i >= 0; i--) {
-			knowledge.backHomeRoute.push(knowledge.getCurrRoute().get(i));
-		}
+		this.prepareBackHomeRoute();
 		return retValue;
 	}
 
