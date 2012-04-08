@@ -30,7 +30,7 @@ public class SearchTests {
 	@Test
 	public void testSearch() {
 		Knowledge knowledge;
-		Planner searchAlgorithm = new Djikstra();
+		Planner searchAlgorithm = new BFS();
 
 		knowledge = makeSquareGrassMap(3);
 		knowledge.getCell(0, 1).setType(Cell.TYPE.FOOD);

@@ -12,34 +12,39 @@ import ants.Surroundings;
 import ants.Tile;
 
 public class Knowledge implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
 	public enum MODE {
 		EXPLORE, SCOUT, TOFOOD, TOHOME
 	}
 
-	private static final long serialVersionUID = 1L;
-
 	// TODO for debugging, should be removed
 	int antnum;
 	boolean carryingFood = false;
-	private final Stack<Cell> currPlan;
 	boolean isScout = false;
+	public boolean surroundingsUpdate = false;
 	Direction lastDir;
-	private final Hashtable<Point, Cell> map;
-
 	MODE mode;
-	private final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 	int round;
 	boolean updated = true;
 	public int x, y;
+
+	private final Hashtable<Point, Cell> map;
+	private final Stack<Cell> currPlan;
+
+	public Hashtable<Point, Cell> getMap() {
+		return map;
+	}
 
 	public Knowledge(int antnum) {
 		this.antnum = antnum;
 		this.map = new Hashtable<Point, Cell>();
 		this.currPlan = new Stack<Cell>();
-		getCell(0, 0).setType(Cell.TYPE.HOME);
 		this.mode = MODE.EXPLORE;
 		this.lastDir = Direction.SOUTH;
+		getCell(0, 0).setType(Cell.TYPE.HOME);
+
 	}
 
 	public PriorityQueue<Cell> preSearch(boolean checkUnexplored) {
@@ -62,22 +67,18 @@ public class Knowledge implements Serializable {
 	}
 
 	public void updateMap(Surroundings surroundings) {
-		// TODO remove
-		if (surroundings == null)
-			throw new IllegalArgumentException("NullSurroundings: "
-					+ surroundings);
+		// If any cells are updated, set updated to true
+		surroundingsUpdate |= updateCell(getCell(x, y),
+				surroundings.getCurrentTile());
 
-		updated |= updateCell(getCell(x, y), surroundings.getCurrentTile());
-		// NESW
 		for (int i = 0; i < 4; i++) {
 			Tile tile = surroundings.getTile(Direction.values()[i]);
 			Cell cell = getCell((x + offsets[i][0]), (y + offsets[i][1]));
-			updated |= updateCell(cell, tile);
+			surroundingsUpdate |= updateCell(cell, tile);
 		}
 
 	}
 
-	// FOOD, GRASS, HOME, UNEXPLORED, WALL
 	public boolean updateCell(Cell cell, Tile tile) {
 		int tileAmountFood = tile.getAmountOfFood();
 		// TODO remove
@@ -111,25 +112,29 @@ public class Knowledge implements Serializable {
 		return false;
 	}
 
-	public void merge(Knowledge toMerge) {
-		Enumeration<Cell> e = toMerge.map.elements();
+	public void merge(Hashtable<Point, Cell> toMerge) {
+		Enumeration<Cell> e = toMerge.elements();
+
 		while (e.hasMoreElements()) {
-			Cell other = e.nextElement();
-			// if local cell is unexplored and other isn't, copy type/food
-			Cell local = getCell(other.getX(), other.getY());
-			if (local.getType() == Cell.TYPE.UNEXPLORED
-					&& other.getType() != Cell.TYPE.UNEXPLORED) {
-				set(other);
-				updated = true;
-			} else if (other.getType() != Cell.TYPE.UNEXPLORED
-					&& local.timeStamp < other.timeStamp) {
-				// if local info is older, copy the newer info
-				set(other);
-				updated = true;
+			Cell otherCell = e.nextElement();
+			// only explored other cells are of interest
+			if (otherCell.getType() != Cell.TYPE.UNEXPLORED) {
+				Cell localCell = getCell(otherCell.getX(), otherCell.getY());
+				if (localCell.getType() == Cell.TYPE.UNEXPLORED) {
+					// if local cell is unexplored and other isn't, copy
+					// type/food
+					// set(otherCell);
+					localCell.copy(otherCell);
+					updated = true;
+				} else if (localCell.timeStamp < otherCell.timeStamp) {
+					// if local info is older, copy the newer info
+					// set(otherCell);
+					localCell.copy(otherCell);
+
+					updated = true;
+				}
 			}
-
 		}
-
 	}
 
 	public Enumeration<Cell> elements() {
@@ -138,8 +143,6 @@ public class Knowledge implements Serializable {
 
 	void updateCurrLoc(Direction dir) {
 		lastDir = dir;
-
-		// Directions: NORTH, EAST, SOUTH, WEST;
 		switch (dir) {
 		case NORTH:
 			this.y++;
@@ -154,11 +157,11 @@ public class Knowledge implements Serializable {
 			this.x--;
 			break;
 		default:
-			MyAnt.debugPrint(2, "Not a valid direction");
+			throw new IllegalArgumentException("Invalid direction");
 		}
 	}
 
-	public int getTotalFoodFound() {
+	public int getAmountFoodFound() {
 		int sum = 0;
 		Enumeration<Cell> e = map.elements();
 		while (e.hasMoreElements()) {
@@ -172,6 +175,7 @@ public class Knowledge implements Serializable {
 	}
 
 	public Cell getCell(int row, int col) {
+		// If requested cell doesn't exist, create it and return
 		Point coord = new Point(row, col);
 		if (map.get(coord) == null)
 			map.put(coord, new Cell(Cell.TYPE.UNEXPLORED, row, col));
@@ -192,7 +196,6 @@ public class Knowledge implements Serializable {
 
 	public void set(Cell cell) {
 		map.put(new Point(cell.getX(), cell.getY()), cell);
-
 	}
 
 	public void setUpdated(boolean updated) {

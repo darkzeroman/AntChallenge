@@ -41,8 +41,8 @@ public class MapOps {
 			LinkedList<Cell> neighbors = listNeighbors(knowledge, t,
 					goalType == Cell.TYPE.UNEXPLORED);
 
-			if ((knowledge.getMode() == Knowledge.MODE.SCOUT)
-					|| (knowledge.getMode() == Knowledge.MODE.EXPLORE))
+			if ((knowledge.mode == Knowledge.MODE.SCOUT)
+					|| (knowledge.mode == Knowledge.MODE.EXPLORE))
 				Collections.shuffle(neighbors,
 						new Random(System.currentTimeMillis()));
 

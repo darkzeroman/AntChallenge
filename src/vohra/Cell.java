@@ -26,10 +26,18 @@ public class Cell implements Comparable<Cell>, Serializable {
 	private int numOfAnts = 0;
 	public long numOfAntsTimeStamp = 0;
 
+	public void copy(Cell otherCell) {
+		this.type = otherCell.type;
+		this.timeStamp = otherCell.timeStamp;
+		this.amountOfFood = otherCell.amountOfFood;
+		this.origFood = otherCell.origFood;
+
+	}
+
 	public Cell(TYPE tileType, int x, int y) {
 		coord = new Point(x, y);
 		this.setType(tileType);
-		timeStamp = System.nanoTime();
+		timeStamp = System.currentTimeMillis();
 	}
 
 	public void presearch() {

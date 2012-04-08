@@ -12,8 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import vohra.Cell;
-import vohra.CellComparator;
 import vohra.Knowledge;
+import vohra.searches.CellComparator;
 import ants.Direction;
 import ants.Surroundings;
 import ants.Tile;
@@ -53,29 +53,29 @@ public class KnowledgeTests {
 		map1.setUpdated(false);
 		assertFalse(map1.isUpdated());
 
-		map1.merge(map2);
+		map1.merge(map2.getMap());
 		assertTrue(map1.isUpdated());
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
 		map2.set(new Cell(Cell.TYPE.GRASS, 0, 1));
-		map1.merge(map2);
+		map1.merge(map2.getMap());
 		assertTrue(map1.isUpdated());
 		assertEquals(map1.numKnownCells(), 2);
 		assertEquals(map2.numKnownCells(), 2);
 
 		map1.setUpdated(false);
-		map1.merge(map2);
+		map1.merge(map2.getMap());
 		assertFalse(map1.isUpdated());
 
 		map2.set(new Cell(Cell.TYPE.FOOD, 2, 2));
-		map1.merge(map2);
+		map1.merge(map2.getMap());
 		assertEquals(map1.numKnownCells(), 3);
 		assertEquals(map2.numKnownCells(), 3);
 		assertTrue(map1.isUpdated());
 
 		map1.setUpdated(false);
-		map1.merge(map2);
+		map1.merge(map2.getMap());
 		assertFalse(map1.isUpdated());
 
 	}
