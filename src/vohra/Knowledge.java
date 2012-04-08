@@ -32,6 +32,7 @@ public class Knowledge implements Serializable {
 
 	private final Hashtable<Point, Cell> map;
 	private final Stack<Cell> currPlan;
+	final Stack<Cell> totalPlan;
 
 	public Hashtable<Point, Cell> getMap() {
 		return map;
@@ -41,6 +42,7 @@ public class Knowledge implements Serializable {
 		this.antnum = antnum;
 		this.map = new Hashtable<Point, Cell>();
 		this.currPlan = new Stack<Cell>();
+		this.totalPlan = new Stack<Cell>();
 		this.mode = MODE.EXPLORE;
 		this.lastDir = Direction.SOUTH;
 		getCell(0, 0).setType(Cell.TYPE.HOME);

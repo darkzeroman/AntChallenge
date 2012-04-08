@@ -125,6 +125,7 @@ public class MyAnt implements Ant {
 			knowledge.carryingFood = true;
 			knowledge.getCurrCell().decrementFood();
 			debugPrint(1, "GATHERING");
+
 			return changeModeAndAction(Knowledge.MODE.TOHOME, Action.GATHER);
 
 		} else if ((canFindFood())) {
@@ -138,6 +139,15 @@ public class MyAnt implements Ant {
 
 		debugPrint(1, "Can't find food, going to explore");
 		return changeMode(Knowledge.MODE.EXPLORE);
+	}
+
+	public void printPath(Stack<Cell> currRoute) {
+		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
+				+ "): ");
+		for (int i = 0; i < currRoute.size(); i++) {
+			MyAnt.debugPrint(1, currRoute.get(i).toString());
+		}
+		MyAnt.debugPrint(1, "");
 	}
 
 	private Action modeExplore() {
@@ -177,6 +187,8 @@ public class MyAnt implements Ant {
 		if (isAtHome() && knowledge.carryingFood) {
 			knowledge.carryingFood = false;
 			knowledge.mode = Knowledge.MODE.TOFOOD;
+			knowledge.totalPlan.clear();
+
 			// For resetting the scout mode limit
 			if (knowledge.isScout && knowledge.getAmountFoodFound() < 700) {
 				// knowledge.getAmountFoodFound() < 650
@@ -192,6 +204,19 @@ public class MyAnt implements Ant {
 			return action;
 		// Make plan to home
 		else if (canFindHome()) {
+			// TODO test
+			printPath(knowledge.totalPlan);
+			printPath(knowledge.getCurrPlan());
+			if (knowledge.totalPlan.size() == knowledge.getCurrPlan().size()) {
+				knowledge.getCurrPlan().clear();
+
+				for (int i = 0; i < knowledge.totalPlan.size(); i++)
+					knowledge.getCurrPlan().push(knowledge.totalPlan.get(i));
+			}
+			printPath(knowledge.getCurrPlan());
+
+			knowledge.totalPlan.clear();
+			//waitForReturn();
 			return nextPlanAction();
 		}
 		throw new RuntimeException("Can't find home, map might be corrupted");
@@ -241,8 +266,9 @@ public class MyAnt implements Ant {
 
 		if (getCurrPlan().size() > 0) {
 			Cell from = knowledge.getCurrCell();
-			Cell to = getCurrPlan().pop();
+			knowledge.totalPlan.push(from);
 
+			Cell to = getCurrPlan().pop();
 			Direction dir = from.dirTo(to);
 			action = Action.move(dir);
 			if (isActionValid(action))
