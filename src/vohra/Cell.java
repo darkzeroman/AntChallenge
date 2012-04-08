@@ -19,7 +19,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 	private TYPE type;
 	private final Point coord;
 	private int amountOfFood = 0;
-	int origFood = 0;
+	private int origFood = 0;
 	private int numOfAnts = 0;
 	public long numOfAntsTimeStamp = 0;
 
