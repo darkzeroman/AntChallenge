@@ -6,35 +6,36 @@ import java.io.Serializable;
 import ants.Direction;
 
 public class Cell implements Comparable<Cell>, Serializable {
-	private static final long serialVersionUID = 1L;
-
 	public enum TYPE {
 		FOOD, GRASS, HOME, UNEXPLORED, WATER
 	}
 
+	private static final long serialVersionUID = 1L;
+
 	// used by Djikstra, public because meant to be overwritten
 	public int dist = 0;
 
-	public long timeStamp;
-	private TYPE type;
-	private final Point coord;
-	private int amountOfFood = 0;
-	private int origFood = 0;
-	private int numOfAnts = 0;
 	public long numOfAntsTimeStamp = 0;
-
-	public void copy(Cell otherCell) {
-		this.type = otherCell.type;
-		this.timeStamp = otherCell.timeStamp;
-		this.amountOfFood = otherCell.amountOfFood;
-		this.origFood = otherCell.origFood;
-
-	}
+	public long timeStamp;
+	private int amountOfFood = 0;
+	private final Point coord;
+	private int numOfAnts = 0;
+	private int originalAmountOfFood = 0;
+	private TYPE type;
 
 	public Cell(TYPE tileType, int x, int y) {
 		coord = new Point(x, y);
 		this.setType(tileType);
 		timeStamp = System.currentTimeMillis();
+	}
+
+	public int compareTo(Cell cell) {
+		return (this.dist - cell.dist);
+	}
+
+	public void decrementFood() {
+		this.amountOfFood--;
+		this.timeStamp = System.nanoTime();
 	}
 
 	public Direction dirTo(Cell to) {
@@ -54,28 +55,20 @@ public class Cell implements Comparable<Cell>, Serializable {
 
 	}
 
-	public void decrementFood() {
-		this.amountOfFood--;
-		this.timeStamp = System.nanoTime();
-	}
-
 	public int getAmountOfFood() {
 		return amountOfFood;
 	}
 
-	public void setAmountOfFood(int amountOfFood) {
-		origFood = Math.max(amountOfFood, origFood);
-		this.amountOfFood = amountOfFood;
-		timeStamp = System.nanoTime();
+	public int getNumAnts() {
+		return numOfAnts;
 	}
 
-	public void setXY(int x, int y) {
-		this.coord.x = x;
-		this.coord.y = y;
+	public int getOriginalAmountOfFood() {
+		return this.originalAmountOfFood;
 	}
 
-	public Point getXY() {
-		return new Point(coord.x, coord.y);
+	public TYPE getType() {
+		return type;
 	}
 
 	public int getX() {
@@ -86,13 +79,26 @@ public class Cell implements Comparable<Cell>, Serializable {
 		return coord.y;
 	}
 
-	public TYPE getType() {
-		return type;
+	public void setAmountOfFood(int amountOfFood) {
+		originalAmountOfFood = Math.max(amountOfFood, originalAmountOfFood);
+		this.amountOfFood = amountOfFood;
+		timeStamp = System.nanoTime();
+	}
+
+	public void setNumAnts(int numAnts) {
+		this.numOfAnts = numAnts;
+		this.numOfAntsTimeStamp = System.nanoTime();
+
 	}
 
 	public void setType(TYPE type) {
 		this.type = type;
 
+	}
+
+	public void setXY(int x, int y) {
+		this.coord.x = x;
+		this.coord.y = y;
 	}
 
 	public String toString() {
@@ -101,19 +107,5 @@ public class Cell implements Comparable<Cell>, Serializable {
 				+ this.numOfAnts;
 		return temp.substring(0, 6);
 		// cost: " + this.dist + " ";
-	}
-
-	public int compareTo(Cell cell) {
-		return (this.dist - cell.dist);
-	}
-
-	public int getNumAnts() {
-		return numOfAnts;
-	}
-
-	public void setNumAnts(int numAnts) {
-		this.numOfAnts = numAnts;
-		this.numOfAntsTimeStamp = System.nanoTime();
-
 	}
 }

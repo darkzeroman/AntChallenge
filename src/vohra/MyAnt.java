@@ -381,7 +381,7 @@ public class MyAnt implements Ant {
 		int sum = 0;
 		Enumeration<Cell> e = worldMap.getMap().elements();
 		while (e.hasMoreElements()) {
-			sum += e.nextElement().origFood;
+			sum += e.nextElement().getOriginalAmountOfFood();
 		}
 		return sum;
 	}
