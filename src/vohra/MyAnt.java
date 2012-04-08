@@ -6,7 +6,6 @@ import java.util.Scanner;
 import java.util.Stack;
 
 import vohra.searches.BFS;
-import vohra.searches.Djikstra;
 import ants.Action;
 import ants.Ant;
 import ants.Direction;

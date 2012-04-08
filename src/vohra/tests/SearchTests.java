@@ -1,27 +1,19 @@
 package vohra.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-import java.util.PriorityQueue;
 import java.util.Stack;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import vohra.Cell;
-import vohra.Cell.TYPE;
-import vohra.searches.AStar;
-import vohra.searches.BFS;
-import vohra.searches.Djikstra;
 import vohra.Knowledge;
 import vohra.MapOps;
 import vohra.MyAnt;
 import vohra.Planner;
-import ants.Action;
+import vohra.searches.AStar;
+import vohra.searches.BFS;
 import ants.Direction;
-import ants.Surroundings;
-import ants.Tile;
 
 public class SearchTests {
 

@@ -4,12 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.PriorityQueue;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import vohra.Cell;
 import vohra.Cell.TYPE;
-import vohra.Knowledge;
 
 public class CellTest {
 

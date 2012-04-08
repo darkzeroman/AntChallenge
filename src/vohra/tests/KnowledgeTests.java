@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.PriorityQueue;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import vohra.Cell;
