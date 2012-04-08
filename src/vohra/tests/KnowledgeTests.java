@@ -25,10 +25,10 @@ public class KnowledgeTests {
 		PriorityQueue<Cell> pq;
 
 		Knowledge knowledge = new Knowledge(1);
-		knowledge.get(0, 1);
+		knowledge.getCell(0, 1);
 		pq = knowledge.preSearch(true);
-		assertEquals(0, knowledge.get(0, 0).dist);
-		assertEquals(Integer.MAX_VALUE, knowledge.get(0, 1).dist);
+		assertEquals(0, knowledge.getCell(0, 0).dist);
+		assertEquals(Integer.MAX_VALUE, knowledge.getCell(0, 1).dist);
 
 		assertEquals(2, pq.size());
 	}

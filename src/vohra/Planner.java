@@ -22,7 +22,7 @@ public abstract class Planner {
 		Stack<Cell> currRoute = knowledge.getCurrPlan();
 		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
 				+ "): ");
-		Cell old = knowledge.get(knowledge.x, knowledge.y);
+		Cell old = knowledge.getCell(knowledge.x, knowledge.y);
 		for (int i = 0; i < currRoute.size(); i++) {
 			MyAnt.debugPrint(1, old.dirTo(currRoute.get(i)) + " ");
 			old = currRoute.get(i);

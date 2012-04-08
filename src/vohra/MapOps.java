@@ -9,19 +9,20 @@ import java.util.Random;
 import ants.Direction;
 
 public class MapOps {
+
 	static final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+
 	static Hashtable<Cell, Integer> dist = new Hashtable<Cell, Integer>();
-
-	public static boolean makePlan(Knowledge knowledge, Cell.TYPE type,
-			Planner planner) {
-		return planner.makePlan(knowledge, type);
-
-	}
 
 	public static Direction oppositeDir(Direction dir) {
 		if (dir == null)
 			MyAnt.debugPrint(2, "Why is Dir  Null");
 		return Direction.values()[(dir.ordinal() + 2) % 4];
+	}
+
+	public static boolean makePlan(Knowledge knowledge, Cell.TYPE type,
+			Planner planner) {
+		return planner.makePlan(knowledge, type);
 	}
 
 	public static Cell bfs(Knowledge knowledge, Cell.TYPE goalType,
@@ -60,11 +61,12 @@ public class MapOps {
 	public static LinkedList<Cell> listNeighbors(Knowledge knowledge,
 			Cell cell, boolean includeUnexplored) {
 		LinkedList<Cell> neighborsList = new LinkedList<Cell>();
+
 		for (int i = 0; i < 4; i++) { // for each cardinal direction
 			int xPos = cell.getX() + offsets[i][0];
 			int yPos = cell.getY() + offsets[i][1];
 
-			Cell neighborCell = knowledge.get(xPos, yPos);
+			Cell neighborCell = knowledge.getCell(xPos, yPos);
 
 			if (neighborCell.getType() != Cell.TYPE.WATER) {
 				if (includeUnexplored)
@@ -75,5 +77,4 @@ public class MapOps {
 		}
 		return neighborsList;
 	}
-
 }

@@ -37,7 +37,7 @@ public class Knowledge implements Serializable {
 		this.antnum = antnum;
 		this.map = new Hashtable<Point, Cell>();
 		this.currPlan = new Stack<Cell>();
-		get(0, 0).setType(Cell.TYPE.HOME);
+		getCell(0, 0).setType(Cell.TYPE.HOME);
 		this.mode = MODE.EXPLORE;
 		this.lastDir = Direction.SOUTH;
 	}
@@ -63,16 +63,15 @@ public class Knowledge implements Serializable {
 
 	public void updateMap(Surroundings surroundings) {
 		// TODO remove
-		if (surroundings == null) {
-			MyAnt.debugPrint(2, "Why is surroundings null");
-			return;
-		}
+		if (surroundings == null)
+			throw new IllegalArgumentException("NullSurroundings: "
+					+ surroundings);
 
-		updated |= updateCell(get(x, y), surroundings.getCurrentTile());
+		updated |= updateCell(getCell(x, y), surroundings.getCurrentTile());
 		// NESW
 		for (int i = 0; i < 4; i++) {
 			Tile tile = surroundings.getTile(Direction.values()[i]);
-			Cell cell = get((x + offsets[i][0]), (y + offsets[i][1]));
+			Cell cell = getCell((x + offsets[i][0]), (y + offsets[i][1]));
 			updated |= updateCell(cell, tile);
 		}
 
@@ -85,7 +84,7 @@ public class Knowledge implements Serializable {
 		cell.setNumAnts(tile.getNumAnts());
 		if (cell.getType() == Cell.TYPE.FOOD && tileAmountFood == 0) {
 			// previously had food, now doesn't. so set to grass
-			cell.setAmountOfFood(tileAmountFood);
+			cell.setAmountOfFood(0);
 			cell.setType(Cell.TYPE.GRASS);
 			return true;
 
@@ -117,7 +116,7 @@ public class Knowledge implements Serializable {
 		while (e.hasMoreElements()) {
 			Cell other = e.nextElement();
 			// if local cell is unexplored and other isn't, copy type/food
-			Cell local = get(other.getX(), other.getY());
+			Cell local = getCell(other.getX(), other.getY());
 			if (local.getType() == Cell.TYPE.UNEXPLORED
 					&& other.getType() != Cell.TYPE.UNEXPLORED) {
 				set(other);
@@ -172,7 +171,7 @@ public class Knowledge implements Serializable {
 		return map.keySet().size();
 	}
 
-	public Cell get(int row, int col) {
+	public Cell getCell(int row, int col) {
 		Point coord = new Point(row, col);
 		if (map.get(coord) == null)
 			map.put(coord, new Cell(Cell.TYPE.UNEXPLORED, row, col));
@@ -180,15 +179,11 @@ public class Knowledge implements Serializable {
 	}
 
 	public Cell getCurrCell() {
-		return get(x, y);
+		return getCell(x, y);
 	}
 
 	public Stack<Cell> getCurrPlan() {
 		return currPlan;
-	}
-
-	public Hashtable<Point, Cell> getMap() {
-		return map;
 	}
 
 	public boolean isUpdated() {

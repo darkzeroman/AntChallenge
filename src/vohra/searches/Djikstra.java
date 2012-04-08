@@ -10,7 +10,6 @@ import vohra.Knowledge;
 import vohra.MapOps;
 import vohra.MyAnt;
 import vohra.Planner;
-import vohra.Cell.TYPE;
 
 public class Djikstra extends Planner {
 
@@ -33,13 +32,6 @@ public class Djikstra extends Planner {
 		boolean includeUnexplored = false;
 		if (type == Cell.TYPE.UNEXPLORED)
 			includeUnexplored = true;
-
-		// MyAnt.debugPrint(1, "Searching Path:");
-
-		// if (k.getX() == knowledge.x && target.getY() == knowledge.y) {
-		// MyAnt.debugPrint(1, "Sitting on top of target");
-		// return;
-		// }
 
 		PriorityQueue<Cell> pq = knowledge.preSearch(includeUnexplored);
 		int count = 0;

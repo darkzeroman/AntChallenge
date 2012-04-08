@@ -1,33 +1,31 @@
 package vohra;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-class ObjectIO<V> {
-	byte[] toByteArray(V obj) {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+class ObjectIO<T> {
+	byte[] toByteArray(T obj) {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		try {
-			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			ObjectOutputStream oos = new ObjectOutputStream(stream);
 			oos.writeObject(obj);
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.exit(-1);
-
 		}
-		return baos.toByteArray();
+		return stream.toByteArray();
 	}
 
 	@SuppressWarnings("unchecked")
-	V fromByteArray(byte[] bytes) {
-		final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-		V t = null;
+	T fromByteArray(byte[] data) {
+		final ByteArrayInputStream stream = new ByteArrayInputStream(data);
+		T t = null;
 		try {
-			final ObjectInputStream ois = new ObjectInputStream(bais);
-			t = (V) ois.readObject();
+			final ObjectInputStream ois = new ObjectInputStream(stream);
+			t = (T) ois.readObject();
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.exit(-1);
 		}
 		return t;
 	}

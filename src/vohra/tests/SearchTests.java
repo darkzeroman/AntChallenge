@@ -33,22 +33,22 @@ public class SearchTests {
 		Planner searchAlgorithm = new Djikstra();
 
 		knowledge = makeSquareGrassMap(3);
-		knowledge.get(0, 1).setType(Cell.TYPE.FOOD);
+		knowledge.getCell(0, 1).setType(Cell.TYPE.FOOD);
 		MapOps.makePlan(knowledge, Cell.TYPE.FOOD, searchAlgorithm);
 		assertEquals(Direction.NORTH, nextRouteDir(knowledge));
 
 		knowledge = makeSquareGrassMap(3);
-		knowledge.get(1, 0).setType(Cell.TYPE.FOOD);
+		knowledge.getCell(1, 0).setType(Cell.TYPE.FOOD);
 		MapOps.makePlan(knowledge, Cell.TYPE.FOOD, searchAlgorithm);
 		assertEquals(Direction.EAST, nextRouteDir(knowledge));
 
 		knowledge = makeSquareGrassMap(3);
-		knowledge.get(0, -1).setType(Cell.TYPE.FOOD);
+		knowledge.getCell(0, -1).setType(Cell.TYPE.FOOD);
 		MapOps.makePlan(knowledge, Cell.TYPE.FOOD, searchAlgorithm);
 		assertEquals(Direction.SOUTH, nextRouteDir(knowledge));
 
 		knowledge = makeSquareGrassMap(3);
-		knowledge.get(-1, 0).setType(Cell.TYPE.FOOD);
+		knowledge.getCell(-1, 0).setType(Cell.TYPE.FOOD);
 		MapOps.makePlan(knowledge, Cell.TYPE.FOOD, searchAlgorithm);
 		assertEquals(Direction.WEST, nextRouteDir(knowledge));
 
@@ -77,9 +77,9 @@ public class SearchTests {
 				{ 0, 3 }, };
 
 		for (int[] arr : waterCoords)
-			knowledge.get(arr[0], arr[1]).setType(Cell.TYPE.WATER);
+			knowledge.getCell(arr[0], arr[1]).setType(Cell.TYPE.WATER);
 		for (int[] arr : grassCoords)
-			knowledge.get(arr[0], arr[1]).setType(Cell.TYPE.GRASS);
+			knowledge.getCell(arr[0], arr[1]).setType(Cell.TYPE.GRASS);
 
 		MapOps.makePlan(knowledge, Cell.TYPE.UNEXPLORED, searchAlgorithm);
 		assertEquals(Direction.NORTH, nextRouteDir(knowledge));
@@ -87,7 +87,7 @@ public class SearchTests {
 		assertEquals(Direction.NORTH, nextRouteDir(knowledge));
 		assertEquals(Direction.NORTH, nextRouteDir(knowledge));
 
-		knowledge.get(0, 4).setType(Cell.TYPE.FOOD);
+		knowledge.getCell(0, 4).setType(Cell.TYPE.FOOD);
 		MapOps.makePlan(knowledge, Cell.TYPE.UNEXPLORED, searchAlgorithm);
 		assertEquals(Direction.NORTH, nextRouteDir(knowledge));
 		assertEquals(Direction.NORTH, nextRouteDir(knowledge));
@@ -101,13 +101,13 @@ public class SearchTests {
 		Knowledge knowledge = makeSquareGrassMap(4);
 
 		knowledge.setXY(0, 0);
-		knowledge.get(1, 1).setType(Cell.TYPE.FOOD);
+		knowledge.getCell(1, 1).setType(Cell.TYPE.FOOD);
 		// ant.getCell(1, 0).setNumAnts(100);
 		// ant.getCell(2, 0).setNumAnts(100);
 
 		// ant.getCell(2, 2).setNumAnts(100);
 		AStar aStar = new AStar();
-		aStar.makePlan(knowledge, knowledge.get(1, 1));
+		aStar.makePlan(knowledge, knowledge.getCell(1, 1));
 		printPath(knowledge);
 		assertEquals(Direction.NORTH, nextRouteDir(knowledge));
 		assertEquals(Direction.EAST, nextRouteDir(knowledge));
@@ -143,7 +143,7 @@ public class SearchTests {
 		Knowledge knowledge = new Knowledge(1);
 		for (int i = -1 * length / 2; i < length / 2; i++)
 			for (int j = -1 * length / 2; j < length / 2; j++)
-				knowledge.get(i, j).setType(Cell.TYPE.GRASS);
+				knowledge.getCell(i, j).setType(Cell.TYPE.GRASS);
 
 		return knowledge;
 	}
@@ -161,7 +161,7 @@ public class SearchTests {
 		Stack<Cell> currRoute = knowledge.getCurrPlan();
 		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
 				+ "): ");
-		Cell old = knowledge.get(knowledge.x, knowledge.y);
+		Cell old = knowledge.getCell(knowledge.x, knowledge.y);
 		for (int i = currRoute.size() - 1; i >= 0; i--) {
 			MyAnt.debugPrint(1, old.dirTo(currRoute.get(i)) + " ");
 			old = currRoute.get(i);

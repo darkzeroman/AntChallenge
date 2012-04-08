@@ -4,7 +4,6 @@ import java.util.Scanner;
 import java.util.Stack;
 
 import vohra.searches.BFS;
-
 import ants.Action;
 import ants.Ant;
 import ants.Direction;
@@ -13,16 +12,12 @@ import ants.Surroundings;
 public class MyAnt implements Ant {
 
 	public static int order = 0;
-	public static final int DEBUG = 1;
+	public static final int DEBUGLEVEL = 1;
 
-	public static void main(String[] args) {
-		new MyAnt();
-		System.out.println("compiled");
-	}
-
-	private int scoutSearchLimit = 20;
+	private int scoutModeTurns = 20;
+	private final int scoutSearchsLimit = 35;
 	public final Knowledge knowledge;
-	public final ObjectIO<Knowledge> oio = new ObjectIO<Knowledge>();
+	public final ObjectIO<Knowledge> ObjectIO = new ObjectIO<Knowledge>();
 	private Surroundings surroundings;
 
 	public MyAnt() {
@@ -52,13 +47,12 @@ public class MyAnt implements Ant {
 		}
 
 		// Special Actions here
-		if (knowledge.antnum == 4)
+		if (knowledge.antnum == 10)
 			;// return Action.HALT;
 
 		debugPrint(1, "Starting in Mode: " + knowledge.getMode());
 
 		Action action = null;
-
 		switch (knowledge.getMode()) {
 		case SCOUT:
 			action = modeScout();
@@ -72,6 +66,7 @@ public class MyAnt implements Ant {
 		case TOHOME:
 			action = modeToHome();
 			break;
+
 		}
 
 		// updating local knowledge
@@ -80,7 +75,7 @@ public class MyAnt implements Ant {
 				// directional actions need to update location
 				knowledge.updateCurrLoc(action.getDirection());
 			else
-				// Action is a non-Direction move
+				// Action is a non-direction move
 				debugPrint(1, "Action: " + actionToString(action));
 			return action;
 		}
@@ -92,9 +87,11 @@ public class MyAnt implements Ant {
 
 	private Action modeScout() {
 		Action action;
-		scoutSearchLimit--;
-		// if still in scout mode: if following route, keep going. Or make one
-		if (scoutSearchLimit > 0) {
+		scoutModeTurns--;
+		System.out.println("ssl: " + scoutModeTurns);
+		// If still in scout mode: Continue with plan if it exists,
+		// otherwise make one to next unexplored
+		if (scoutModeTurns > 0) {
 			if ((action = nextPlanAction()) != null)
 				return action;
 			else if (canFindUnexplored())
@@ -102,7 +99,6 @@ public class MyAnt implements Ant {
 		}
 		// not in scout mode anymore, switch to food mode;
 		return changeMode(Knowledge.MODE.TOFOOD);
-
 	}
 
 	private Action modeToFood() {
@@ -110,7 +106,8 @@ public class MyAnt implements Ant {
 		Action action;
 
 		// if food on target doesn't doesn't exist anymore, re-plan
-		if (knowledge.updated && !getCurrPlan().isEmpty()
+		// knowledge.updated &&
+		if (!getCurrPlan().isEmpty()
 				&& getCurrPlan().firstElement().getAmountOfFood() == 0) {
 			getCurrPlan().clear();
 			debugPrint(1, "Target doesn't have food, need to replan");
@@ -130,6 +127,9 @@ public class MyAnt implements Ant {
 		} else if ((canFindFood())) {
 			// don't have a plan, so make one
 			return nextPlanAction();
+		}
+		if (isAtHome() && currCellFood > 100) {
+			return Action.HALT;
 		}
 
 		debugPrint(1, "Can't find food, going to explore");
@@ -167,7 +167,7 @@ public class MyAnt implements Ant {
 
 			if (knowledge.isScout && knowledge.getTotalFoodFound() < 650) {
 				debugPrint(1, "Resetting Countdown");
-				scoutSearchLimit = 25;
+				scoutModeTurns = scoutSearchsLimit;
 				knowledge.mode = Knowledge.MODE.SCOUT;
 			}
 			return changeModeAndAction(knowledge.getMode(), Action.DROP_OFF);
@@ -189,7 +189,7 @@ public class MyAnt implements Ant {
 	private Action changeMode(Knowledge.MODE mode) {
 		debugPrint(1, "Changing from: " + knowledge.getMode() + " to: " + mode);
 
-		// when changing modes, clear the plan
+		// when changing modes, clear the current plan
 		getCurrPlan().clear();
 		knowledge.mode = mode;
 		switch (mode) {
@@ -202,8 +202,7 @@ public class MyAnt implements Ant {
 		case TOHOME:
 			return modeToHome();
 		}
-		debugPrint(2, "Change mode shouldn't be null");
-		return null;
+		throw new IllegalArgumentException("UnrecognizedMode: " + mode);
 
 	}
 
@@ -216,14 +215,13 @@ public class MyAnt implements Ant {
 	}
 
 	private String actionToString(Action action) {
-		String actionString;
 		if (action == Action.DROP_OFF)
-			actionString = "Drop off";
+			return "Drop off";
 		else if (action == Action.GATHER)
-			actionString = "Gather";
-		else
-			actionString = "Halt";
-		return actionString;
+			return "Gather";
+		else if (action == Action.HALT)
+			return "Halt";
+		throw new IllegalArgumentException("UnrecognizedAction: " + action);
 	}
 
 	private Action nextPlanAction() {
@@ -243,15 +241,15 @@ public class MyAnt implements Ant {
 
 	public byte[] send() {
 		long start = System.currentTimeMillis();
-		byte[] arr = oio.toByteArray(knowledge);
+		byte[] arr = ObjectIO.toByteArray(knowledge);
 		debugPrint(1, "To Serialize: " + knowledge.numKnownCells() + " "
 				+ (System.currentTimeMillis() - start));
 		return arr;
 	}
 
 	public void receive(byte[] data) {
-		Knowledge otherKnowledge = oio.fromByteArray(data);
-		debugPrint(1, " Merging on: " + otherKnowledge);
+		Knowledge otherKnowledge = ObjectIO.fromByteArray(data);
+		debugPrint(1, " Merging on: " + otherKnowledge.antnum);
 		knowledge.merge(otherKnowledge);
 	}
 
@@ -270,6 +268,10 @@ public class MyAnt implements Ant {
 		return false;
 	}
 
+	public boolean makePlan(Cell.TYPE type, Planner planner) {
+		return false;
+	}
+
 	public boolean canFindFood() {
 		return MapOps.makePlan(knowledge, Cell.TYPE.FOOD, new BFS());
 	}
@@ -283,7 +285,7 @@ public class MyAnt implements Ant {
 	}
 
 	public Cell getCell(int row, int col) {
-		return knowledge.get(row, col);
+		return knowledge.getCell(row, col);
 	}
 
 	public Stack<Cell> getCurrPlan() {
@@ -296,7 +298,7 @@ public class MyAnt implements Ant {
 	}
 
 	public static void debugPrint(int num, String message) {
-		if (num >= DEBUG) {
+		if (num >= DEBUGLEVEL) {
 			System.out.println(num + ": " + message);
 			if (num == 2)
 				try {
@@ -318,4 +320,5 @@ public class MyAnt implements Ant {
 		}
 		count--;
 	}
+
 }

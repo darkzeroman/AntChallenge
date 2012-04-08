@@ -18,7 +18,6 @@ import vohra.Knowledge;
 import vohra.MapOps;
 import vohra.MyAnt;
 import vohra.Planner;
-import vohra.Cell.TYPE;
 
 /**
  * @author dkz
@@ -26,11 +25,6 @@ import vohra.Cell.TYPE;
  */
 public class AStar extends Planner {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see vohra.RoutePlanner#makeRoute(vohra.Knowledge, vohra.Cell.TYPE)
-	 */
 	@Override
 	public boolean makePlan(Knowledge knowledge, Cell.TYPE type) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
