@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.Scanner;
 import java.util.Stack;
 
+import vohra.Knowledge.MODE;
 import vohra.searches.BFS;
 import ants.Action;
 import ants.Ant;
@@ -17,8 +18,8 @@ public class MyAnt implements Ant {
 	public static int order = 0;
 	public static final int DEBUGLEVEL = 1;
 
-	private int scoutModeTurns = 20;
-	private final int scoutSearchsLimit = 35;
+	private int scoutModeTurns = 10;
+	private final int scoutSearchsLimit = 25;
 	public final Knowledge knowledge;
 	public final ObjectIO<Hashtable<Point, Cell>> ObjectIO = new ObjectIO<Hashtable<Point, Cell>>();
 	private Surroundings surroundings;
@@ -49,6 +50,8 @@ public class MyAnt implements Ant {
 			debugPrint(1, "Initial Scout Mode");
 			return Action.HALT;
 		}
+		knowledge.isScout = true;
+		// knowledge.mode = Knowledge.MODE.SCOUT;
 
 		// Special Actions here
 
@@ -174,7 +177,8 @@ public class MyAnt implements Ant {
 			return action;
 
 		// Try to find closest unexplored
-		if (canFindUnexplored())
+		if (knowledge.getCell(0, 0).getAmountOfFood() < 200
+				&& canFindUnexplored())
 			return nextPlanAction();
 
 		// Everything is explored, Go home
@@ -183,6 +187,8 @@ public class MyAnt implements Ant {
 
 	private Action modeToHome() {
 		Action action;
+		if (isAtHome() && !knowledge.carryingFood)
+			return changeMode(MODE.TOFOOD);
 		// drop off food if if at home
 		if (isAtHome() && knowledge.carryingFood) {
 			knowledge.carryingFood = false;
@@ -190,8 +196,8 @@ public class MyAnt implements Ant {
 			knowledge.totalPlan.clear();
 
 			// For resetting the scout mode limit
-			if (knowledge.isScout && knowledge.getAmountFoodFound() < 700) {
-				// knowledge.getAmountFoodFound() < 650
+			if (knowledge.isScout && knowledge.getAmountFoodFound() < 625) {
+				// knowledge.getAmountFoodFound() < 6
 				debugPrint(1, "Resetting Countdown");
 				scoutModeTurns = scoutSearchsLimit;
 				knowledge.mode = Knowledge.MODE.SCOUT;
@@ -216,7 +222,7 @@ public class MyAnt implements Ant {
 			printPath(knowledge.getCurrPlan());
 
 			knowledge.totalPlan.clear();
-			//waitForReturn();
+			// waitForReturn();
 			return nextPlanAction();
 		}
 		throw new RuntimeException("Can't find home, map might be corrupted");

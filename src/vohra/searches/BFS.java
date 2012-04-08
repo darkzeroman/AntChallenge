@@ -72,19 +72,19 @@ public class BFS extends Planner {
 		int[] W = { -1, 0 };
 		int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
-		if (goalType == Cell.TYPE.HOME) {
-			int x = knowledge.x;
-			int y = knowledge.y;
-			if (y > 0 && x > 0) {
-				offsets = new int[][] { E, N, W, S };
-			} else if (y > 0 && x < 0)
-				offsets = new int[][] { N, W, S, E };
-			else if (y < 0 && x > 0)
-				offsets = new int[][] { S, E, N, W };
-			else
-				offsets = new int[][] { W, S, E, N };
-
-		}
+		// if (goalType == Cell.TYPE.HOME) {
+		// int x = knowledge.x;
+		// int y = knowledge.y;
+		// if (y > 0 && x > 0) {
+		// offsets = new int[][] { E, N, W, S };
+		// } else if (y > 0 && x < 0)
+		// offsets = new int[][] { N, W, S, E };
+		// else if (y < 0 && x > 0)
+		// offsets = new int[][] { S, E, N, W };
+		// else
+		// offsets = new int[][] { W, S, E, N };
+		//
+		// }
 
 		for (int i = 0; i < 4; i++) { // for each cardinal direction
 			int xPos = cell.getX() + offsets[i][0];
