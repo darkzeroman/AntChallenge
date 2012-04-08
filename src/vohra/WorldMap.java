@@ -39,7 +39,8 @@ public class WorldMap {
 		// Below CELL means local copy and TILE is from engine
 		int tileAmountFood = tile.getAmountOfFood();
 		cell.setNumAnts(tile.getNumAnts());
-
+		
+		// TILE is not traversable, merge if CELL isn't already water
 		if (!tile.isTravelable() && cell.getCellType() != Cell.CELLTYPE.WATER) {
 			cell.setCellType(Cell.CELLTYPE.WATER);
 			return true;
