@@ -7,6 +7,7 @@ import java.util.Stack;
 import org.junit.Test;
 
 import vohra.Cell;
+import vohra.Cell.CELLTYPE;
 import vohra.MapOps;
 import vohra.MyAnt;
 import vohra.Planner;
@@ -20,42 +21,45 @@ public class SearchTests {
 	@Test
 	public void testSearch() {
 		Planner searchAlgorithm = new BFS();
-
-		ant = makeSquareGrassMap(3);
-		ant.getCell(0, 1).setCellType(Cell.CELLTYPE.FOOD);
+		// Creating a world with food one cell away and making sure search 
+		// algorithm matches the expected output
+		
+		ant = makeAntInSquareWorldWithGrass(3);
+		ant.getCell(0, 1).setCellType(CELLTYPE.FOOD);
 		Stack<Cell> plan = MapOps.makePlan(ant.getWorldMap(),
-				ant.getCurrCell(), Cell.CELLTYPE.FOOD, searchAlgorithm);
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
+				ant.getCurrentCell(), CELLTYPE.FOOD, searchAlgorithm);
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 
-		ant = makeSquareGrassMap(3);
-		ant.getCell(1, 0).setCellType(Cell.CELLTYPE.FOOD);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
-				Cell.CELLTYPE.FOOD, searchAlgorithm);
-		assertEquals(Direction.EAST, nextPlanDir(plan, ant.getCurrCell()));
+		ant = makeAntInSquareWorldWithGrass(3);
+		ant.getCell(1, 0).setCellType(CELLTYPE.FOOD);
+		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.FOOD, searchAlgorithm);
+		assertEquals(Direction.EAST, nextPlanDir(plan, ant.getCurrentCell()));
 
-		ant = makeSquareGrassMap(3);
-		ant.getCell(0, -1).setCellType(Cell.CELLTYPE.FOOD);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
-				Cell.CELLTYPE.FOOD, searchAlgorithm);
-		assertEquals(Direction.SOUTH, nextPlanDir(plan, ant.getCurrCell()));
+		ant = makeAntInSquareWorldWithGrass(3);
+		ant.getCell(0, -1).setCellType(CELLTYPE.FOOD);
+		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.FOOD, searchAlgorithm);
+		assertEquals(Direction.SOUTH, nextPlanDir(plan, ant.getCurrentCell()));
 
-		ant = makeSquareGrassMap(3);
-		ant.getCell(-1, 0).setCellType(Cell.CELLTYPE.FOOD);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
-				Cell.CELLTYPE.FOOD, searchAlgorithm);
-		assertEquals(Direction.WEST, nextPlanDir(plan, ant.getCurrCell()));
+		ant = makeAntInSquareWorldWithGrass(3);
+		ant.getCell(-1, 0).setCellType(CELLTYPE.FOOD);
+		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.FOOD, searchAlgorithm);
+		assertEquals(Direction.WEST, nextPlanDir(plan, ant.getCurrentCell()));
 
 	}
 
 	@Test
 	public void testClosestType() {
 		ant = new MyAnt();
-
 		Planner searchAlgorithm = new BFS();
-
+		// Test to check if plan can work for multiple cells away
+		
 		// U: Unexplored, W: Water, G: Grass, A: Ant,
 		// X: Goal (Either Food or Unexplored)
-
+		
+		// Map that is created: A is origin
 		// U W X W U
 		// U W G W U
 		// U W G W U
@@ -70,24 +74,26 @@ public class SearchTests {
 				{ 0, 3 }, };
 
 		for (int[] arr : waterCellCoords)
-			ant.getCell(arr[0], arr[1]).setCellType(Cell.CELLTYPE.WATER);
+			ant.getCell(arr[0], arr[1]).setCellType(CELLTYPE.WATER);
 		for (int[] arr : grassCellCoords)
-			ant.getCell(arr[0], arr[1]).setCellType(Cell.CELLTYPE.GRASS);
+			ant.getCell(arr[0], arr[1]).setCellType(CELLTYPE.GRASS);
 
+		Cell currCell = ant.getCurrentCell();
+		
 		Stack<Cell> plan = MapOps.makePlan(ant.getWorldMap(),
-				ant.getCurrCell(), Cell.CELLTYPE.UNEXPLORED, searchAlgorithm);
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
+				ant.getCurrentCell(), CELLTYPE.UNEXPLORED, searchAlgorithm);
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 
-		ant.getCell(0, 4).setCellType(Cell.CELLTYPE.FOOD);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
-				Cell.CELLTYPE.UNEXPLORED, searchAlgorithm);
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
+		ant.getCell(0, 4).setCellType(CELLTYPE.FOOD);
+		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.UNEXPLORED, searchAlgorithm);
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 
 	}
 
@@ -111,12 +117,12 @@ public class SearchTests {
 
 	@Test
 	public void testReturnPath() {
-		MyAnt ant = makeSquareGrassMap(6);
+		MyAnt ant = makeAntInSquareWorldWithGrass(6);
 
-		ant.getWorldMap().getCell(2, 2).setCellType(Cell.CELLTYPE.FOOD);
+		ant.getWorldMap().getCell(2, 2).setCellType(CELLTYPE.FOOD);
 
-		MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
-				Cell.CELLTYPE.FOOD, new BFS());
+		MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.FOOD, new BFS());
 		// Stack<Cell> pathToGoal = (Stack<Cell>) ant.getCurrPlan().clone();
 
 		// MyAnt ant = new MyAnt();
@@ -133,12 +139,12 @@ public class SearchTests {
 		// assertEquals(Direction.WEST, nextRouteDir(ant.knowledge);
 	}
 
-	private MyAnt makeSquareGrassMap(int length) {
+	private MyAnt makeAntInSquareWorldWithGrass(int dimension) {
 		MyAnt ant = new MyAnt();
 		WorldMap worldMap = ant.getWorldMap();
-		for (int i = -1 * length / 2; i < length / 2; i++)
-			for (int j = -1 * length / 2; j < length / 2; j++)
-				worldMap.getCell(i, j).setCellType(Cell.CELLTYPE.GRASS);
+		for (int i = -1 * dimension / 2; i < dimension / 2; i++)
+			for (int j = -1 * dimension / 2; j < dimension / 2; j++)
+				worldMap.getCell(i, j).setCellType(CELLTYPE.GRASS);
 
 		return ant;
 	}

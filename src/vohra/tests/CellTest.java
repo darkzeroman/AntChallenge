@@ -18,7 +18,7 @@ public class CellTest {
 	public void testCompareTo() {
 		Cell a = new Cell(CELLTYPE.WATER, 1, 1);
 		a.dist = 10;
-		Cell b = new Cell(Cell.CELLTYPE.GRASS, 1, 1);
+		Cell b = new Cell(CELLTYPE.GRASS, 1, 1);
 		b.dist = Integer.MAX_VALUE;
 		PriorityQueue<Cell> pq = new PriorityQueue<Cell>();
 		pq.add(a);
@@ -29,11 +29,11 @@ public class CellTest {
 	@Test
 	public void testDistanceComparator() {
 		ArrayList<Cell> test = new ArrayList<Cell>();
-		test.add(new Cell(Cell.CELLTYPE.GRASS, 1, 1));
-		test.add(new Cell(Cell.CELLTYPE.FOOD, 4, 4));
+		test.add(new Cell(CELLTYPE.GRASS, 1, 1));
+		test.add(new Cell(CELLTYPE.FOOD, 4, 4));
 
 		Collections.sort(test, new DistFromOriginComparator());
-		assertEquals(Cell.CELLTYPE.GRASS, test.get(0).getCellType());
+		assertEquals(CELLTYPE.GRASS, test.get(0).getCellType());
 	}
 
 }

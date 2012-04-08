@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Stack;
 
+import vohra.Cell.CELLTYPE;
 import ants.Direction;
 
 public class MapOps {
@@ -19,14 +20,12 @@ public class MapOps {
 	}
 
 	public static Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
-			Cell.CELLTYPE type, Planner planner) {
+			CELLTYPE type, Planner planner) {
 		return planner.makePlan(worldMap, startCell, type);
 	}
 
-	
-
 	public static LinkedList<Cell> listNeighbors(WorldMap worldMap, Cell cell,
-			boolean includeUnexplored) {
+			boolean addUnexplored) {
 		LinkedList<Cell> neighborsList = new LinkedList<Cell>();
 
 		for (int i = 0; i < 4; i++) { // for each cardinal direction
@@ -35,10 +34,10 @@ public class MapOps {
 
 			Cell neighborCell = worldMap.getCell(xPos, yPos);
 
-			if (neighborCell.getCellType() != Cell.CELLTYPE.WATER) {
-				if (includeUnexplored)
+			if (neighborCell.getCellType() != CELLTYPE.WATER) {
+				if (addUnexplored)
 					neighborsList.add(neighborCell);
-				else if (neighborCell.getCellType() != Cell.CELLTYPE.UNEXPLORED)
+				else if (neighborCell.getCellType() != CELLTYPE.UNEXPLORED)
 					neighborsList.add(neighborCell);
 			}
 		}

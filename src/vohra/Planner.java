@@ -3,11 +3,13 @@ package vohra;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import vohra.Cell.CELLTYPE;
+
 public abstract class Planner {
 	protected final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
 	public abstract Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
-			Cell.CELLTYPE goalType);
+			CELLTYPE goalType);
 
 	public Stack<Cell> constructPlan(WorldMap worldMap, Cell target,
 			Hashtable<Cell, Cell> prev) {

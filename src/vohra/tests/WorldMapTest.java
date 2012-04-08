@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import vohra.Cell;
+import vohra.Cell.CELLTYPE;
+import vohra.MyAnt;
 import vohra.WorldMap;
 import ants.Direction;
 import ants.Surroundings;
@@ -14,12 +16,11 @@ import ants.Tile;
 
 public class WorldMapTest extends WorldMap {
 
-
-
 	@Test
 	public void testUpdatingMap() {
 		WorldMap worldMap = new WorldMap();
-		boolean surroundingsUpdated = worldMap.updateMap(new testSurroundings(), 0, 0);
+		boolean surroundingsUpdated = worldMap.updateMap(
+				new testSurroundings(), 0, 0);
 		assertEquals(5, worldMap.numKnownCells());
 		assertTrue(surroundingsUpdated);
 	}
@@ -28,7 +29,7 @@ public class WorldMapTest extends WorldMap {
 	public void testMapMerge() {
 		WorldMap map1 = new WorldMap();
 		WorldMap map2 = new WorldMap();
-		
+
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
@@ -37,7 +38,7 @@ public class WorldMapTest extends WorldMap {
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
-		map2.setCell(new Cell(Cell.CELLTYPE.GRASS, 0, 1));
+		map2.setCell(new Cell(CELLTYPE.GRASS, 0, 1));
 		isUpdated = map1.mergeMaps(map2.getMap());
 		assertTrue(isUpdated);
 		assertEquals(map1.numKnownCells(), 2);
@@ -46,7 +47,7 @@ public class WorldMapTest extends WorldMap {
 		isUpdated = map1.mergeMaps(map2.getMap());
 		assertFalse(isUpdated);
 
-		map2.setCell(new Cell(Cell.CELLTYPE.FOOD, 2, 2));
+		map2.setCell(new Cell(CELLTYPE.FOOD, 2, 2));
 		isUpdated = map1.mergeMaps(map2.getMap());
 		assertEquals(map1.numKnownCells(), 3);
 		assertEquals(map2.numKnownCells(), 3);
@@ -55,6 +56,16 @@ public class WorldMapTest extends WorldMap {
 		isUpdated = map1.mergeMaps(map2.getMap());
 		assertFalse(isUpdated);
 
+	}
+
+	private MyAnt makeAntInSquareWorldWithGrass(int dimension) {
+		MyAnt ant = new MyAnt();
+		WorldMap worldMap = ant.getWorldMap();
+		for (int i = -1 * dimension / 2; i < dimension / 2; i++)
+			for (int j = -1 * dimension / 2; j < dimension / 2; j++)
+				worldMap.getCell(i, j).setCellType(CELLTYPE.GRASS);
+
+		return ant;
 	}
 
 	private class testSurroundings implements Surroundings {

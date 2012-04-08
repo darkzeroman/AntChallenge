@@ -20,7 +20,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 	private long timeStamp;
 	private CELLTYPE cellType;
 	private final int x, y;
-
+	
 	public Cell(CELLTYPE cellType, int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -34,7 +34,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 
 	public void decrementFood() {
 		this.numFood--;
-		this.timeStamp = System.nanoTime();
+		this.timeStamp = System.currentTimeMillis();
 	}
 
 	public Direction dirTo(Cell to) {
@@ -55,6 +55,15 @@ public class Cell implements Comparable<Cell>, Serializable {
 				return Direction.EAST;
 		}
 		throw new RuntimeException("Can't reach cell");
+
+	}
+
+	public void copyCell(Cell otherCell) {
+		this.cellType = otherCell.getCellType();
+		this.timeStamp = otherCell.timeStamp;
+		this.numFood = otherCell.numFood;
+		this.initialNumFood = Math.max(initialNumFood,
+				otherCell.getInitialNumFood());
 
 	}
 
@@ -89,7 +98,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 	public void setNumFood(int numFood) {
 		initialNumFood = Math.max(numFood, initialNumFood);
 		this.numFood = numFood;
-		timeStamp = System.nanoTime();
+		timeStamp = System.currentTimeMillis();
 	}
 
 	public void setNumAnts(int numAnts) {

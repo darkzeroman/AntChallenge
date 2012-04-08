@@ -8,6 +8,7 @@ import java.util.PriorityQueue;
 import java.util.Stack;
 
 import vohra.Cell;
+import vohra.Cell.CELLTYPE;
 import vohra.MapOps;
 import vohra.MyAnt;
 import vohra.Planner;
@@ -16,8 +17,7 @@ import vohra.WorldMap;
 public class Djikstra extends Planner {
 
 	@Override
-	public Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
-			Cell.CELLTYPE type) {
+	public Stack<Cell> makePlan(WorldMap worldMap, Cell startCell, CELLTYPE type) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = djikstra(worldMap, startCell, type, prev);
@@ -28,7 +28,7 @@ public class Djikstra extends Planner {
 	}
 
 	public PriorityQueue<Cell> preSearch(WorldMap worldMap, Cell startCell,
-			boolean checkUnexplored) {
+			boolean addUnexplored) {
 		PriorityQueue<Cell> pq = new PriorityQueue<Cell>();
 
 		Enumeration<Cell> e = worldMap.getMap().elements();
@@ -39,23 +39,22 @@ public class Djikstra extends Planner {
 					&& cell.getY() == startCell.getY()) {
 				cell.dist = 0;
 			}
-			if (!checkUnexplored && cell.getCellType() != Cell.CELLTYPE.UNEXPLORED
-					&& cell.getCellType() != Cell.CELLTYPE.WATER)
+			if (!addUnexplored && cell.getCellType() != CELLTYPE.UNEXPLORED
+					&& cell.getCellType() != CELLTYPE.WATER)
 				pq.add(cell);
-			else if (checkUnexplored && cell.getCellType() != Cell.CELLTYPE.WATER)
+			else if (addUnexplored && cell.getCellType() != CELLTYPE.WATER)
 				pq.add(cell);
 		}
 		return pq;
 	}
 
-	public Cell djikstra(WorldMap worldMap, Cell startCell, Cell.CELLTYPE type,
+	public Cell djikstra(WorldMap worldMap, Cell startCell, CELLTYPE type,
 			Hashtable<Cell, Cell> prev) {
-		boolean includeUnexplored = false;
-		if (type == Cell.CELLTYPE.UNEXPLORED)
-			includeUnexplored = true;
+		boolean addUnexplored = false;
+		if (type == CELLTYPE.UNEXPLORED)
+			addUnexplored = true;
 
-		PriorityQueue<Cell> pq = preSearch(worldMap, startCell,
-				includeUnexplored);
+		PriorityQueue<Cell> pq = preSearch(worldMap, startCell, addUnexplored);
 		int count = 0;
 
 		while (!pq.isEmpty()) {
@@ -74,7 +73,7 @@ public class Djikstra extends Planner {
 
 			}
 			LinkedList<Cell> al = MapOps.listNeighbors(worldMap, u,
-					includeUnexplored);
+					addUnexplored);
 			ListIterator<Cell> it = al.listIterator();
 			while (it.hasNext())
 				if (!pq.contains(it.next()))

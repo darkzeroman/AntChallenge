@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import vohra.Cell.CELLTYPE;
 import ants.Direction;
 import ants.Surroundings;
 import ants.Tile;
@@ -16,7 +17,7 @@ public class WorldMap {
 	public WorldMap() {
 		this.map = new Hashtable<Point, Cell>();
 		// Setting the home tile upon instantiation
-		getCell(0, 0).setCellType(Cell.CELLTYPE.HOME);
+		getCell(0, 0).setCellType(CELLTYPE.HOME);
 	}
 
 	public boolean updateMap(Surroundings surroundings, int x, int y) {
@@ -36,37 +37,35 @@ public class WorldMap {
 	}
 
 	public boolean updateCell(Cell cell, Tile tile) {
-		// Below CELL means local copy and TILE is from engine
-		int tileAmountFood = tile.getAmountOfFood();
+		int tileNumFood = tile.getAmountOfFood();
 		cell.setNumAnts(tile.getNumAnts());
-		
-		// TILE is not traversable, merge if CELL isn't already water
-		if (!tile.isTravelable() && cell.getCellType() != Cell.CELLTYPE.WATER) {
-			cell.setCellType(Cell.CELLTYPE.WATER);
-			return true;
-		}
-		// CELL previously had food, now doesn't. Change food and set to Grass
-		else if (cell.getCellType() == Cell.CELLTYPE.FOOD
-				&& tileAmountFood == 0) {
-			cell.setNumFood(0);
-			cell.setCellType(Cell.CELLTYPE.GRASS);
+		if (cell.getCellType() == CELLTYPE.UNEXPLORED) {
+			if (tileNumFood > 0) {
+				cell.setNumFood(tileNumFood);
+				cell.setCellType(CELLTYPE.FOOD);
+			} else if (tileNumFood == 0 && tile.isTravelable())
+				cell.setCellType(CELLTYPE.GRASS);
+			else if (!tile.isTravelable())
+				cell.setCellType(CELLTYPE.WATER);
 			return true;
 
-			// CELL has food, but amount has changed
-		} else if (tileAmountFood > 0 && tileAmountFood != cell.getNumFood()) {
-			cell.setNumFood(tileAmountFood);
-			if (!(cell.getCellType() == Cell.CELLTYPE.HOME))
-				cell.setCellType(Cell.CELLTYPE.FOOD);
-			return true;
+		} else if (cell.getCellType() == CELLTYPE.FOOD) {
+			if (tileNumFood == 0) {
+				cell.setNumFood(tileNumFood);
+				cell.setCellType(CELLTYPE.GRASS);
+				return true;
 
-			// TILE is traversable and CELL isn't home or grass, so new info
-		} else if (tile.isTravelable() && tileAmountFood == 0
-				&& cell.getCellType() != Cell.CELLTYPE.HOME
-				&& cell.getCellType() != Cell.CELLTYPE.GRASS) {
-			cell.setCellType(Cell.CELLTYPE.GRASS);
-			return true;
+			} else if (tileNumFood != cell.getNumFood()) {
+				cell.setNumFood(tileNumFood);
+				return true;
+
+			}
+		} else if (cell.getCellType() == CELLTYPE.HOME) {
+			cell.setNumFood(tileNumFood);
+			return false;
 		}
 		return false;
+
 	}
 
 	public boolean mergeMaps(Hashtable<Point, Cell> mapToMerge) {
@@ -75,17 +74,17 @@ public class WorldMap {
 		while (e.hasMoreElements()) {
 			Cell otherCell = e.nextElement();
 			// Only explored "other cells" are of interest
-			if (otherCell.getCellType() != Cell.CELLTYPE.UNEXPLORED) {
+			if (otherCell.getCellType() != CELLTYPE.UNEXPLORED) {
 				Cell localCell = getCell(otherCell.getX(), otherCell.getY());
 
 				// If local cell is unexplored and other isn't, merge
-				if (localCell.getCellType() == Cell.CELLTYPE.UNEXPLORED) {
+				if (localCell.getCellType() == CELLTYPE.UNEXPLORED) {
 					setCell(otherCell);
 					updated = true;
 
 					// If local info is older, merge
 				} else if (localCell.getTimeStamp() < otherCell.getTimeStamp()) {
-					setCell(otherCell);
+					localCell.copyCell(otherCell);
 					updated = true;
 				}
 			}
@@ -106,7 +105,7 @@ public class WorldMap {
 		// If requested cell doesn't exist, create it and return
 		Point coord = new Point(row, col);
 		if (map.get(coord) == null)
-			map.put(coord, new Cell(Cell.CELLTYPE.UNEXPLORED, row, col));
+			map.put(coord, new Cell(CELLTYPE.UNEXPLORED, row, col));
 		return map.get(coord);
 	}
 
@@ -116,6 +115,15 @@ public class WorldMap {
 
 	public Hashtable<Point, Cell> getMap() {
 		return map;
+	}
+
+	public int getNumFoodFound() {
+		int sum = 0;
+		Enumeration<Cell> e = getMap().elements();
+		while (e.hasMoreElements()) {
+			sum += e.nextElement().getInitialNumFood();
+		}
+		return sum;
 	}
 
 }

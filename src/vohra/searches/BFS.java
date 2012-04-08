@@ -15,8 +15,7 @@ import vohra.WorldMap;
 public class BFS extends Planner {
 
 	@Override
-	public Stack<Cell> makePlan(WorldMap worldMap, Cell start,
-			Cell.CELLTYPE goalType) {
+	public Stack<Cell> makePlan(WorldMap worldMap, Cell start, CELLTYPE goalType) {
 
 		// holds cell references which is used to backtrack for route plan
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
@@ -30,7 +29,7 @@ public class BFS extends Planner {
 
 	}
 
-	public Cell bfs(WorldMap worldMap, Cell startCell, Cell.CELLTYPE goalType,
+	public Cell bfs(WorldMap worldMap, Cell startCell, CELLTYPE goalType,
 			Hashtable<Cell, Cell> prev) {
 		// Standard BFS algorithm
 		// Using markedSet to avoid re-checking already visited nodes
@@ -48,7 +47,7 @@ public class BFS extends Planner {
 					goalType);
 
 			// if looking for unexplored, shuffle list
-			if (goalType == Cell.CELLTYPE.UNEXPLORED)
+			if (goalType == CELLTYPE.UNEXPLORED)
 				Collections.shuffle(neighbors, new Random(System.nanoTime()));
 
 			for (Cell neighbor : neighbors)
@@ -66,7 +65,7 @@ public class BFS extends Planner {
 			CELLTYPE goalType) {
 		// If searching for unexplored, must be sure to include that type
 		// otherwise, food/home searches do not track unexplored for efficiency
-		boolean addUnexplored = (goalType == Cell.CELLTYPE.UNEXPLORED);
+		boolean addUnexplored = (goalType == CELLTYPE.UNEXPLORED);
 		LinkedList<Cell> neighbors = new LinkedList<Cell>();
 
 		// for each cardinal direction find the neighbor
@@ -76,10 +75,10 @@ public class BFS extends Planner {
 			Cell neighborCell = worldMap.getCell(xPos, yPos);
 
 			// Waters are not needed, so if water, move on
-			if (neighborCell.getCellType() != Cell.CELLTYPE.WATER) {
+			if (neighborCell.getCellType() != CELLTYPE.WATER) {
 				if (addUnexplored)
 					neighbors.add(neighborCell);
-				else if (neighborCell.getCellType() != Cell.CELLTYPE.UNEXPLORED)
+				else if (neighborCell.getCellType() != CELLTYPE.UNEXPLORED)
 					neighbors.add(neighborCell);
 			}
 		}

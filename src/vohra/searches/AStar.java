@@ -1,9 +1,5 @@
 package vohra.searches;
 
-/**
- * 
- */
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -15,20 +11,16 @@ import java.util.Random;
 import java.util.Stack;
 
 import vohra.Cell;
+import vohra.Cell.CELLTYPE;
 import vohra.MapOps;
 import vohra.MyAnt;
 import vohra.Planner;
 import vohra.WorldMap;
 
-/**
- * @author dkz
- * 
- */
 public class AStar extends Planner {
 
 	@Override
-	public Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
-			Cell.CELLTYPE type) {
+	public Stack<Cell> makePlan(WorldMap worldMap, Cell startCell, CELLTYPE type) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = bfs(worldMap, startCell, type, prev);
@@ -43,7 +35,7 @@ public class AStar extends Planner {
 	}
 
 	public static Cell bfs(WorldMap worldMap, Cell startCell,
-			Cell.CELLTYPE goalType, Hashtable<Cell, Cell> prev) {
+			CELLTYPE goalType, Hashtable<Cell, Cell> prev) {
 		// BFS Search
 		HashSet<Cell> markSet = new HashSet<Cell>();
 		LinkedList<Cell> queue = new LinkedList<Cell>();
@@ -55,9 +47,9 @@ public class AStar extends Planner {
 			if (t.getCellType() == goalType)
 				return t;
 			LinkedList<Cell> neighbors = MapOps.listNeighbors(worldMap, t,
-					goalType == Cell.CELLTYPE.UNEXPLORED);
+					goalType == CELLTYPE.UNEXPLORED);
 
-			if (goalType == Cell.CELLTYPE.UNEXPLORED)
+			if (goalType == CELLTYPE.UNEXPLORED)
 				Collections.shuffle(neighbors,
 						new Random(System.currentTimeMillis()));
 
@@ -118,7 +110,7 @@ public class AStar extends Planner {
 			closedSet.add(currNode.cell);
 
 			LinkedList<Cell> al = MapOps.listNeighbors(worldMap, currNode.cell,
-					target.getCellType() == Cell.CELLTYPE.UNEXPLORED);
+					target.getCellType() == CELLTYPE.UNEXPLORED);
 
 			for (Cell neighborCell : al) {
 				if (closedSet.contains(neighborCell))
@@ -222,9 +214,6 @@ public class AStar extends Planner {
 
 	}
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
