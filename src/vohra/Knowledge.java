@@ -34,16 +34,12 @@ public class Knowledge implements Serializable {
 	private final Stack<Cell> currPlan;
 	final Stack<Cell> totalPlan;
 
-	public Hashtable<Point, Cell> getMap() {
-		return map;
-	}
-
 	public Knowledge(int antnum) {
 		this.antnum = antnum;
 		this.map = new Hashtable<Point, Cell>();
 		this.currPlan = new Stack<Cell>();
 		this.totalPlan = new Stack<Cell>();
-		this.mode = MODE.EXPLORE;
+		this.mode = MODE.SCOUT;
 		this.lastDir = Direction.SOUTH;
 		getCell(0, 0).setType(Cell.TYPE.HOME);
 
@@ -119,19 +115,19 @@ public class Knowledge implements Serializable {
 
 		while (e.hasMoreElements()) {
 			Cell otherCell = e.nextElement();
-			// only explored other cells are of interest
+			// only explored "other cells" are of interest
 			if (otherCell.getType() != Cell.TYPE.UNEXPLORED) {
 				Cell localCell = getCell(otherCell.getX(), otherCell.getY());
 				if (localCell.getType() == Cell.TYPE.UNEXPLORED) {
 					// if local cell is unexplored and other isn't, copy
 					// type/food
-					// set(otherCell);
-					localCell.copy(otherCell);
+					set(otherCell);
+					// localCell.copy(otherCell);
 					updated = true;
 				} else if (localCell.timeStamp < otherCell.timeStamp) {
 					// if local info is older, copy the newer info
-					// set(otherCell);
-					localCell.copy(otherCell);
+					set(otherCell);
+					// localCell.copy(otherCell);
 
 					updated = true;
 				}
@@ -174,6 +170,10 @@ public class Knowledge implements Serializable {
 
 	public int numKnownCells() {
 		return map.keySet().size();
+	}
+
+	public Hashtable<Point, Cell> getMap() {
+		return map;
 	}
 
 	public Cell getCell(int row, int col) {

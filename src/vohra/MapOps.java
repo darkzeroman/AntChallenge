@@ -1,10 +1,8 @@
 package vohra;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.Random;
+import java.util.Stack;
 
 import ants.Direction;
 
@@ -20,53 +18,22 @@ public class MapOps {
 		return Direction.values()[(dir.ordinal() + 2) % 4];
 	}
 
-	public static boolean makePlan(Knowledge knowledge, Cell.TYPE type,
-			Planner planner) {
-		return planner.makePlan(knowledge, type);
+	public static Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
+			Cell.TYPE type, Planner planner) {
+		return planner.makePlan(worldMap, startCell, type);
 	}
 
-	public static Cell bfs(Knowledge knowledge, Cell.TYPE goalType,
-			Hashtable<Cell, Cell> prev) {
-		// BFS Search
-		HashSet<Cell> markSet = new HashSet<Cell>();
-		LinkedList<Cell> queue = new LinkedList<Cell>();
+	
 
-		Cell startCell = knowledge.getCurrCell();
-		markSet.add(startCell);
-		queue.add(startCell);
-		while (!queue.isEmpty()) {
-			Cell t = queue.remove();
-			if (t.getType() == goalType)
-				return t;
-			LinkedList<Cell> neighbors = listNeighbors(knowledge, t,
-					goalType == Cell.TYPE.UNEXPLORED);
-
-			if ((knowledge.mode == Knowledge.MODE.SCOUT)
-					|| (knowledge.mode == Knowledge.MODE.EXPLORE))
-				Collections.shuffle(neighbors,
-						new Random(System.currentTimeMillis()));
-
-			for (Cell cell : neighbors) {
-				if (!markSet.contains(cell)) {
-					markSet.add(cell);
-					queue.add(cell);
-					prev.put(cell, t);
-				}
-			}
-		}
-		// goalType doesn't exist
-		return null;
-	}
-
-	public static LinkedList<Cell> listNeighbors(Knowledge knowledge,
-			Cell cell, boolean includeUnexplored) {
+	public static LinkedList<Cell> listNeighbors(WorldMap worldMap, Cell cell,
+			boolean includeUnexplored) {
 		LinkedList<Cell> neighborsList = new LinkedList<Cell>();
 
 		for (int i = 0; i < 4; i++) { // for each cardinal direction
 			int xPos = cell.getX() + offsets[i][0];
 			int yPos = cell.getY() + offsets[i][1];
 
-			Cell neighborCell = knowledge.getCell(xPos, yPos);
+			Cell neighborCell = worldMap.getCell(xPos, yPos);
 
 			if (neighborCell.getType() != Cell.TYPE.WATER) {
 				if (includeUnexplored)

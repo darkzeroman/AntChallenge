@@ -6,18 +6,19 @@ package vohra.searches;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
+import java.util.Random;
+import java.util.Stack;
 
 import vohra.Cell;
-import vohra.Knowledge;
 import vohra.MapOps;
 import vohra.MyAnt;
 import vohra.Planner;
+import vohra.WorldMap;
 
 /**
  * @author dkz
@@ -26,14 +27,50 @@ import vohra.Planner;
 public class AStar extends Planner {
 
 	@Override
-	public boolean makePlan(Knowledge knowledge, Cell.TYPE type) {
+	public Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
+			Cell.TYPE type) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
-		Cell target = MapOps.bfs(knowledge, type, prev);
+		Cell target = bfs(worldMap, startCell, type, prev);
 		if (target == null)
-			return false;
-		return makePlan(knowledge, target);
+			return null;
+		if (astar(worldMap, startCell, target, prev) == null)
+			return null;
 
+		Stack<Cell> newPlan = constructPath(worldMap, target, prev);
+		return newPlan;
+
+	}
+
+	public static Cell bfs(WorldMap worldMap, Cell startCell,
+			Cell.TYPE goalType, Hashtable<Cell, Cell> prev) {
+		// BFS Search
+		HashSet<Cell> markSet = new HashSet<Cell>();
+		LinkedList<Cell> queue = new LinkedList<Cell>();
+
+		markSet.add(startCell);
+		queue.add(startCell);
+		while (!queue.isEmpty()) {
+			Cell t = queue.remove();
+			if (t.getType() == goalType)
+				return t;
+			LinkedList<Cell> neighbors = MapOps.listNeighbors(worldMap, t,
+					goalType == Cell.TYPE.UNEXPLORED);
+
+			if (goalType == Cell.TYPE.UNEXPLORED)
+				Collections.shuffle(neighbors,
+						new Random(System.currentTimeMillis()));
+
+			for (Cell cell : neighbors) {
+				if (!markSet.contains(cell)) {
+					markSet.add(cell);
+					queue.add(cell);
+					prev.put(cell, t);
+				}
+			}
+		}
+		// goalType doesn't exist
+		return null;
 	}
 
 	public int h(Cell from, Cell to, Cell before, Hashtable<Cell, Cell> prev) {
@@ -58,82 +95,30 @@ public class AStar extends Planner {
 
 	}
 
-	public boolean makePlan(Knowledge knowledge, Cell target) {
-		HashSet<Cell> closedSet = new HashSet<Cell>();
-		LinkedList<Cell> openSet = new LinkedList<Cell>();
-		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
-		knowledge.preSearch(false);
-		Cell start = knowledge.getCurrCell();
-		openSet.add(start);
-
-		start.g = 0;
-		start.h = this.h(start, target, null, prev);
-		start.f = start.g + start.h;
-		while (!openSet.isEmpty()) {
-			Collections.sort(openSet, new Comp());
-
-			Cell currCell = openSet.poll();
-			if (currCell == target) {
-				printPathlol(prev, target);
-				constructPath(knowledge, target, prev);
-
-				return true;
-			}
-			closedSet.add(currCell);
-			LinkedList<Cell> al = MapOps.listNeighbors(knowledge, currCell,
-					target.getType() == Cell.TYPE.UNEXPLORED);
-			// Collections.shuffle(al);
-			for (Cell neighbor : al) {
-				if (closedSet.contains(neighbor))
-					continue;
-				int tentative_g_score = currCell.f;
-				boolean tentative_is_better = false;
-				if (!openSet.contains(neighbor)) {
-					openSet.add(neighbor);
-					neighbor.h = this.h(neighbor, target, currCell, prev);
-					tentative_is_better = true;
-				} else if (tentative_g_score < neighbor.g)
-					tentative_is_better = true;
-				else
-					tentative_is_better = false;
-				if (tentative_is_better) {
-					prev.put(neighbor, currCell);
-					neighbor.g = tentative_g_score;
-					neighbor.f = neighbor.g + neighbor.h;
-				}
-
-			}
-			// printPathlol(prev, currCell);
-
-		}
-		return false;
-	}
-
-	public boolean nothing(Knowledge knowledge, Cell target) {
-		Cell start = knowledge.getCurrCell();
+	public Cell astar(WorldMap worldMap, Cell startCell, Cell target,
+			Hashtable<Cell, Cell> prev) {
 		HashSet<Cell> closedSet = new HashSet<Cell>();
 		PriorityQueue<PQNode> openSet = new PriorityQueue<PQNode>();
-		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
-		openSet.add(new PQNode(start, new int[] { h(start, target, null, null),
-				0, h(start, target, null, null) }));
+		openSet.add(new PQNode(startCell, new int[] {
+				h(startCell, target, null, null), 0,
+				h(startCell, target, null, null) }));
 
 		while (!openSet.isEmpty()) {
 			System.out.println(openSet);
 			PQNode currNode = openSet.peek();
 			if (currNode.cell == target) {
-				constructPath(knowledge, target, prev);
 				System.out.println();
 				// printPathlol(prev, target);
 				System.out.println();
-				return true;
+				return target;
 			}
 			currNode = openSet.poll();
 			System.out.println(currNode.cell);
 			closedSet.add(currNode.cell);
 
-			LinkedList<Cell> al = MapOps.listNeighbors(knowledge,
-					currNode.cell, target.getType() == Cell.TYPE.UNEXPLORED);
+			LinkedList<Cell> al = MapOps.listNeighbors(worldMap, currNode.cell,
+					target.getType() == Cell.TYPE.UNEXPLORED);
 
 			for (Cell neighborCell : al) {
 				if (closedSet.contains(neighborCell))
@@ -162,7 +147,7 @@ public class AStar extends Planner {
 				}
 			}
 		}
-		return false;
+		return null;
 
 	}
 
@@ -181,15 +166,6 @@ public class AStar extends Planner {
 				return node;
 		}
 		return null;
-
-	}
-
-	private class Comp implements Comparator<Cell> {
-
-		@Override
-		public int compare(Cell o1, Cell o2) {
-			return o1.f - o2.f;
-		}
 
 	}
 

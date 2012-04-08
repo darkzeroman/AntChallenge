@@ -1,11 +1,12 @@
 package vohra;
 
 import java.awt.Point;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Scanner;
 import java.util.Stack;
 
-import vohra.Knowledge.MODE;
+import vohra.Cell.TYPE;
 import vohra.searches.BFS;
 import ants.Action;
 import ants.Ant;
@@ -14,53 +15,65 @@ import ants.Surroundings;
 import ants.Tile;
 
 public class MyAnt implements Ant {
+	private int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+
+	public enum MODE {
+		EXPLORE, SCOUT, TOFOOD, TOHOME
+	}
 
 	public static int order = 0;
 	public static final int DEBUGLEVEL = 1;
 
-	private int scoutModeTurns = 10;
-	private final int scoutSearchsLimit = 25;
-	public final Knowledge knowledge;
-	public final ObjectIO<Hashtable<Point, Cell>> ObjectIO = new ObjectIO<Hashtable<Point, Cell>>();
+	private int scoutModeTurns = 20;
+	private final int scoutSearchsLimit = 30;
+	private final ObjectIO<Hashtable<Point, Cell>> ObjectIO = new ObjectIO<Hashtable<Point, Cell>>();
+	private final int antnum;
+	private boolean carryingFood = false;
+	private boolean isScout = false;
+	private boolean mapUpdated = true;
+	private boolean surroundingsUpdated = false;
+	private MODE mode;
+	private int x, y;
+	private Stack<Cell> currPlan;
+	private final Stack<Cell> totalPlan;
+	private final WorldMap worldMap;
 	private Surroundings surroundings;
-	boolean firstAction = true;
 
 	public MyAnt() {
 		// TODO remove
-		knowledge = new Knowledge(order++);
+		this.antnum = order++;
+		this.worldMap = new WorldMap();
+		this.currPlan = new Stack<Cell>();
+		this.totalPlan = new Stack<Cell>();
+		this.mode = MODE.EXPLORE;
+		worldMap.getCell(0, 0).setType(Cell.TYPE.HOME);
 	}
 
 	public Action getAction(Surroundings surroundings) {
 		this.surroundings = surroundings;
-		knowledge.round++;
-		knowledge.updateMap(surroundings);
+		surroundingsUpdated |= worldMap.updateMap(surroundings, x, y);
 
 		debugPrint(1, "");
 		debugPrint(1, this.toString());
-		debugPrint(1, knowledge.toString());
-		debugPrint(1, knowledge.getCurrCell().toString());
+		debugPrint(1, toString());
+		debugPrint(1, getCurrCell().toString());
 
-		int currCellFood = knowledge.getCurrCell().getAmountOfFood();
-		int currCellNumAnts = knowledge.getCurrCell().getNumAnts();
+		int currCellFood = getCurrCell().getAmountOfFood();
+		int currCellNumAnts = getCurrCell().getNumAnts();
 
-		if (isAtHome() && currCellFood == 0 && !knowledge.isScout
-				&& currCellNumAnts == 3) {
-			knowledge.isScout = true;
-			knowledge.mode = Knowledge.MODE.SCOUT;
+		if (isAtHome() && currCellFood == 0 && !isScout && currCellNumAnts == 3) {
+			isScout = true;
+			mode = MODE.SCOUT;
 			debugPrint(1, "Initial Scout Mode");
 			return Action.HALT;
 		}
-		knowledge.isScout = true;
-		// knowledge.mode = Knowledge.MODE.SCOUT;
 
 		// Special Actions here
 
-		;// return Action.HALT;
-
-		debugPrint(1, "Starting in Mode: " + knowledge.mode);
-		// Determine next action by the use of the finite state machines
+		debugPrint(1, "Starting in Mode: " + mode);
+		// Determine next action using FSMs
 		Action action = null;
-		switch (knowledge.mode) {
+		switch (mode) {
 		case SCOUT:
 			action = modeScout();
 			break;
@@ -76,13 +89,11 @@ public class MyAnt implements Ant {
 		default:
 			throw new RuntimeException("Undefined state");
 		}
-		// waitForReturn();
-		firstAction = false;
-		// updating local knowledge
+
 		if (isActionValid(action)) {
 			if (action.getDirection() != null)
 				// directional actions need to update location
-				knowledge.updateCurrLoc(action.getDirection());
+				updateXY(action.getDirection());
 			else
 				// Action is a non-direction move
 				debugPrint(1, "Action: " + actionToString(action));
@@ -95,53 +106,52 @@ public class MyAnt implements Ant {
 		Action action;
 		scoutModeTurns--;
 
-		// If still in scout mode:
 		if (scoutModeTurns > 0) {
 			// If plan exists, continue with it
 			if ((action = nextPlanAction()) != null)
 				return action;
 			// If not, make one
-			else if (canFindUnexplored())
+			else if (canFindType(Cell.TYPE.UNEXPLORED))
 				return nextPlanAction();
 		}
 		// Not in scout mode anymore, transition to Food mode
-		return changeMode(Knowledge.MODE.TOFOOD);
+		return changeMode(MODE.TOFOOD);
 	}
 
 	private Action modeToFood() {
-		int currCellFood = knowledge.getCurrCell().getAmountOfFood();
+		int currCellFood = getCurrCell().getAmountOfFood();
 		Action action;
 
 		// if food on target doesn't doesn't exist anymore, re-plan
-		if (knowledge.updated && !getCurrPlan().isEmpty()
-				&& getCurrPlan().firstElement().getAmountOfFood() == 0) {
-			getCurrPlan().clear();
+		if (mapUpdated && !currPlan.isEmpty()
+				&& currPlan.firstElement().getAmountOfFood() == 0) {
+			currPlan.clear();
 			debugPrint(1, "Target doesn't have food, need to replan");
 		}
 
-		// Continue the plan if it exists
+		// Continue a plan if it exists
 		if ((action = nextPlanAction()) != null) {
 			return action;
 
-		} else if (!isAtHome() && currCellFood > 0 && !knowledge.carryingFood) {
+		} else if (!isAtHome() && currCellFood > 0 && !carryingFood) {
 			// ant is on food tile, gather
-			knowledge.carryingFood = true;
-			knowledge.getCurrCell().decrementFood();
+			carryingFood = true;
+			getCurrCell().decrementFood();
 			debugPrint(1, "GATHERING");
 
-			return changeModeAndAction(Knowledge.MODE.TOHOME, Action.GATHER);
+			return changeModeAndAction(MODE.TOHOME, Action.GATHER);
 
-		} else if ((canFindFood())) {
+		} else if ((canFindType(Cell.TYPE.FOOD))) {
 			// don't have a plan, so make one
 			return nextPlanAction();
 		}
-		if (isAtHome() && currCellFood > 100) {
+		if (isAtHome() && currCellFood > 200) {
 			// Stay at home, some ant should come with a plan
 			return Action.HALT;
 		}
 
 		debugPrint(1, "Can't find food, going to explore");
-		return changeMode(Knowledge.MODE.EXPLORE);
+		return changeMode(MODE.EXPLORE);
 	}
 
 	public void printPath(Stack<Cell> currRoute) {
@@ -154,87 +164,90 @@ public class MyAnt implements Ant {
 	}
 
 	private Action modeExplore() {
-
 		Action action;
-		int currCellFood = knowledge.getCurrCell().getAmountOfFood();
+		int currCellFood = getCurrCell().getAmountOfFood();
 
-		// Knowledge was recently updated, see if food source exists nearby
-		if (knowledge.updated && currCellFood == 0) {
-			knowledge.updated = false;
-			return changeMode(Knowledge.MODE.TOFOOD);
+		// WorldMap was recently updated, see if food source exists nearby
+		if (mapUpdated && currCellFood == 0) {
+			mapUpdated = false;
+			return changeMode(MODE.TOFOOD);
 		}
-		if (knowledge.surroundingsUpdate) {
-			knowledge.surroundingsUpdate = false;
+		// Instead of doing a full graph search when the immediate surroundings
+		// are updated
+		// check specifically for food in 4 surrounding tiles
+		if (surroundingsUpdated) {
+			surroundingsUpdated = false;
 			for (int i = 0; i < 4; i++) {
 				Tile tile = surroundings.getTile(Direction.values()[i]);
 				if (tile.getAmountOfFood() > 0) {
-					return changeMode(Knowledge.MODE.TOFOOD);
+					return changeMode(MODE.TOFOOD);
 				}
 			}
 		}
-		// Keep following plan
+		// If a plan exists, follow it
 		if ((action = nextPlanAction()) != null)
 			return action;
 
 		// Try to find closest unexplored
-		if (knowledge.getCell(0, 0).getAmountOfFood() < 200
-				&& canFindUnexplored())
+		if (worldMap.getCell(0, 0).getAmountOfFood() < 300
+				&& canFindType(Cell.TYPE.UNEXPLORED))
 			return nextPlanAction();
 
 		// Everything is explored, Go home
-		return changeMode(Knowledge.MODE.TOHOME);
+		return changeMode(MODE.TOHOME);
 	}
 
 	private Action modeToHome() {
 		Action action;
-		if (isAtHome() && !knowledge.carryingFood)
+		if (isAtHome() && !carryingFood)
 			return changeMode(MODE.TOFOOD);
-		// drop off food if if at home
-		if (isAtHome() && knowledge.carryingFood) {
-			knowledge.carryingFood = false;
-			knowledge.mode = Knowledge.MODE.TOFOOD;
-			knowledge.totalPlan.clear();
+
+		// drop off food if at home
+		if (isAtHome() && carryingFood) {
+			carryingFood = false;
+			mode = MODE.TOFOOD;
+			totalPlan.clear();
 
 			// For resetting the scout mode limit
-			if (knowledge.isScout && knowledge.getAmountFoodFound() < 625) {
-				// knowledge.getAmountFoodFound() < 6
+			if (isScout && getAmountFoodFound() < 625) {
+				// getAmountFoodFound() < 6
 				debugPrint(1, "Resetting Countdown");
 				scoutModeTurns = scoutSearchsLimit;
-				knowledge.mode = Knowledge.MODE.SCOUT;
+				mode = MODE.SCOUT;
 			}
-			return changeModeAndAction(knowledge.mode, Action.DROP_OFF);
+			return changeModeAndAction(mode, Action.DROP_OFF);
 		}
 
 		// Continue with plan
 		if ((action = nextPlanAction()) != null)
 			return action;
 		// Make plan to home
-		else if (canFindHome()) {
+		else if (canFindType(Cell.TYPE.HOME)) {
 			// TODO test
-			printPath(knowledge.totalPlan);
-			printPath(knowledge.getCurrPlan());
-			if (knowledge.totalPlan.size() == knowledge.getCurrPlan().size()) {
-				knowledge.getCurrPlan().clear();
+			printPath(totalPlan);
+			printPath(currPlan);
+			if (totalPlan.size() == currPlan.size()) {
+				currPlan.clear();
 
-				for (int i = 0; i < knowledge.totalPlan.size(); i++)
-					knowledge.getCurrPlan().push(knowledge.totalPlan.get(i));
+				for (int i = 0; i < totalPlan.size(); i++)
+					currPlan.push(totalPlan.get(i));
 			}
-			printPath(knowledge.getCurrPlan());
+			printPath(currPlan);
 
-			knowledge.totalPlan.clear();
+			totalPlan.clear();
 			// waitForReturn();
 			return nextPlanAction();
 		}
 		throw new RuntimeException("Can't find home, map might be corrupted");
 	}
 
-	private Action changeMode(Knowledge.MODE mode) {
-		debugPrint(1, "Changing from: " + knowledge.mode + " to: " + mode);
+	private Action changeMode(MODE nextMode) {
+		debugPrint(1, "Changing from: " + this.mode + " to: " + nextMode);
 
 		// Clear current plan when changing modes
-		getCurrPlan().clear();
-		knowledge.mode = mode;
-		switch (mode) {
+		currPlan.clear();
+		this.mode = nextMode;
+		switch (this.mode) {
 		case SCOUT:
 			return modeScout();
 		case TOFOOD:
@@ -244,16 +257,16 @@ public class MyAnt implements Ant {
 		case TOHOME:
 			return modeToHome();
 		}
-		throw new IllegalArgumentException("UnrecognizedMode: " + mode);
+		throw new IllegalArgumentException("UnrecognizedMode: " + nextMode);
 
 	}
 
-	private Action changeModeAndAction(Knowledge.MODE mode, Action action) {
-		debugPrint(1, "Changing to Mode: " + mode + " and Action: "
+	private Action changeModeAndAction(MODE nextMode, Action action) {
+		debugPrint(1, "Changing to Mode: " + nextMode + " and Action: "
 				+ actionToString(action));
 		// Set a new mode and action
-		getCurrPlan().clear();
-		knowledge.mode = mode;
+		currPlan.clear();
+		this.mode = nextMode;
 		return action;
 	}
 
@@ -270,11 +283,11 @@ public class MyAnt implements Ant {
 	private Action nextPlanAction() {
 		Action action;
 
-		if (getCurrPlan().size() > 0) {
-			Cell from = knowledge.getCurrCell();
-			knowledge.totalPlan.push(from);
+		if (currPlan.size() > 0) {
+			Cell from = getCurrCell();
+			totalPlan.push(from);
 
-			Cell to = getCurrPlan().pop();
+			Cell to = currPlan.pop();
 			Direction dir = from.dirTo(to);
 			action = Action.move(dir);
 			if (isActionValid(action))
@@ -285,20 +298,20 @@ public class MyAnt implements Ant {
 
 	public byte[] send() {
 		long start = System.currentTimeMillis();
-		byte[] arr = ObjectIO.toByteArray(knowledge.getMap());
-		debugPrint(1, "To Serialize: " + knowledge.numKnownCells() + " "
+		byte[] arr = ObjectIO.toByteArray(worldMap.getMap());
+		debugPrint(1, "To Serialize: " + worldMap.numKnownCells() + " "
 				+ (System.currentTimeMillis() - start));
 		return arr;
 	}
 
 	public void receive(byte[] data) {
-		Hashtable<Point, Cell> otherKnowledge = ObjectIO.fromByteArray(data);
-		// debugPrint(1, " Merging on: " + otherKnowledge.antnum);
-		knowledge.merge(otherKnowledge);
+		Hashtable<Point, Cell> otherWorldMap = ObjectIO.fromByteArray(data);
+		// debugPrint(1, " Merging on: " + otherantnum);
+		mapUpdated |= worldMap.merge(otherWorldMap);
 	}
 
 	private boolean isAtHome() {
-		return (knowledge.x == 0 && knowledge.y == 0);
+		return (x == 0 && y == 0);
 	}
 
 	private boolean isActionValid(Action action) {
@@ -312,33 +325,19 @@ public class MyAnt implements Ant {
 		return false;
 	}
 
-	public boolean makePlan(Cell.TYPE type, Planner planner) {
-		return false;
-	}
+	public boolean canFindType(Cell.TYPE goalType) {
+		Stack<Cell> newPlan = MapOps.makePlan(worldMap, this.getCurrCell(),
+				goalType, new BFS());
 
-	public boolean canFindFood() {
-		return MapOps.makePlan(knowledge, Cell.TYPE.FOOD, new BFS());
-	}
+		if (newPlan == null || newPlan.size() == 0)
+			return false;
 
-	public boolean canFindUnexplored() {
-		return MapOps.makePlan(knowledge, Cell.TYPE.UNEXPLORED, new BFS());
-	}
-
-	public boolean canFindHome() {
-		return MapOps.makePlan(knowledge, Cell.TYPE.HOME, new BFS());
-	}
-
-	public Cell getCell(int row, int col) {
-		return knowledge.getCell(row, col);
-	}
-
-	public Stack<Cell> getCurrPlan() {
-		return knowledge.getCurrPlan();
+		this.currPlan = newPlan;
+		return true;
 	}
 
 	public String toString() {
-		return "Ant Num: " + knowledge.antnum + " at: [" + knowledge.x + ", "
-				+ knowledge.y + "] ";
+		return "Ant Num: " + antnum + " at: [" + x + ", " + y + "] ";
 	}
 
 	public static void debugPrint(int num, String message) {
@@ -353,16 +352,66 @@ public class MyAnt implements Ant {
 		}
 	}
 
-	int count = 1;
-
 	private void waitForReturn() {
-		if (count == 0) {
-			Scanner sc = new Scanner(System.in);
-			while (!sc.nextLine().equals(""))
-				;
-			count = 2;
-		}
-		count--;
+		Scanner sc = new Scanner(System.in);
+		while (!sc.nextLine().equals(""))
+			;
 	}
 
+	public void updateXY(Direction dir) {
+		switch (dir) {
+		case NORTH:
+			this.y++;
+			break;
+		case EAST:
+			this.x++;
+			break;
+		case SOUTH:
+			this.y--;
+			break;
+		case WEST:
+			this.x--;
+			break;
+		default:
+			throw new IllegalArgumentException("Invalid direction");
+		}
+	}
+
+	public int getAmountFoodFound() {
+		int sum = 0;
+		Enumeration<Cell> e = worldMap.getMap().elements();
+		while (e.hasMoreElements()) {
+			sum += e.nextElement().origFood;
+		}
+		return sum;
+	}
+
+	public Cell getCurrCell() {
+		return getCell(this.x, this.y);
+	}
+
+	public WorldMap getWorldMap() {
+		return worldMap;
+	}
+
+	public void setXY(int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	public int getX() {
+		return x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public Stack<Cell> getCurrPlan() {
+		return currPlan;
+	}
+
+	public Cell getCell(int x, int y) {
+		return worldMap.getCell(x, y);
+	}
 }

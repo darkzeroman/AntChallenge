@@ -12,11 +12,8 @@ public class Cell implements Comparable<Cell>, Serializable {
 		FOOD, GRASS, HOME, UNEXPLORED, WATER
 	}
 
-	// used by searches, public because meant to be overwritten
+	// used by Djikstra, public because meant to be overwritten
 	public int dist = 0;
-	public int f = 0;
-	public int g = 0;
-	public int h = 0;
 
 	public long timeStamp;
 	private TYPE type;
@@ -40,17 +37,11 @@ public class Cell implements Comparable<Cell>, Serializable {
 		timeStamp = System.currentTimeMillis();
 	}
 
-	public void presearch() {
-		// used by BFS/Djikstra
-		this.dist = Integer.MAX_VALUE;
-		this.f = this.g = this.h = 0;
-
-	}
-
 	public Direction dirTo(Cell to) {
 		int fromX = this.coord.x;
 		int fromY = this.coord.y;
-		int toX = to.getX(), toY = to.getY();
+		int toX = to.getX();
+		int toY = to.getY();
 
 		if ((fromX == toX) && (fromY > toY))
 			return Direction.SOUTH;
