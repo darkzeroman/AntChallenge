@@ -17,13 +17,13 @@ public class Djikstra extends Planner {
 
 	@Override
 	public Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
-			Cell.TYPE type) {
+			Cell.CELLTYPE type) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = djikstra(worldMap, startCell, type, prev);
 		if (target == null)
 			return null;
-		Stack<Cell> newPlan = constructPath(worldMap, target, prev);
+		Stack<Cell> newPlan = constructPlan(worldMap, target, prev);
 		return newPlan;
 	}
 
@@ -39,19 +39,19 @@ public class Djikstra extends Planner {
 					&& cell.getY() == startCell.getY()) {
 				cell.dist = 0;
 			}
-			if (!checkUnexplored && cell.getType() != Cell.TYPE.UNEXPLORED
-					&& cell.getType() != Cell.TYPE.WATER)
+			if (!checkUnexplored && cell.getCellType() != Cell.CELLTYPE.UNEXPLORED
+					&& cell.getCellType() != Cell.CELLTYPE.WATER)
 				pq.add(cell);
-			else if (checkUnexplored && cell.getType() != Cell.TYPE.WATER)
+			else if (checkUnexplored && cell.getCellType() != Cell.CELLTYPE.WATER)
 				pq.add(cell);
 		}
 		return pq;
 	}
 
-	public Cell djikstra(WorldMap worldMap, Cell startCell, Cell.TYPE type,
+	public Cell djikstra(WorldMap worldMap, Cell startCell, Cell.CELLTYPE type,
 			Hashtable<Cell, Cell> prev) {
 		boolean includeUnexplored = false;
-		if (type == Cell.TYPE.UNEXPLORED)
+		if (type == Cell.CELLTYPE.UNEXPLORED)
 			includeUnexplored = true;
 
 		PriorityQueue<Cell> pq = preSearch(worldMap, startCell,
@@ -67,7 +67,7 @@ public class Djikstra extends Planner {
 
 			}
 			u = pq.poll();
-			if (u.getType() == type) { // reached target, can end
+			if (u.getCellType() == type) { // reached target, can end
 				pq.clear();
 
 				return u;

@@ -19,7 +19,7 @@ public class MapOps {
 	}
 
 	public static Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
-			Cell.TYPE type, Planner planner) {
+			Cell.CELLTYPE type, Planner planner) {
 		return planner.makePlan(worldMap, startCell, type);
 	}
 
@@ -35,10 +35,10 @@ public class MapOps {
 
 			Cell neighborCell = worldMap.getCell(xPos, yPos);
 
-			if (neighborCell.getType() != Cell.TYPE.WATER) {
+			if (neighborCell.getCellType() != Cell.CELLTYPE.WATER) {
 				if (includeUnexplored)
 					neighborsList.add(neighborCell);
-				else if (neighborCell.getType() != Cell.TYPE.UNEXPLORED)
+				else if (neighborCell.getCellType() != Cell.CELLTYPE.UNEXPLORED)
 					neighborsList.add(neighborCell);
 			}
 		}

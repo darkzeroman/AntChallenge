@@ -5,7 +5,7 @@ import java.util.Comparator;
 
 import vohra.Cell;
 
-public class CellComparator implements Comparator<Cell> {
+public class DistFromOriginComparator implements Comparator<Cell> {
 
 	@Override
 	public int compare(Cell o1, Cell o2) {

@@ -3,7 +3,6 @@ package vohra.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -15,47 +14,45 @@ import ants.Tile;
 
 public class WorldMapTest extends WorldMap {
 
-	@Test
-	public void test() {
-		fail("Not yet implemented");
-	}
+
 
 	@Test
 	public void testUpdatingMap() {
 		WorldMap worldMap = new WorldMap();
-		worldMap.updateMap(new testSurroundings(), 0, 0);
+		boolean surroundingsUpdated = worldMap.updateMap(new testSurroundings(), 0, 0);
 		assertEquals(5, worldMap.numKnownCells());
+		assertTrue(surroundingsUpdated);
 	}
 
 	@Test
 	public void testMapMerge() {
 		WorldMap map1 = new WorldMap();
 		WorldMap map2 = new WorldMap();
-
+		
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
-		boolean isUpdated = map1.merge(map2.getMap());
-		assertTrue(isUpdated);
+		boolean isUpdated = map1.mergeMaps(map2.getMap());
+		assertFalse(isUpdated);
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
-		map2.set(new Cell(Cell.TYPE.GRASS, 0, 1));
-		isUpdated = map1.merge(map2.getMap());
+		map2.setCell(new Cell(Cell.CELLTYPE.GRASS, 0, 1));
+		isUpdated = map1.mergeMaps(map2.getMap());
 		assertTrue(isUpdated);
 		assertEquals(map1.numKnownCells(), 2);
 		assertEquals(map2.numKnownCells(), 2);
 
-		isUpdated = map1.merge(map2.getMap());
-		assertTrue(isUpdated);
+		isUpdated = map1.mergeMaps(map2.getMap());
+		assertFalse(isUpdated);
 
-		map2.set(new Cell(Cell.TYPE.FOOD, 2, 2));
-		isUpdated = map1.merge(map2.getMap());
+		map2.setCell(new Cell(Cell.CELLTYPE.FOOD, 2, 2));
+		isUpdated = map1.mergeMaps(map2.getMap());
 		assertEquals(map1.numKnownCells(), 3);
 		assertEquals(map2.numKnownCells(), 3);
 		assertTrue(isUpdated);
 
-		isUpdated = map1.merge(map2.getMap());
+		isUpdated = map1.mergeMaps(map2.getMap());
 		assertFalse(isUpdated);
 
 	}

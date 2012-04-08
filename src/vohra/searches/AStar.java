@@ -28,7 +28,7 @@ public class AStar extends Planner {
 
 	@Override
 	public Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
-			Cell.TYPE type) {
+			Cell.CELLTYPE type) {
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
 		Cell target = bfs(worldMap, startCell, type, prev);
@@ -37,13 +37,13 @@ public class AStar extends Planner {
 		if (astar(worldMap, startCell, target, prev) == null)
 			return null;
 
-		Stack<Cell> newPlan = constructPath(worldMap, target, prev);
+		Stack<Cell> newPlan = constructPlan(worldMap, target, prev);
 		return newPlan;
 
 	}
 
 	public static Cell bfs(WorldMap worldMap, Cell startCell,
-			Cell.TYPE goalType, Hashtable<Cell, Cell> prev) {
+			Cell.CELLTYPE goalType, Hashtable<Cell, Cell> prev) {
 		// BFS Search
 		HashSet<Cell> markSet = new HashSet<Cell>();
 		LinkedList<Cell> queue = new LinkedList<Cell>();
@@ -52,12 +52,12 @@ public class AStar extends Planner {
 		queue.add(startCell);
 		while (!queue.isEmpty()) {
 			Cell t = queue.remove();
-			if (t.getType() == goalType)
+			if (t.getCellType() == goalType)
 				return t;
 			LinkedList<Cell> neighbors = MapOps.listNeighbors(worldMap, t,
-					goalType == Cell.TYPE.UNEXPLORED);
+					goalType == Cell.CELLTYPE.UNEXPLORED);
 
-			if (goalType == Cell.TYPE.UNEXPLORED)
+			if (goalType == Cell.CELLTYPE.UNEXPLORED)
 				Collections.shuffle(neighbors,
 						new Random(System.currentTimeMillis()));
 
@@ -78,9 +78,9 @@ public class AStar extends Planner {
 		int temp = Math.abs(from.getX() - to.getX())
 				+ Math.abs((from.getY() - to.getY()));
 		int h = temp;
-		if (from.getNumAnts() > 0
-				&& (System.nanoTime() - from.numOfAntsTimeStamp) < 3 * Math
-						.pow(10, 9))
+		if (from.getNumAnts() > 0)
+			// && (System.nanoTime() - from.numOfAntsTimeStamp) < 3 * Math
+			// .pow(10, 9))
 			h += 0;
 		else
 			h += 5;
@@ -118,7 +118,7 @@ public class AStar extends Planner {
 			closedSet.add(currNode.cell);
 
 			LinkedList<Cell> al = MapOps.listNeighbors(worldMap, currNode.cell,
-					target.getType() == Cell.TYPE.UNEXPLORED);
+					target.getCellType() == Cell.CELLTYPE.UNEXPLORED);
 
 			for (Cell neighborCell : al) {
 				if (closedSet.contains(neighborCell))

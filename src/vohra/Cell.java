@@ -1,12 +1,11 @@
 package vohra;
 
-import java.awt.Point;
 import java.io.Serializable;
 
 import ants.Direction;
 
 public class Cell implements Comparable<Cell>, Serializable {
-	public enum TYPE {
+	public enum CELLTYPE {
 		FOOD, GRASS, HOME, UNEXPLORED, WATER
 	}
 
@@ -15,17 +14,17 @@ public class Cell implements Comparable<Cell>, Serializable {
 	// used by Djikstra, public because meant to be overwritten
 	public int dist = 0;
 
-	public long numOfAntsTimeStamp = 0;
-	public long timeStamp;
-	private int amountOfFood = 0;
-	private final Point coord;
-	private int numOfAnts = 0;
-	private int originalAmountOfFood = 0;
-	private TYPE type;
+	private int initialNumFood = 0;
+	private int numFood = 0;
+	private int numAnts = 0;
+	private long timeStamp;
+	private CELLTYPE cellType;
+	private final int x, y;
 
-	public Cell(TYPE tileType, int x, int y) {
-		coord = new Point(x, y);
-		this.setType(tileType);
+	public Cell(CELLTYPE cellType, int x, int y) {
+		this.x = x;
+		this.y = y;
+		this.cellType = cellType;
 		timeStamp = System.currentTimeMillis();
 	}
 
@@ -34,77 +33,79 @@ public class Cell implements Comparable<Cell>, Serializable {
 	}
 
 	public void decrementFood() {
-		this.amountOfFood--;
+		this.numFood--;
 		this.timeStamp = System.nanoTime();
 	}
 
 	public Direction dirTo(Cell to) {
-		int fromX = this.coord.x;
-		int fromY = this.coord.y;
+		int fromX = this.x;
+		int fromY = this.y;
 		int toX = to.getX();
 		int toY = to.getY();
 
-		if ((fromX == toX) && (fromY > toY))
-			return Direction.SOUTH;
-		else if ((fromX == toX) && (fromY < toY))
-			return Direction.NORTH;
-		else if ((fromY == toY) && (fromX > toX))
-			return Direction.WEST;
-		else
-			return Direction.EAST;
+		if (fromX == toX) {
+			if (fromY > toY)
+				return Direction.SOUTH;
+			else
+				return Direction.NORTH;
+		} else if (fromY == toY) {
+			if (fromX > toX)
+				return Direction.WEST;
+			else
+				return Direction.EAST;
+		}
+		throw new RuntimeException("Can't reach cell");
 
 	}
 
-	public int getAmountOfFood() {
-		return amountOfFood;
+	public int getNumFood() {
+		return numFood;
 	}
 
 	public int getNumAnts() {
-		return numOfAnts;
+		return numAnts;
 	}
 
-	public int getOriginalAmountOfFood() {
-		return this.originalAmountOfFood;
+	public int getInitialNumFood() {
+		return this.initialNumFood;
 	}
 
-	public TYPE getType() {
-		return type;
+	public CELLTYPE getCellType() {
+		return cellType;
 	}
 
 	public int getX() {
-		return coord.x;
+		return this.x;
 	}
 
 	public int getY() {
-		return coord.y;
+		return this.y;
 	}
 
-	public void setAmountOfFood(int amountOfFood) {
-		originalAmountOfFood = Math.max(amountOfFood, originalAmountOfFood);
-		this.amountOfFood = amountOfFood;
+	public long getTimeStamp() {
+		return timeStamp;
+	}
+
+	public void setNumFood(int numFood) {
+		initialNumFood = Math.max(numFood, initialNumFood);
+		this.numFood = numFood;
 		timeStamp = System.nanoTime();
 	}
 
 	public void setNumAnts(int numAnts) {
-		this.numOfAnts = numAnts;
-		this.numOfAntsTimeStamp = System.nanoTime();
+		this.numAnts = numAnts;
 
 	}
 
-	public void setType(TYPE type) {
-		this.type = type;
+	public void setCellType(CELLTYPE type) {
+		this.cellType = type;
 
-	}
-
-	public void setXY(int x, int y) {
-		this.coord.x = x;
-		this.coord.y = y;
 	}
 
 	public String toString() {
-		String temp = "[" + coord.x + "," + coord.y + "], type: " + this.type;
-		temp += ", Amount of Food: " + this.amountOfFood + ", NumAnts: "
-				+ this.numOfAnts;
+		String temp = "[" + this.x + "," + this.y + "], type: " + this.cellType;
+		temp += ", Amount of Food: " + this.numFood + ", NumAnts: "
+				+ this.numAnts;
 		return temp.substring(0, 6);
 		// cost: " + this.dist + " ";
 	}

@@ -6,7 +6,6 @@ import java.util.Hashtable;
 import java.util.Scanner;
 import java.util.Stack;
 
-import vohra.Cell.TYPE;
 import vohra.searches.BFS;
 import ants.Action;
 import ants.Ant;
@@ -34,7 +33,7 @@ public class MyAnt implements Ant {
 	private boolean surroundingsUpdated = false;
 	private MODE mode;
 	private int x, y;
-	private Stack<Cell> currPlan;
+	private Stack<Cell> currentPlan;
 	private final Stack<Cell> totalPlan;
 	private final WorldMap worldMap;
 	private Surroundings surroundings;
@@ -43,10 +42,9 @@ public class MyAnt implements Ant {
 		// TODO remove
 		this.antnum = order++;
 		this.worldMap = new WorldMap();
-		this.currPlan = new Stack<Cell>();
+		this.currentPlan = new Stack<Cell>();
 		this.totalPlan = new Stack<Cell>();
 		this.mode = MODE.EXPLORE;
-		worldMap.getCell(0, 0).setType(Cell.TYPE.HOME);
 	}
 
 	public Action getAction(Surroundings surroundings) {
@@ -58,7 +56,7 @@ public class MyAnt implements Ant {
 		debugPrint(1, toString());
 		debugPrint(1, getCurrCell().toString());
 
-		int currCellFood = getCurrCell().getAmountOfFood();
+		int currCellFood = getCurrCell().getNumFood();
 		int currCellNumAnts = getCurrCell().getNumAnts();
 
 		if (isAtHome() && currCellFood == 0 && !isScout && currCellNumAnts == 3) {
@@ -111,7 +109,7 @@ public class MyAnt implements Ant {
 			if ((action = nextPlanAction()) != null)
 				return action;
 			// If not, make one
-			else if (canFindType(Cell.TYPE.UNEXPLORED))
+			else if (canFindType(Cell.CELLTYPE.UNEXPLORED))
 				return nextPlanAction();
 		}
 		// Not in scout mode anymore, transition to Food mode
@@ -119,13 +117,13 @@ public class MyAnt implements Ant {
 	}
 
 	private Action modeToFood() {
-		int currCellFood = getCurrCell().getAmountOfFood();
+		int currCellFood = getCurrCell().getNumFood();
 		Action action;
 
 		// if food on target doesn't doesn't exist anymore, re-plan
-		if (mapUpdated && !currPlan.isEmpty()
-				&& currPlan.firstElement().getAmountOfFood() == 0) {
-			currPlan.clear();
+		if (mapUpdated && !currentPlan.isEmpty()
+				&& currentPlan.firstElement().getNumFood() == 0) {
+			currentPlan.clear();
 			debugPrint(1, "Target doesn't have food, need to replan");
 		}
 
@@ -141,7 +139,7 @@ public class MyAnt implements Ant {
 
 			return changeModeAndAction(MODE.TOHOME, Action.GATHER);
 
-		} else if ((canFindType(Cell.TYPE.FOOD))) {
+		} else if ((canFindType(Cell.CELLTYPE.FOOD))) {
 			// don't have a plan, so make one
 			return nextPlanAction();
 		}
@@ -165,7 +163,7 @@ public class MyAnt implements Ant {
 
 	private Action modeExplore() {
 		Action action;
-		int currCellFood = getCurrCell().getAmountOfFood();
+		int currCellFood = getCurrCell().getNumFood();
 
 		// WorldMap was recently updated, see if food source exists nearby
 		if (mapUpdated && currCellFood == 0) {
@@ -189,8 +187,8 @@ public class MyAnt implements Ant {
 			return action;
 
 		// Try to find closest unexplored
-		if (worldMap.getCell(0, 0).getAmountOfFood() < 300
-				&& canFindType(Cell.TYPE.UNEXPLORED))
+		if (worldMap.getCell(0, 0).getNumFood() < 300
+				&& canFindType(Cell.CELLTYPE.UNEXPLORED))
 			return nextPlanAction();
 
 		// Everything is explored, Go home
@@ -222,17 +220,17 @@ public class MyAnt implements Ant {
 		if ((action = nextPlanAction()) != null)
 			return action;
 		// Make plan to home
-		else if (canFindType(Cell.TYPE.HOME)) {
+		else if (canFindType(Cell.CELLTYPE.HOME)) {
 			// TODO test
 			printPath(totalPlan);
-			printPath(currPlan);
-			if (totalPlan.size() == currPlan.size()) {
-				currPlan.clear();
+			printPath(currentPlan);
+			if (totalPlan.size() == currentPlan.size()) {
+				currentPlan.clear();
 
 				for (int i = 0; i < totalPlan.size(); i++)
-					currPlan.push(totalPlan.get(i));
+					currentPlan.push(totalPlan.get(i));
 			}
-			printPath(currPlan);
+			printPath(currentPlan);
 
 			totalPlan.clear();
 			// waitForReturn();
@@ -245,7 +243,7 @@ public class MyAnt implements Ant {
 		debugPrint(1, "Changing from: " + this.mode + " to: " + nextMode);
 
 		// Clear current plan when changing modes
-		currPlan.clear();
+		currentPlan.clear();
 		this.mode = nextMode;
 		switch (this.mode) {
 		case SCOUT:
@@ -265,7 +263,7 @@ public class MyAnt implements Ant {
 		debugPrint(1, "Changing to Mode: " + nextMode + " and Action: "
 				+ actionToString(action));
 		// Set a new mode and action
-		currPlan.clear();
+		currentPlan.clear();
 		this.mode = nextMode;
 		return action;
 	}
@@ -283,11 +281,11 @@ public class MyAnt implements Ant {
 	private Action nextPlanAction() {
 		Action action;
 
-		if (currPlan.size() > 0) {
+		if (currentPlan.size() > 0) {
 			Cell from = getCurrCell();
 			totalPlan.push(from);
 
-			Cell to = currPlan.pop();
+			Cell to = currentPlan.pop();
 			Direction dir = from.dirTo(to);
 			action = Action.move(dir);
 			if (isActionValid(action))
@@ -307,7 +305,7 @@ public class MyAnt implements Ant {
 	public void receive(byte[] data) {
 		Hashtable<Point, Cell> otherWorldMap = ObjectIO.fromByteArray(data);
 		// debugPrint(1, " Merging on: " + otherantnum);
-		mapUpdated |= worldMap.merge(otherWorldMap);
+		mapUpdated |= worldMap.mergeMaps(otherWorldMap);
 	}
 
 	private boolean isAtHome() {
@@ -325,14 +323,14 @@ public class MyAnt implements Ant {
 		return false;
 	}
 
-	public boolean canFindType(Cell.TYPE goalType) {
+	public boolean canFindType(Cell.CELLTYPE goalType) {
 		Stack<Cell> newPlan = MapOps.makePlan(worldMap, this.getCurrCell(),
 				goalType, new BFS());
 
 		if (newPlan == null || newPlan.size() == 0)
 			return false;
 
-		this.currPlan = newPlan;
+		this.currentPlan = newPlan;
 		return true;
 	}
 
@@ -381,7 +379,7 @@ public class MyAnt implements Ant {
 		int sum = 0;
 		Enumeration<Cell> e = worldMap.getMap().elements();
 		while (e.hasMoreElements()) {
-			sum += e.nextElement().getOriginalAmountOfFood();
+			sum += e.nextElement().getInitialNumFood();
 		}
 		return sum;
 	}
@@ -408,7 +406,7 @@ public class MyAnt implements Ant {
 	}
 
 	public Stack<Cell> getCurrPlan() {
-		return currPlan;
+		return currentPlan;
 	}
 
 	public Cell getCell(int x, int y) {

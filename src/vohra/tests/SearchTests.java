@@ -22,35 +22,35 @@ public class SearchTests {
 		Planner searchAlgorithm = new BFS();
 
 		ant = makeSquareGrassMap(3);
-		ant.getCell(0, 1).setType(Cell.TYPE.FOOD);
+		ant.getCell(0, 1).setCellType(Cell.CELLTYPE.FOOD);
 		Stack<Cell> plan = MapOps.makePlan(ant.getWorldMap(),
-				ant.getCurrCell(), Cell.TYPE.FOOD, searchAlgorithm);
+				ant.getCurrCell(), Cell.CELLTYPE.FOOD, searchAlgorithm);
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
 
 		ant = makeSquareGrassMap(3);
-		ant.getCell(1, 0).setType(Cell.TYPE.FOOD);
+		ant.getCell(1, 0).setCellType(Cell.CELLTYPE.FOOD);
 		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
-				Cell.TYPE.FOOD, searchAlgorithm);
+				Cell.CELLTYPE.FOOD, searchAlgorithm);
 		assertEquals(Direction.EAST, nextPlanDir(plan, ant.getCurrCell()));
 
 		ant = makeSquareGrassMap(3);
-		ant.getCell(0, -1).setType(Cell.TYPE.FOOD);
+		ant.getCell(0, -1).setCellType(Cell.CELLTYPE.FOOD);
 		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
-				Cell.TYPE.FOOD, searchAlgorithm);
+				Cell.CELLTYPE.FOOD, searchAlgorithm);
 		assertEquals(Direction.SOUTH, nextPlanDir(plan, ant.getCurrCell()));
 
 		ant = makeSquareGrassMap(3);
-		ant.getCell(-1, 0).setType(Cell.TYPE.FOOD);
+		ant.getCell(-1, 0).setCellType(Cell.CELLTYPE.FOOD);
 		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
-				Cell.TYPE.FOOD, searchAlgorithm);
+				Cell.CELLTYPE.FOOD, searchAlgorithm);
 		assertEquals(Direction.WEST, nextPlanDir(plan, ant.getCurrCell()));
 
 	}
 
 	@Test
 	public void testClosestType() {
-		MyAnt ant = new MyAnt();
-		ant.setXY(0, 0);
+		ant = new MyAnt();
+
 		Planner searchAlgorithm = new BFS();
 
 		// U: Unexplored, W: Water, G: Grass, A: Ant,
@@ -63,27 +63,27 @@ public class SearchTests {
 		// U W A W U
 		// U W W W U
 
-		int[][] waterCellCoords = new int[][] { { 0, -1 }, { -1, 0 }, { -1, 1 },
-				{ -1, 2 }, { -1, 3 }, { -1, 4 }, { 0, -1 }, { 1, 0 }, { 1, 1 },
-				{ 1, 2 }, { 1, 3 }, { 1, 4 } };
+		int[][] waterCellCoords = new int[][] { { 0, -1 }, { -1, 0 },
+				{ -1, 1 }, { -1, 2 }, { -1, 3 }, { -1, 4 }, { 0, -1 },
+				{ 1, 0 }, { 1, 1 }, { 1, 2 }, { 1, 3 }, { 1, 4 } };
 		int[][] grassCellCoords = new int[][] { { 0, 0 }, { 0, 1 }, { 0, 2 },
 				{ 0, 3 }, };
 
 		for (int[] arr : waterCellCoords)
-			ant.getCell(arr[0], arr[1]).setType(Cell.TYPE.WATER);
+			ant.getCell(arr[0], arr[1]).setCellType(Cell.CELLTYPE.WATER);
 		for (int[] arr : grassCellCoords)
-			ant.getCell(arr[0], arr[1]).setType(Cell.TYPE.GRASS);
+			ant.getCell(arr[0], arr[1]).setCellType(Cell.CELLTYPE.GRASS);
 
 		Stack<Cell> plan = MapOps.makePlan(ant.getWorldMap(),
-				ant.getCurrCell(), Cell.TYPE.UNEXPLORED, searchAlgorithm);
+				ant.getCurrCell(), Cell.CELLTYPE.UNEXPLORED, searchAlgorithm);
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
 
-		ant.getCell(0, 4).setType(Cell.TYPE.FOOD);
+		ant.getCell(0, 4).setCellType(Cell.CELLTYPE.FOOD);
 		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
-				Cell.TYPE.UNEXPLORED, searchAlgorithm);
+				Cell.CELLTYPE.UNEXPLORED, searchAlgorithm);
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrCell()));
@@ -113,10 +113,10 @@ public class SearchTests {
 	public void testReturnPath() {
 		MyAnt ant = makeSquareGrassMap(6);
 
-		ant.getWorldMap().getCell(2, 2).setType(Cell.TYPE.FOOD);
+		ant.getWorldMap().getCell(2, 2).setCellType(Cell.CELLTYPE.FOOD);
 
-		MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(), Cell.TYPE.FOOD,
-				new BFS());
+		MapOps.makePlan(ant.getWorldMap(), ant.getCurrCell(),
+				Cell.CELLTYPE.FOOD, new BFS());
 		// Stack<Cell> pathToGoal = (Stack<Cell>) ant.getCurrPlan().clone();
 
 		// MyAnt ant = new MyAnt();
@@ -138,7 +138,7 @@ public class SearchTests {
 		WorldMap worldMap = ant.getWorldMap();
 		for (int i = -1 * length / 2; i < length / 2; i++)
 			for (int j = -1 * length / 2; j < length / 2; j++)
-				worldMap.getCell(i, j).setType(Cell.TYPE.GRASS);
+				worldMap.getCell(i, j).setCellType(Cell.CELLTYPE.GRASS);
 
 		return ant;
 	}
@@ -150,18 +150,6 @@ public class SearchTests {
 			return currCell.dirTo(to);
 		}
 		return null;
-	}
-
-	private void printPath(MyAnt ant) {
-		Stack<Cell> currRoute = ant.getCurrPlan();
-		System.out
-				.println("Printing Path:  (size: " + currRoute.size() + "): ");
-		Cell old = ant.getCell(ant.getX(), ant.getY());
-		for (int i = currRoute.size() - 1; i >= 0; i--) {
-			System.out.println(old.dirTo(currRoute.get(i)) + " ");
-			old = currRoute.get(i);
-		}
-		MyAnt.debugPrint(1, "");
 	}
 
 }
