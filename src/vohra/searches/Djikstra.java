@@ -12,7 +12,6 @@ import java.util.Stack;
 import vohra.Cell;
 import vohra.Cell.CELLTYPE;
 import vohra.ExtraMethods;
-import vohra.MapOps;
 import vohra.Planner;
 import vohra.WorldMap;
 
@@ -54,12 +53,10 @@ public class Djikstra extends Planner {
 
 	public Cell djikstra(WorldMap worldMap, Cell startCell, CELLTYPE type,
 			Hashtable<Cell, Cell> prev) {
-		boolean addUnexplored = false;
-		if (type == CELLTYPE.UNEXPLORED)
-			addUnexplored = true;
 
 		LinkedList<Cell> listqueue = new LinkedList<Cell>();
-		PriorityQueue<Cell> pq = preSearch(worldMap, startCell, addUnexplored);
+		PriorityQueue<Cell> pq = preSearch(worldMap, startCell,
+				type == CELLTYPE.UNEXPLORED);
 		for (Cell cell : pq) {
 			listqueue.add(cell);
 		}
@@ -81,8 +78,7 @@ public class Djikstra extends Planner {
 				return u;
 
 			}
-			LinkedList<Cell> neighbors = MapOps.listNeighbors(worldMap, u,
-					addUnexplored);
+			LinkedList<Cell> neighbors = listNeighbors(worldMap, u, type);
 			ListIterator<Cell> it = neighbors.listIterator();
 			while (it.hasNext())
 				if (!listqueue.contains(it.next()))

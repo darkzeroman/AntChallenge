@@ -1,7 +1,6 @@
 FSM
 
-First 3 Ants start in scout.
-
+If A
 
 Modes:
 

@@ -43,12 +43,12 @@ public class BFS extends Planner {
 			Cell cell = queue.remove();
 			if (cell.getCellType() == goalType)
 				return cell;
-			LinkedList<Cell> neighbors = this.listNeighbors(worldMap, cell,
-					goalType);
+			LinkedList<Cell> neighbors = listNeighbors(worldMap, cell, goalType);
 
 			// if looking for unexplored, shuffle list
 			if (goalType == CELLTYPE.UNEXPLORED)
-				Collections.shuffle(neighbors, new Random(System.nanoTime()));
+				Collections.shuffle(neighbors,
+						new Random(System.currentTimeMillis()));
 
 			for (Cell neighbor : neighbors)
 				if (!markedSet.contains(neighbor)) {
@@ -61,27 +61,4 @@ public class BFS extends Planner {
 		return null;
 	}
 
-	private LinkedList<Cell> listNeighbors(WorldMap worldMap, Cell cell,
-			CELLTYPE goalType) {
-		// If searching for unexplored, add that type to list of neighbors
-		// food/home searches do not track unexplored cells for efficiency
-		boolean addUnexplored = (goalType == CELLTYPE.UNEXPLORED);
-		LinkedList<Cell> neighbors = new LinkedList<Cell>();
-
-		// for each cardinal direction find the neighbor
-		for (int i = 0; i < 4; i++) {
-			int xPos = cell.getX() + offsets[i][0];
-			int yPos = cell.getY() + offsets[i][1];
-			Cell neighborCell = worldMap.getCell(xPos, yPos);
-
-			// Waters are not needed, so if water, move on
-			if (neighborCell.getCellType() != CELLTYPE.WATER) {
-				if (addUnexplored)
-					neighbors.add(neighborCell);
-				else if (neighborCell.getCellType() != CELLTYPE.UNEXPLORED)
-					neighbors.add(neighborCell);
-			}
-		}
-		return neighbors;
-	}
 }

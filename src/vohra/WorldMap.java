@@ -14,7 +14,7 @@ public class WorldMap {
 	private final Hashtable<Point, Cell> map;
 	final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
-	private boolean foodUpdated = false;
+	private boolean foodUpdated = true;
 
 	public WorldMap() {
 		this.map = new Hashtable<Point, Cell>();
@@ -90,14 +90,17 @@ public class WorldMap {
 
 				// If local cell is unexplored and other isn't, copy
 				if (localCell.getCellType() == CELLTYPE.UNEXPLORED) {
-					if (localCell.getCellType() == CELLTYPE.FOOD)
+					if (otherCell.getCellType() == CELLTYPE.FOOD
+							|| localCell.getCellType() == CELLTYPE.FOOD)
 						this.foodUpdated = true;
 					localCell.copyCell(otherCell);
 
 					// If local cell is older, copy over
 				} else if (localCell.getTimeStamp() < otherCell.getTimeStamp()) {
-					if (localCell.getCellType() == CELLTYPE.FOOD)
+					if (otherCell.getCellType() == CELLTYPE.FOOD
+							|| localCell.getCellType() == CELLTYPE.FOOD)
 						this.foodUpdated = true;
+					
 					localCell.copyCell(otherCell);
 
 				}

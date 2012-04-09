@@ -34,6 +34,9 @@ public class WorldMapTest extends WorldMap {
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
+		// On creation, flag should be set
+		assertTrue(map1.checkAndToggleFoodUpdated());
+
 		// Merging now should not yield any new information
 		map1.mergeMaps(map2.getMap());
 		assertFalse(map1.checkAndToggleFoodUpdated());

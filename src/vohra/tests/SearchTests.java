@@ -8,17 +8,15 @@ import org.junit.Test;
 
 import vohra.Cell;
 import vohra.Cell.CELLTYPE;
-import vohra.MapOps;
 import vohra.MyAnt;
 import vohra.Planner;
+import vohra.Planner.SEARCHTYPE;
 import vohra.WorldMap;
-import vohra.searches.BFS;
-import vohra.searches.Djikstra;
 import ants.Direction;
 
 public class SearchTests {
 	MyAnt ant = new MyAnt();
-	Planner searchAlgorithm = new Djikstra();
+	Planner planner = Planner.getSingleInstance(SEARCHTYPE.BFS);
 
 	@Test
 	public void testSearchFood() {
@@ -28,26 +26,26 @@ public class SearchTests {
 
 		ant = makeAntInSquareWorldWithGrass(3);
 		ant.getCell(0, 1).setCellType(CELLTYPE.FOOD);
-		Stack<Cell> plan = MapOps.makePlan(ant.getWorldMap(),
-				ant.getCurrentCell(), CELLTYPE.FOOD, searchAlgorithm);
+		Stack<Cell> plan = planner.makePlan(ant.getWorldMap(),
+				ant.getCurrentCell(), CELLTYPE.FOOD);
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 
 		ant = makeAntInSquareWorldWithGrass(3);
 		ant.getCell(1, 0).setCellType(CELLTYPE.FOOD);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
-				CELLTYPE.FOOD, searchAlgorithm);
+		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.FOOD);
 		assertEquals(Direction.EAST, nextPlanDir(plan, ant.getCurrentCell()));
 
 		ant = makeAntInSquareWorldWithGrass(3);
 		ant.getCell(0, -1).setCellType(CELLTYPE.FOOD);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
-				CELLTYPE.FOOD, searchAlgorithm);
+		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.FOOD);
 		assertEquals(Direction.SOUTH, nextPlanDir(plan, ant.getCurrentCell()));
 
 		ant = makeAntInSquareWorldWithGrass(3);
 		ant.getCell(-1, 0).setCellType(CELLTYPE.FOOD);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
-				CELLTYPE.FOOD, searchAlgorithm);
+		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.FOOD);
 		assertEquals(Direction.WEST, nextPlanDir(plan, ant.getCurrentCell()));
 
 	}
@@ -58,28 +56,28 @@ public class SearchTests {
 		// Creating an ant in a world with food one cell away and making sure
 		// search algorithm matches the expected output
 
-		ant = makeAntInSquareWorldWithGrass(3);
+		ant = makeAntInSquareWorldWithGrass(4);
 		ant.getCell(0, 1).setCellType(CELLTYPE.UNEXPLORED);
-		Stack<Cell> plan = MapOps.makePlan(ant.getWorldMap(),
-				ant.getCurrentCell(), CELLTYPE.UNEXPLORED, searchAlgorithm);
+		Stack<Cell> plan = planner.makePlan(ant.getWorldMap(),
+				ant.getCurrentCell(), CELLTYPE.UNEXPLORED);
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 
-		ant = makeAntInSquareWorldWithGrass(3);
+		ant = makeAntInSquareWorldWithGrass(4);
 		ant.getCell(1, 0).setCellType(CELLTYPE.UNEXPLORED);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
-				CELLTYPE.UNEXPLORED, searchAlgorithm);
+		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.UNEXPLORED);
 		assertEquals(Direction.EAST, nextPlanDir(plan, ant.getCurrentCell()));
 
-		ant = makeAntInSquareWorldWithGrass(3);
+		ant = makeAntInSquareWorldWithGrass(4);
 		ant.getCell(0, -1).setCellType(CELLTYPE.UNEXPLORED);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
-				CELLTYPE.UNEXPLORED, searchAlgorithm);
+		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.UNEXPLORED);
 		assertEquals(Direction.SOUTH, nextPlanDir(plan, ant.getCurrentCell()));
 
-		ant = makeAntInSquareWorldWithGrass(3);
+		ant = makeAntInSquareWorldWithGrass(4);
 		ant.getCell(-1, 0).setCellType(CELLTYPE.UNEXPLORED);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
-				CELLTYPE.UNEXPLORED, searchAlgorithm);
+		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.UNEXPLORED);
 		assertEquals(Direction.WEST, nextPlanDir(plan, ant.getCurrentCell()));
 
 	}
@@ -113,8 +111,8 @@ public class SearchTests {
 			ant.getCell(arr[0], arr[1]).setCellType(CELLTYPE.GRASS);
 
 		System.out.println(ant.getWorldMap().numKnownCells());
-		Stack<Cell> plan = MapOps.makePlan(ant.getWorldMap(),
-				ant.getCurrentCell(), CELLTYPE.UNEXPLORED, searchAlgorithm);
+		Stack<Cell> plan = planner.makePlan(ant.getWorldMap(),
+				ant.getCurrentCell(), CELLTYPE.UNEXPLORED);
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
@@ -122,8 +120,8 @@ public class SearchTests {
 
 		// Switching goal type to food, still should be same answer
 		ant.getCell(0, 4).setCellType(CELLTYPE.FOOD);
-		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
-				CELLTYPE.FOOD, searchAlgorithm);
+		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.FOOD);
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));

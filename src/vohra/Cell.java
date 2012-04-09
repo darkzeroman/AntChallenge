@@ -5,21 +5,23 @@ import java.io.Serializable;
 import ants.Direction;
 
 public class Cell implements Comparable<Cell>, Serializable {
+	private static final long serialVersionUID = 1L;
+
+	// Cell types help simplify the search
 	public enum CELLTYPE {
 		FOOD, GRASS, HOME, UNEXPLORED, WATER
 	}
 
-	private static final long serialVersionUID = 1L;
-
 	// used by Djikstra, public because meant to be overwritten
 	public int dist = 0;
 
-	private int initialNumFood = 0;
+	// Properties of the cell
+	private int initialNumFood = 0; // used to track total numFood
 	private int numFood = 0;
 	private int numAnts = 0;
-	private long timeStamp;
+	private long timeStamp; // When the i
 	private CELLTYPE cellType;
-	private final int x, y;
+	private final int x, y; // location
 
 	public Cell(CELLTYPE cellType, int x, int y) {
 		this.x = x;
