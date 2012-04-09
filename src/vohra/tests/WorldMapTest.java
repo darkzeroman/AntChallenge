@@ -20,7 +20,7 @@ public class WorldMapTest extends WorldMap {
 		// Starting with fresh world map, check if updating with a surroundings
 		// object triggers the update flag and increases number of known cells
 		WorldMap worldMap = new WorldMap();
-		boolean surroundingsUpdated = worldMap.updateMap(
+		boolean surroundingsUpdated = worldMap.surroundingsUpdate(
 				new DummySurroundings(), 0, 0);
 		assertEquals(5, worldMap.numKnownCells());
 		assertTrue(surroundingsUpdated);

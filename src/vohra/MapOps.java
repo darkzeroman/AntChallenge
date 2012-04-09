@@ -15,7 +15,7 @@ public class MapOps {
 
 	public static Direction oppositeDir(Direction dir) {
 		if (dir == null)
-			MyAnt.debugPrint(2, "Why is Dir  Null");
+			ExtraMethods.debugPrint(2, "Why is Dir  Null");
 		return Direction.values()[(dir.ordinal() + 2) % 4];
 	}
 

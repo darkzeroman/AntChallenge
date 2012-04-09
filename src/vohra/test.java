@@ -14,11 +14,14 @@ public class test {
 
 		s1.push(1);
 		s1.push(2);
+		s2.push(3);
+		s2.push(4);
 
-		for (int i = 0; i < s1.size(); i++)
-			s2.push(s1.get(i));
-		System.out.println(s2.pop());
-		System.out.println(s2.pop());
+		s1 = s2;
+		s2 = new Stack<Integer>();
+		System.out.println(s1.size());
+		System.out.println(s2.size());
+
 
 	}
 

@@ -12,8 +12,8 @@ import java.util.Stack;
 
 import vohra.Cell;
 import vohra.Cell.CELLTYPE;
+import vohra.ExtraMethods;
 import vohra.MapOps;
-import vohra.MyAnt;
 import vohra.Planner;
 import vohra.WorldMap;
 
@@ -134,7 +134,7 @@ public class AStar extends Planner {
 					neighborNode.updateg(tentative_g_score);
 					neighborNode.update();
 					if (!openSet.remove(neighborNode))
-						MyAnt.debugPrint(2, "ERROR");
+						ExtraMethods.debugPrint(2, "ERROR");
 					openSet.add(neighborNode);
 				}
 			}

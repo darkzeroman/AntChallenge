@@ -5,6 +5,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import vohra.Cell.CELLTYPE;
+import vohra.MyAnt.ANTMODE;
 import ants.Direction;
 import ants.Surroundings;
 import ants.Tile;
@@ -20,21 +21,24 @@ public class WorldMap {
 		getCell(0, 0).setCellType(CELLTYPE.HOME);
 	}
 
-	public boolean updateMap(Surroundings surroundings, int x, int y) {
-		// Return boolean to indicate surroundings were updated
-		boolean surroundingsUpdated = false;
-		
+	public boolean surroundingsUpdate(Surroundings surroundings, int x, int y) {
+		// Return boolean to indicate surroundings were updated and have food
+		boolean checkForFood = false;
+
 		// Checking the current tile
-		surroundingsUpdated |= updateCell(getCell(x, y),
-				surroundings.getCurrentTile());
-		
+		checkForFood |= updateCell(getCell(x, y), surroundings.getCurrentTile());
+
 		// Checking the neighbors
 		for (int i = 0; i < 4; i++) {
 			Tile tile = surroundings.getTile(Direction.values()[i]);
 			Cell cell = getCell((x + offsets[i][0]), (y + offsets[i][1]));
-			surroundingsUpdated |= updateCell(cell, tile);
+			checkForFood |= updateCell(cell, tile);
 		}
-		return surroundingsUpdated;
+		
+		// Doing a full food search when only the immediate surroundings is
+		// updated is wasteful, so just check for food in 4 surrounding tiles
+
+		return checkForFood;
 
 	}
 
@@ -42,7 +46,7 @@ public class WorldMap {
 		// CELL = local copy, TILE = given by engine
 
 		// Takes in a CELL and TILE and checks if there is new info from TILE
-		// and returns boolean if CELL has been updated
+		// and returns boolean if CELL has Food
 
 		int tileNumFood = tile.getAmountOfFood();
 		cell.setNumAnts(tile.getNumAnts()); // always set number of ants
@@ -52,15 +56,13 @@ public class WorldMap {
 			if (tileNumFood > 0) { // Checking for food TILE
 				cell.setNumFood(tileNumFood);
 				cell.setCellType(CELLTYPE.FOOD);
+				return true;
 
 			} else if (tileNumFood == 0 && tile.isTravelable())
 				cell.setCellType(CELLTYPE.GRASS);
 
 			else if (!tile.isTravelable()) //
 				cell.setCellType(CELLTYPE.WATER);
-			else
-				return false; // when nothing is updated
-			return true;
 
 		} else if (cell.getCellType() == CELLTYPE.FOOD) {
 			if (tileNumFood == 0) { // CELL had food, not anymore
@@ -85,26 +87,26 @@ public class WorldMap {
 	public boolean mergeMaps(Hashtable<Point, Cell> otherMap) {
 		// Merges local and other ant's Map
 		Enumeration<Cell> e = otherMap.elements();
-		boolean mergeMapUpdate = false; // flag for when new info is added
+		boolean mergedNewInfo = false; // flag for when new info is added
 		while (e.hasMoreElements()) {
 			Cell otherCell = e.nextElement();
 			// Only explored "other cells" are of interest
 			if (otherCell.getCellType() != CELLTYPE.UNEXPLORED) {
 				Cell localCell = getCell(otherCell.getX(), otherCell.getY());
 
-				// If local cell is unexplored and other isn't, merge
+				// If local cell is unexplored and other isn't, copy
 				if (localCell.getCellType() == CELLTYPE.UNEXPLORED) {
 					localCell.copyCell(otherCell);
-					mergeMapUpdate = true;
+					mergedNewInfo = true;
 
-					// If local info is older, merge
+					// If local cell is older, copy over
 				} else if (localCell.getTimeStamp() < otherCell.getTimeStamp()) {
 					localCell.copyCell(otherCell);
-					mergeMapUpdate = true;
+					mergedNewInfo = true;
 				}
 			}
 		}
-		return mergeMapUpdate;
+		return mergedNewInfo;
 	}
 
 	public int numKnownCells() {

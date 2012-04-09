@@ -18,10 +18,10 @@ import ants.Direction;
 
 public class SearchTests {
 	MyAnt ant = new MyAnt();
-	Planner searchAlgorithm = new BFS();
+	Planner searchAlgorithm = new Djikstra();
 
 	@Test
-	public void testSearch() {
+	public void testSearchFood() {
 
 		// Creating an ant in a world with food one cell away and making sure
 		// search algorithm matches the expected output
@@ -53,8 +53,41 @@ public class SearchTests {
 	}
 
 	@Test
+	public void testSearchUnexplored() {
+
+		// Creating an ant in a world with food one cell away and making sure
+		// search algorithm matches the expected output
+
+		ant = makeAntInSquareWorldWithGrass(3);
+		ant.getCell(0, 1).setCellType(CELLTYPE.UNEXPLORED);
+		Stack<Cell> plan = MapOps.makePlan(ant.getWorldMap(),
+				ant.getCurrentCell(), CELLTYPE.UNEXPLORED, searchAlgorithm);
+		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
+
+		ant = makeAntInSquareWorldWithGrass(3);
+		ant.getCell(1, 0).setCellType(CELLTYPE.UNEXPLORED);
+		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.UNEXPLORED, searchAlgorithm);
+		assertEquals(Direction.EAST, nextPlanDir(plan, ant.getCurrentCell()));
+
+		ant = makeAntInSquareWorldWithGrass(3);
+		ant.getCell(0, -1).setCellType(CELLTYPE.UNEXPLORED);
+		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.UNEXPLORED, searchAlgorithm);
+		assertEquals(Direction.SOUTH, nextPlanDir(plan, ant.getCurrentCell()));
+
+		ant = makeAntInSquareWorldWithGrass(3);
+		ant.getCell(-1, 0).setCellType(CELLTYPE.UNEXPLORED);
+		plan = MapOps.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
+				CELLTYPE.UNEXPLORED, searchAlgorithm);
+		assertEquals(Direction.WEST, nextPlanDir(plan, ant.getCurrentCell()));
+
+	}
+
+	@Test
 	public void testClosestType() {
-		ant = this.makeAntInSquareWorldWithGrass(7);
+		ant = this.makeAntInSquareWorldWithGrass(10);
+		ant.getCell(0, 4).setCellType(CELLTYPE.UNEXPLORED);
 		// Test to check if plan can work for multiple cells away
 
 		// U: Unexplored, W: Water, G: Grass, A: Ant,
@@ -70,7 +103,7 @@ public class SearchTests {
 
 		int[][] waterCellCoords = new int[][] { { 0, -1 }, { -1, 0 },
 				{ -1, 1 }, { -1, 2 }, { -1, 3 }, { -1, 4 }, { 0, -1 },
-				{ 1, 0 }, { 1, 1 }, { 1, 2 }, { 1, 3 }, { 1, 4 } };
+				{ 1, 0 }, { 1, 1 }, { 1, 2 }, { 1, 3 }, { 1, 4 }, { 0, 5 } };
 		int[][] grassCellCoords = new int[][] { { 0, 0 }, { 0, 1 }, { 0, 2 },
 				{ 0, 3 }, };
 

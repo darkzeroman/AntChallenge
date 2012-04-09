@@ -17,7 +17,7 @@ import ants.Tile;
 public class MyAnt implements Ant {
 
 	// Modes the ant can be in, used for the FSM
-	public enum MODE {
+	public enum ANTMODE {
 		EXPLORE, SCOUT, TOFOOD, TOHOME
 	}
 
@@ -31,18 +31,18 @@ public class MyAnt implements Ant {
 	// The reset number for the scout mode counter
 	private final int scoutModeTurns = 30;
 
-	private final int NUMFOODATHOME_TOFOODCONSTANT = 600;
+	private final int NUMFOODATHOME_TOFOODCONSTANT = 200;
 
 	// Scouts will be in scout mode until below number of food are found
-	private final int numFoodToFindforScouts = 625;
+	private final int numFoodToFindforScouts = 700;
 
 	// Ant properties
 	private boolean carryingFood = false;
 	private boolean isScout = false;
 	private int x, y; // location of the ant
-	private MODE mode;
+	private ANTMODE mode;
 	private Stack<Cell> currentPlan; // pre-determined planned route to a target
-	private final Stack<Cell> fromHomePlan; // path from last time at home
+	private Stack<Cell> fromHomePlan; // path from last time at home
 
 	// Holds the knowledge each ant has of the world
 	private final WorldMap worldMap;
@@ -56,12 +56,11 @@ public class MyAnt implements Ant {
 
 	// Flag for indicating new info has been merged in the world map from
 	// another ant
-	private boolean mergeMapUpdate = true;
+	private boolean checkForNewFood = true;
 
 	// Flag for when world map receives new information from surroundings
 	// Instead of searching whole map when just surroundings have been updated
 	// this allows for just the immediate cells to be searched
-	private boolean surroundingsUpdated = false;
 
 	private Planner planner = new BFS();
 
@@ -70,17 +69,17 @@ public class MyAnt implements Ant {
 		this.worldMap = new WorldMap();
 		this.currentPlan = new Stack<Cell>();
 		this.fromHomePlan = new Stack<Cell>();
-		this.mode = MODE.EXPLORE;
+		this.mode = ANTMODE.EXPLORE;
 	}
 
 	public Action getAction(Surroundings surroundings) {
 		this.surroundings = surroundings;
-		surroundingsUpdated |= worldMap.updateMap(surroundings, x, y);
+		checkForNewFood |= worldMap.surroundingsUpdate(surroundings, x, y);
 
-		debugPrint(1, "");
-		debugPrint(1, this.toString());
-		debugPrint(1, toString());
-		debugPrint(1, getCurrentCell().toString());
+		ExtraMethods.debugPrint(1, "");
+		ExtraMethods.debugPrint(1, this.toString());
+		ExtraMethods.debugPrint(1, toString());
+		ExtraMethods.debugPrint(1, getCurrentCell().toString());
 
 		int currentCellNumFood = getCurrentCell().getNumFood();
 		int currentCellNumAnts = getCurrentCell().getNumAnts();
@@ -90,12 +89,12 @@ public class MyAnt implements Ant {
 		if (isAtHome() && currentCellNumFood == 0 && !isScout
 				&& currentCellNumAnts == 3) {
 			isScout = true;
-			mode = MODE.SCOUT;
-			debugPrint(1, "Initial Scout Mode");
+			mode = ANTMODE.SCOUT;
+			ExtraMethods.debugPrint(1, "Initial Scout Mode");
 			return Action.HALT;
 		}
 
-		debugPrint(1, "Starting in Mode: " + mode);
+		ExtraMethods.debugPrint(1, "Starting in Mode: " + mode);
 
 		// Determine next action using FSMs
 		Action action = null;
@@ -122,7 +121,8 @@ public class MyAnt implements Ant {
 				updateLocation(action.getDirection());
 			else
 				// Action is a non-direction move
-				debugPrint(1, "Action: " + actionToString(action));
+				ExtraMethods.debugPrint(1,
+						"Action: " + ExtraMethods.actionToString(action));
 			return action;
 		}
 		throw new RuntimeException("Invalid Action");
@@ -133,7 +133,7 @@ public class MyAnt implements Ant {
 
 		// Decreasing the scout mode counter before switching to TOFOOD mode
 		scoutModeCounter--;
-		System.out.println("scoutModeTurns: " + scoutModeCounter);
+
 		if (scoutModeCounter > 0) { // Still in scout mode
 			// If plan exists, continue with it
 			action = nextPlanAction();
@@ -144,7 +144,7 @@ public class MyAnt implements Ant {
 				return nextPlanAction();
 		}
 		// Not in scout mode anymore, transition to Food mode
-		return changeMode(MODE.TOFOOD);
+		return changeMode(ANTMODE.EXPLORE);
 	}
 
 	private Action modeToFood() {
@@ -152,12 +152,12 @@ public class MyAnt implements Ant {
 		Action action;
 
 		// If food on target doesn't doesn't exist anymore, re-plan
-		if ((mergeMapUpdate || surroundingsUpdated) && !currentPlan.isEmpty()
+		if (checkForNewFood && !currentPlan.isEmpty()
 				&& currentPlan.firstElement().getNumFood() == 0) {
-			mergeMapUpdate = false;
-			surroundingsUpdated = false;
+			checkForNewFood = false;
 			currentPlan.clear(); // clearing, so re-planning is neeeded
-			debugPrint(1, "Target doesn't have food, need to replan");
+			ExtraMethods.debugPrint(1,
+					"Target doesn't have food, need to replan");
 		}
 
 		// Continue a plan if it exists
@@ -169,8 +169,8 @@ public class MyAnt implements Ant {
 		if (!isAtHome() && currentCellNumFood > 0 && !carryingFood) {
 			carryingFood = true;
 			getCurrentCell().decrementFood();
-			debugPrint(1, "GATHERING");
-			return changeModeWithAction(MODE.TOHOME, Action.GATHER);
+			ExtraMethods.debugPrint(1, "GATHERING");
+			return changeModeWithAction(ANTMODE.TOHOME, Action.GATHER);
 		}
 
 		// Make plan to closest food source
@@ -184,29 +184,17 @@ public class MyAnt implements Ant {
 			return Action.HALT;
 		}
 
-		debugPrint(1, "Can't find food, going to explore");
-		return changeMode(MODE.EXPLORE);
+		ExtraMethods.debugPrint(1, "Can't find food, going to explore");
+		return changeMode(ANTMODE.EXPLORE);
 	}
 
 	private Action modeExplore() {
 		Action action;
-		int currentCellNumFood = getCurrentCell().getNumFood();
 
 		// WorldMap was recently updated, see if food source exists nearby
-		if (mergeMapUpdate && currentCellNumFood == 0) {
-			mergeMapUpdate = false;
-			return changeMode(MODE.TOFOOD);
-		}
-
-		// Doing a full food search when only the immediate surroundings is
-		// updated is wasteful, so just check for food in 4 surrounding tiles
-		if (surroundingsUpdated) {
-			surroundingsUpdated = false;
-			for (int i = 0; i < 4; i++) {
-				Tile tile = surroundings.getTile(Direction.values()[i]);
-				if (tile.getAmountOfFood() > 0)
-					return changeMode(MODE.TOFOOD);
-			}
+		if (checkForNewFood) {
+			checkForNewFood = false;
+			return changeMode(ANTMODE.TOFOOD);
 		}
 
 		// If a plan exists, follow it
@@ -215,21 +203,27 @@ public class MyAnt implements Ant {
 			return action;
 
 		// Try to find closest unexplored
+
 		if (worldMap.getCell(0, 0).getNumFood() < NUMFOODATHOME_TOFOODCONSTANT
 				&& canFindValidPlanTo(CELLTYPE.UNEXPLORED))
 			return nextPlanAction();
 
 		// Everything is explored, go home
-		return changeMode(MODE.TOHOME);
+		return changeMode(ANTMODE.TOHOME);
 	}
 
 	private Action modeToHome() {
 		Action action;
 
+		// When at home and can't find food, happens when mound is on an island
+		if (isAtHome() && !canFindValidPlanTo(CELLTYPE.UNEXPLORED)
+				&& !canFindValidPlanTo(CELLTYPE.FOOD))
+			return Action.HALT;
+
 		// If ant went to home because there is nothing left
 		// to explore, try to find food again
 		if (isAtHome() && !carryingFood)
-			return changeMode(MODE.TOFOOD);
+			return changeMode(ANTMODE.TOFOOD);
 
 		// Drop off food
 		if (isAtHome() && carryingFood) {
@@ -238,12 +232,12 @@ public class MyAnt implements Ant {
 
 			// If scout, go back to scout mode
 			if (isScout && worldMap.getNumFoodFound() <= numFoodToFindforScouts) {
-				debugPrint(1, "Resetting Countdown");
+				ExtraMethods.debugPrint(1, "Resetting Countdown");
 				scoutModeCounter = scoutModeTurns;
-				return changeModeWithAction(MODE.SCOUT, Action.DROP_OFF);
+				return changeModeWithAction(ANTMODE.SCOUT, Action.DROP_OFF);
 			}
 			// Not scout, so go back to food
-			return changeModeWithAction(MODE.TOFOOD, Action.DROP_OFF);
+			return changeModeWithAction(ANTMODE.TOFOOD, Action.DROP_OFF);
 		}
 
 		// If a plan exists, follow it
@@ -251,7 +245,7 @@ public class MyAnt implements Ant {
 			return action;
 
 		// Attempt to make plan to go home
-		else if (canFindValidPlanTo(CELLTYPE.HOME)) {
+		if (canFindValidPlanTo(CELLTYPE.HOME)) {
 
 			// If the plan to home is the same size as the path from home,
 			// take the reverse of path from home. To hopefully
@@ -260,16 +254,16 @@ public class MyAnt implements Ant {
 				currentPlan.clear();
 				copyStack(fromHomePlan, currentPlan);
 			}
-			// Since at home
+			// Since at home, clear path
 			fromHomePlan.clear();
 			return nextPlanAction();
 		}
-		throw new RuntimeException(
-				"Can't find home, map might have been accidentally changed");
+		throw new RuntimeException("Can't find home, map error?");
 	}
 
-	private Action changeMode(MODE nextMode) {
-		debugPrint(1, "Changing from: " + this.mode + " to: " + nextMode);
+	private Action changeMode(ANTMODE nextMode) {
+		ExtraMethods.debugPrint(1, "Changing from: " + this.mode + " to: "
+				+ nextMode);
 
 		// Clear current plan when changing modes
 		currentPlan.clear();
@@ -288,9 +282,9 @@ public class MyAnt implements Ant {
 
 	}
 
-	private Action changeModeWithAction(MODE nextMode, Action action) {
-		debugPrint(1, "Changing to Mode: " + nextMode + " and Action: "
-				+ actionToString(action));
+	private Action changeModeWithAction(ANTMODE nextMode, Action action) {
+		ExtraMethods.debugPrint(1, "Changing to Mode: " + nextMode
+				+ " and Action: " + ExtraMethods.actionToString(action));
 
 		// Set a new mode with action
 		currentPlan.clear();
@@ -320,15 +314,15 @@ public class MyAnt implements Ant {
 	public byte[] send() {
 		long start = System.currentTimeMillis();
 		byte[] arr = ObjectIO.toByteArray(worldMap.getMap());
-		debugPrint(1, "To Serialize: " + worldMap.numKnownCells() + " "
-				+ (System.currentTimeMillis() - start));
+		ExtraMethods.debugPrint(1, "To Serialize: " + worldMap.numKnownCells()
+				+ " " + (System.currentTimeMillis() - start));
 		return arr;
 	}
 
 	public void receive(byte[] data) {
 		Hashtable<Point, Cell> otherWorldMap = ObjectIO.fromByteArray(data);
-		debugPrint(1, " Merging on: ");
-		mergeMapUpdate |= worldMap.mergeMaps(otherWorldMap);
+		ExtraMethods.debugPrint(1, " Merging on: ");
+		checkForNewFood |= worldMap.mergeMaps(otherWorldMap);
 	}
 
 	private boolean canFindValidPlanTo(CELLTYPE goalType) {
@@ -375,57 +369,20 @@ public class MyAnt implements Ant {
 	private boolean isActionValid(Action action) {
 		if (action == null)
 			return false;
-		Direction dir;
-		if ((dir = action.getDirection()) == null)
+		Direction dir = action.getDirection();
+		if (dir == null)
 			return true; // action is non-directional
 
 		// action has a direction, so check if travelable
 		if (surroundings.getTile(dir).isTravelable())
 			return true;
+
+		new RuntimeException("Invalid Action");
 		return false;
-	}
-
-	private String actionToString(Action action) {
-		if (action == Action.DROP_OFF)
-			return "Drop off";
-		else if (action == Action.GATHER)
-			return "Gather";
-		else if (action == Action.HALT)
-			return "Halt";
-		throw new IllegalArgumentException("UnrecognizedAction: " + action);
-	}
-
-	private void printPath(Stack<Cell> currRoute) {
-		MyAnt.debugPrint(1, "Printing Path:  (size: " + currRoute.size()
-				+ "): ");
-		for (int i = 0; i < currRoute.size(); i++) {
-			MyAnt.debugPrint(1, currRoute.get(i).toString());
-		}
-		MyAnt.debugPrint(1, "");
 	}
 
 	public String toString() {
 		return "Ant Num: " + antnum + " at: [" + x + ", " + y + "] ";
-	}
-
-	public static void debugPrint(int num, String message) {
-		if (DEBUGLEVEL == 0)
-			return;
-		if (num >= DEBUGLEVEL) {
-			System.out.println(num + ": " + message);
-			if (num == 2)
-				try {
-					Thread.sleep(1000 * 10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-		}
-	}
-
-	private void waitForReturn() {
-		Scanner sc = new Scanner(System.in);
-		while (!sc.nextLine().equals(""))
-			;
 	}
 
 	// Getters and Setters below are either for methods that

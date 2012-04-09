@@ -2,15 +2,12 @@ package vohra.tests;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.PriorityQueue;
 
 import org.junit.Test;
 
 import vohra.Cell;
 import vohra.Cell.CELLTYPE;
-import vohra.searches.DistFromOriginComparator;
 
 public class CellTest {
 
@@ -24,16 +21,6 @@ public class CellTest {
 		pq.add(a);
 		pq.add(b);
 		assertEquals(a, pq.poll());
-	}
-
-	@Test
-	public void testDistanceComparator() {
-		ArrayList<Cell> test = new ArrayList<Cell>();
-		test.add(new Cell(CELLTYPE.GRASS, 1, 1));
-		test.add(new Cell(CELLTYPE.FOOD, 4, 4));
-
-		Collections.sort(test, new DistFromOriginComparator());
-		assertEquals(CELLTYPE.GRASS, test.get(0).getCellType());
 	}
 
 }

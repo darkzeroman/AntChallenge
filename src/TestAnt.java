@@ -1,11 +1,12 @@
 
-
 import vohra.MyAnt;
 import ants.Action;
 import ants.Ant;
 import ants.Surroundings;
 
 public class TestAnt implements Ant {
+	// Needed to use this because the engine complains if the class is in a
+	// package but I needed packages for JUnit tests
 	MyAnt ant = new MyAnt();
 
 	/**

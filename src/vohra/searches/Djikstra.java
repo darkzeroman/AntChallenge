@@ -11,8 +11,8 @@ import java.util.Stack;
 
 import vohra.Cell;
 import vohra.Cell.CELLTYPE;
+import vohra.ExtraMethods;
 import vohra.MapOps;
-import vohra.MyAnt;
 import vohra.Planner;
 import vohra.WorldMap;
 
@@ -35,12 +35,14 @@ public class Djikstra extends Planner {
 
 		Enumeration<Cell> e = worldMap.getMap().elements();
 		while (e.hasMoreElements()) {
+
 			Cell cell = e.nextElement();
 			cell.dist = Integer.MAX_VALUE;
 			if (cell.getX() == startCell.getX()
 					&& cell.getY() == startCell.getY()) {
 				cell.dist = 0;
 			}
+
 			if (!addUnexplored && cell.getCellType() != CELLTYPE.UNEXPLORED
 					&& cell.getCellType() != CELLTYPE.WATER)
 				pq.add(cell);
@@ -57,19 +59,19 @@ public class Djikstra extends Planner {
 			addUnexplored = true;
 
 		LinkedList<Cell> listqueue = new LinkedList<Cell>();
-		// PriorityQueue<Cell> listqueue = preSearch(worldMap, startCell,
-		// addUnexplored);
-		for (Cell cell : listqueue) {
+		PriorityQueue<Cell> pq = preSearch(worldMap, startCell, addUnexplored);
+		for (Cell cell : pq) {
 			listqueue.add(cell);
 		}
-		Collections.sort(listqueue);
 		int count = 0;
 
 		while (!listqueue.isEmpty()) {
+			Collections.sort(listqueue);
+
 			count++;
 			Cell u = listqueue.peek();
 			if (u.dist == Integer.MAX_VALUE) {
-				MyAnt.debugPrint(1, "exiting after: " + count);
+				ExtraMethods.debugPrint(1, "exiting after: " + count);
 				break; // nothing past here is reachable
 
 			}
@@ -89,9 +91,9 @@ public class Djikstra extends Planner {
 				Collections.shuffle(neighbors, new Random(System.nanoTime()));
 
 			for (Cell cell : neighbors) {
-				int alt = u.dist + 10;
+				int alt = u.dist + 1;
 				if (cell.getNumAnts() > 0) {
-					MyAnt.debugPrint(1, "has ants!");
+					ExtraMethods.debugPrint(1, "has ants!");
 					alt = u.dist + 1;
 					;
 				}
