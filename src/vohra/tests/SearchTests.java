@@ -144,7 +144,7 @@ public class SearchTests {
 		// Gets plan's next step direction
 		if (plan.size() > 0) {
 			Cell to = plan.pop();
-			return from.dirTo(to);
+			return from.directionTo(to);
 		}
 		return null;
 	}

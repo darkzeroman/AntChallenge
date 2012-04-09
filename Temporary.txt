@@ -1,8 +1,9 @@
 FSM
 
-Modes:
-
 First 3 Ants start in scout.
+
+
+Modes:
 
 SCOUT
 	If scoutModeCounter is > 0.
@@ -13,6 +14,9 @@ SCOUT
 EXPLORE
 	If map was updated, ChangeMode(TOFOOD)
 	If plan exists, continue with it
+	If more than 200 food on mound
+		if at HOME, wait
+		else ChangeMode(TOHOME)
 	If can find closest UNEXPLORED, return
 	ChangeMode(TOHOME)
 	
@@ -21,11 +25,11 @@ TOFOOD
 	If plan exists, continue with it
 	If on food, gather. ChangeMode(TOHOME)
 	If can find closest FOOD, return
-	If at HOME and already food on mound, wait
 	ChangeTo(EXPLORE)
 	
 TOHOME
-	If at HOME and can't find UNEXPLORED OR FOOD, stuck
+	If at HOME and not carrying food
+		ChangeMode(Explore)
 	If at HOME and carrying food. 
 		DROPOFF
 		If scout, reset counter. 
@@ -34,6 +38,4 @@ TOHOME
 	If can find closest HOME,
 		If plan to home and plan from home is same, switch.
 		return
-	END. CAN'T FIND HOME OR FOOD
-	
-		
+	If can't find unexplored/food, ERROR

@@ -18,12 +18,10 @@ public class WorldMapTest extends WorldMap {
 	@Test
 	public void testUpdatingMap() {
 		// Starting with fresh world map, check if updating with a surroundings
-		// object triggers the update flag and increases number of known cells
+		// increases number of known cells
 		WorldMap worldMap = new WorldMap();
-		boolean surroundingsUpdated = worldMap.surroundingsUpdate(
-				new DummySurroundings(), 0, 0);
+		worldMap.surroundingsUpdate(new DummySurroundings(), 0, 0);
 		assertEquals(5, worldMap.numKnownCells());
-		assertTrue(surroundingsUpdated);
 	}
 
 	@Test
@@ -37,34 +35,34 @@ public class WorldMapTest extends WorldMap {
 		assertEquals(map2.numKnownCells(), 1);
 
 		// Merging now should not yield any new information
-		boolean mergeMapUpdate = map1.mergeMaps(map2.getMap());
-		assertFalse(mergeMapUpdate);
+		map1.mergeMaps(map2.getMap());
+		assertFalse(map1.checkAndToggleFoodUpdated());
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
-		// Setting a new type of cell in map 2, so map 1 should have
-		// mergeMapUpdate flag triggered
+		// Setting a new type of cell in map 2, but since this isn't a food
+		// source map 1's foodupdate should not be set
 		map2.setCell(new Cell(CELLTYPE.GRASS, 0, 1));
-		mergeMapUpdate = map1.mergeMaps(map2.getMap());
-		assertTrue(mergeMapUpdate);
+		map1.mergeMaps(map2.getMap());
+		assertFalse(map1.checkAndToggleFoodUpdated());
 		assertEquals(map1.numKnownCells(), 2);
 		assertEquals(map2.numKnownCells(), 2);
 
 		// Nothing new added, so merging again should lead to no triggering of
 		// update flag
-		mergeMapUpdate = map1.mergeMaps(map2.getMap());
-		assertFalse(mergeMapUpdate);
+		map1.mergeMaps(map2.getMap());
+		assertFalse(map1.checkAndToggleFoodUpdated());
 
 		// Making sure food is updated correctly
 		map2.setCell(new Cell(CELLTYPE.FOOD, 2, 2));
-		mergeMapUpdate = map1.mergeMaps(map2.getMap());
+		map1.mergeMaps(map2.getMap());
 		assertEquals(map1.numKnownCells(), 3); // known cells should be 3
 		assertEquals(map2.numKnownCells(), 3);
-		assertTrue(mergeMapUpdate);
+		assertTrue(map1.checkAndToggleFoodUpdated());
 
 		// Final test to merge, nothing new should be merged
-		mergeMapUpdate = map1.mergeMaps(map2.getMap());
-		assertFalse(mergeMapUpdate);
+		map1.mergeMaps(map2.getMap());
+		assertFalse(map1.checkAndToggleFoodUpdated());
 
 	}
 

@@ -28,6 +28,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 		timeStamp = System.currentTimeMillis();
 	}
 
+	// From Comparable interface, used for Djikstra
 	public int compareTo(Cell cell) {
 		return (this.dist - cell.dist);
 	}
@@ -37,7 +38,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 		this.timeStamp = System.currentTimeMillis();
 	}
 
-	public Direction dirTo(Cell to) {
+	public Direction directionTo(Cell to) {
 		int fromX = this.x;
 		int fromY = this.y;
 		int toX = to.getX();
@@ -58,13 +59,13 @@ public class Cell implements Comparable<Cell>, Serializable {
 
 	}
 
+	// Copy the otherCell's data to this one
 	public void copyCell(Cell otherCell) {
 		this.cellType = otherCell.getCellType();
 		this.timeStamp = otherCell.timeStamp;
 		this.numFood = otherCell.numFood;
 		this.initialNumFood = Math.max(initialNumFood,
 				otherCell.getInitialNumFood());
-
 	}
 
 	public int getNumFood() {

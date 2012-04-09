@@ -79,7 +79,7 @@ public class AStar extends Planner {
 
 		Cell beforebefore;
 		if (before != null && (beforebefore = prev.get(before)) != null
-				&& (beforebefore.dirTo(before) == before.dirTo(from))) {
+				&& (beforebefore.directionTo(before) == before.directionTo(from))) {
 			h += 0;
 		} else
 			h += temp;

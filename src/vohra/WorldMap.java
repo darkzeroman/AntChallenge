@@ -5,7 +5,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import vohra.Cell.CELLTYPE;
-import vohra.MyAnt.ANTMODE;
 import ants.Direction;
 import ants.Surroundings;
 import ants.Tile;
@@ -15,34 +14,33 @@ public class WorldMap {
 	private final Hashtable<Point, Cell> map;
 	final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
+	private boolean foodUpdated = false;
+
 	public WorldMap() {
 		this.map = new Hashtable<Point, Cell>();
 		// Setting the home tile upon instantiation
 		getCell(0, 0).setCellType(CELLTYPE.HOME);
 	}
 
-	public boolean surroundingsUpdate(Surroundings surroundings, int x, int y) {
+	public void surroundingsUpdate(Surroundings surroundings, int x, int y) {
 		// Return boolean to indicate surroundings were updated and have food
-		boolean checkForFood = false;
 
 		// Checking the current tile
-		checkForFood |= updateCell(getCell(x, y), surroundings.getCurrentTile());
+		updateCell(getCell(x, y), surroundings.getCurrentTile());
 
 		// Checking the neighbors
 		for (int i = 0; i < 4; i++) {
 			Tile tile = surroundings.getTile(Direction.values()[i]);
 			Cell cell = getCell((x + offsets[i][0]), (y + offsets[i][1]));
-			checkForFood |= updateCell(cell, tile);
+			updateCell(cell, tile);
 		}
-		
+
 		// Doing a full food search when only the immediate surroundings is
 		// updated is wasteful, so just check for food in 4 surrounding tiles
 
-		return checkForFood;
-
 	}
 
-	public boolean updateCell(Cell cell, Tile tile) {
+	public void updateCell(Cell cell, Tile tile) {
 		// CELL = local copy, TILE = given by engine
 
 		// Takes in a CELL and TILE and checks if there is new info from TILE
@@ -56,7 +54,7 @@ public class WorldMap {
 			if (tileNumFood > 0) { // Checking for food TILE
 				cell.setNumFood(tileNumFood);
 				cell.setCellType(CELLTYPE.FOOD);
-				return true;
+				foodUpdated = true;
 
 			} else if (tileNumFood == 0 && tile.isTravelable())
 				cell.setCellType(CELLTYPE.GRASS);
@@ -68,26 +66,22 @@ public class WorldMap {
 			if (tileNumFood == 0) { // CELL had food, not anymore
 				cell.setNumFood(tileNumFood);
 				cell.setCellType(CELLTYPE.GRASS);
-				return true;
-
+				foodUpdated = true;
 			} else if (tileNumFood != cell.getNumFood()) {
 				// Need to update num food on CELL
 				cell.setNumFood(tileNumFood);
-				return true;
-
+				foodUpdated = true;
 			}
 		} else if (cell.getCellType() == CELLTYPE.HOME) {
 			// Updating HOME's numFood
 			cell.setNumFood(tileNumFood);
-			return true;
 		}
-		return false; // means no updates for current cell
 	}
 
-	public boolean mergeMaps(Hashtable<Point, Cell> otherMap) {
+	public void mergeMaps(Hashtable<Point, Cell> otherMap) {
 		// Merges local and other ant's Map
 		Enumeration<Cell> e = otherMap.elements();
-		boolean mergedNewInfo = false; // flag for when new info is added
+
 		while (e.hasMoreElements()) {
 			Cell otherCell = e.nextElement();
 			// Only explored "other cells" are of interest
@@ -96,17 +90,19 @@ public class WorldMap {
 
 				// If local cell is unexplored and other isn't, copy
 				if (localCell.getCellType() == CELLTYPE.UNEXPLORED) {
+					if (localCell.getCellType() == CELLTYPE.FOOD)
+						this.foodUpdated = true;
 					localCell.copyCell(otherCell);
-					mergedNewInfo = true;
 
 					// If local cell is older, copy over
 				} else if (localCell.getTimeStamp() < otherCell.getTimeStamp()) {
+					if (localCell.getCellType() == CELLTYPE.FOOD)
+						this.foodUpdated = true;
 					localCell.copyCell(otherCell);
-					mergedNewInfo = true;
+
 				}
 			}
 		}
-		return mergedNewInfo;
 	}
 
 	public int numKnownCells() {
@@ -123,6 +119,25 @@ public class WorldMap {
 		Enumeration<Cell> e = getMap().elements();
 		while (e.hasMoreElements()) {
 			sum += e.nextElement().getInitialNumFood();
+		}
+		return sum;
+	}
+
+	public boolean checkAndToggleFoodUpdated() {
+		if (this.foodUpdated) {
+			this.foodUpdated = false;
+			return true;
+		}
+		return this.foodUpdated;
+	}
+
+	public int getNumAntsAroundCell(Cell cell) {
+		int sum = 0;
+		sum = cell.getNumAnts();
+		// Checking the neighbors
+		for (int i = 0; i < 4; i++) {
+			sum += getCell((cell.getX() + offsets[i][0]),
+					(cell.getY() + offsets[i][1])).getNumAnts();
 		}
 		return sum;
 	}
