@@ -9,7 +9,7 @@ import java.io.ObjectOutputStream;
  * Used for converting the objects to/from byte array. Standard code
  */
 class ObjectIO<T> {
-	byte[] toByteArray(T obj) {
+	public byte[] toByteArray(T obj) {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(stream);
@@ -21,7 +21,7 @@ class ObjectIO<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	T fromByteArray(byte[] data) {
+	public T fromByteArray(byte[] data) {
 		final ByteArrayInputStream stream = new ByteArrayInputStream(data);
 		T t = null;
 		try {

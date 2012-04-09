@@ -20,7 +20,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 	private long timeStamp;
 	private CELLTYPE cellType;
 	private final int x, y;
-	
+
 	public Cell(CELLTYPE cellType, int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -115,7 +115,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 		String temp = "[" + this.x + "," + this.y + "], type: " + this.cellType;
 		temp += ", Amount of Food: " + this.numFood + ", NumAnts: "
 				+ this.numAnts;
-		return temp.substring(0, 6);
+		return temp.substring(0, 6).concat(this.dist + "");
 		// cost: " + this.dist + " ";
 	}
 }

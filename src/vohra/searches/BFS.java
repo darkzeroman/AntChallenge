@@ -19,8 +19,8 @@ public class BFS extends Planner {
 
 		// holds cell references which is used to backtrack for route plan
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
+		Cell target = breadthFirstSearch(worldMap, start, goalType, prev);
 
-		Cell target = bfs(worldMap, start, goalType, prev);
 		// If target is null, the search wasn't able to find desired goal type
 		if (target == null)
 			return null;
@@ -29,8 +29,8 @@ public class BFS extends Planner {
 
 	}
 
-	public Cell bfs(WorldMap worldMap, Cell startCell, CELLTYPE goalType,
-			Hashtable<Cell, Cell> prev) {
+	private Cell breadthFirstSearch(WorldMap worldMap, Cell startCell,
+			CELLTYPE goalType, Hashtable<Cell, Cell> prev) {
 		// Standard BFS algorithm
 		// Using markedSet to avoid re-checking already visited nodes
 
@@ -61,10 +61,10 @@ public class BFS extends Planner {
 		return null;
 	}
 
-	public LinkedList<Cell> listNeighbors(WorldMap worldMap, Cell cell,
+	private LinkedList<Cell> listNeighbors(WorldMap worldMap, Cell cell,
 			CELLTYPE goalType) {
-		// If searching for unexplored, must be sure to include that type
-		// otherwise, food/home searches do not track unexplored for efficiency
+		// If searching for unexplored, add that type to list of neighbors
+		// food/home searches do not track unexplored cells for efficiency
 		boolean addUnexplored = (goalType == CELLTYPE.UNEXPLORED);
 		LinkedList<Cell> neighbors = new LinkedList<Cell>();
 

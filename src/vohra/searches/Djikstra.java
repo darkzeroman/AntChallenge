@@ -1,10 +1,12 @@
 package vohra.searches;
 
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.PriorityQueue;
+import java.util.Random;
 import java.util.Stack;
 
 import vohra.Cell;
@@ -54,32 +56,39 @@ public class Djikstra extends Planner {
 		if (type == CELLTYPE.UNEXPLORED)
 			addUnexplored = true;
 
-		PriorityQueue<Cell> pq = preSearch(worldMap, startCell, addUnexplored);
+		LinkedList<Cell> listqueue = new LinkedList<Cell>();
+		// PriorityQueue<Cell> listqueue = preSearch(worldMap, startCell,
+		// addUnexplored);
+		for (Cell cell : listqueue) {
+			listqueue.add(cell);
+		}
+		Collections.sort(listqueue);
 		int count = 0;
 
-		while (!pq.isEmpty()) {
+		while (!listqueue.isEmpty()) {
 			count++;
-			Cell u = pq.peek();
+			Cell u = listqueue.peek();
 			if (u.dist == Integer.MAX_VALUE) {
 				MyAnt.debugPrint(1, "exiting after: " + count);
 				break; // nothing past here is reachable
 
 			}
-			u = pq.poll();
+			u = listqueue.poll();
 			if (u.getCellType() == type) { // reached target, can end
-				pq.clear();
-
+				listqueue.clear();
 				return u;
 
 			}
-			LinkedList<Cell> al = MapOps.listNeighbors(worldMap, u,
+			LinkedList<Cell> neighbors = MapOps.listNeighbors(worldMap, u,
 					addUnexplored);
-			ListIterator<Cell> it = al.listIterator();
+			ListIterator<Cell> it = neighbors.listIterator();
 			while (it.hasNext())
-				if (!pq.contains(it.next()))
+				if (!listqueue.contains(it.next()))
 					it.remove();
+			if (type == CELLTYPE.UNEXPLORED)
+				Collections.shuffle(neighbors, new Random(System.nanoTime()));
 
-			for (Cell cell : al) {
+			for (Cell cell : neighbors) {
 				int alt = u.dist + 10;
 				if (cell.getNumAnts() > 0) {
 					MyAnt.debugPrint(1, "has ants!");
@@ -90,8 +99,8 @@ public class Djikstra extends Planner {
 				if (alt < cell.dist) {
 					cell.dist = alt;
 					prev.put(cell, u);
-					if (pq.remove(cell))
-						pq.add(cell);
+					if (listqueue.remove(cell))
+						listqueue.add(cell);
 					else
 						throw new Error("Can't find element in PQ");
 

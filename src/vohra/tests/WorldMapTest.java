@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import vohra.Cell;
 import vohra.Cell.CELLTYPE;
-import vohra.MyAnt;
 import vohra.WorldMap;
 import ants.Direction;
 import ants.Surroundings;
@@ -18,71 +17,73 @@ public class WorldMapTest extends WorldMap {
 
 	@Test
 	public void testUpdatingMap() {
+		// Starting with fresh world map, check if updating with a surroundings
+		// object triggers the update flag and increases number of known cells
 		WorldMap worldMap = new WorldMap();
 		boolean surroundingsUpdated = worldMap.updateMap(
-				new testSurroundings(), 0, 0);
+				new DummySurroundings(), 0, 0);
 		assertEquals(5, worldMap.numKnownCells());
 		assertTrue(surroundingsUpdated);
 	}
 
 	@Test
 	public void testMapMerge() {
+		// Testing various parts of a merge between two world maps
 		WorldMap map1 = new WorldMap();
 		WorldMap map2 = new WorldMap();
 
+		// Both maps should only have one known cell: HOME
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
-		boolean isUpdated = map1.mergeMaps(map2.getMap());
-		assertFalse(isUpdated);
+		// Merging now should not yield any new information
+		boolean mergeMapUpdate = map1.mergeMaps(map2.getMap());
+		assertFalse(mergeMapUpdate);
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
+		// Setting a new type of cell in map 2, so map 1 should have
+		// mergeMapUpdate flag triggered
 		map2.setCell(new Cell(CELLTYPE.GRASS, 0, 1));
-		isUpdated = map1.mergeMaps(map2.getMap());
-		assertTrue(isUpdated);
+		mergeMapUpdate = map1.mergeMaps(map2.getMap());
+		assertTrue(mergeMapUpdate);
 		assertEquals(map1.numKnownCells(), 2);
 		assertEquals(map2.numKnownCells(), 2);
 
-		isUpdated = map1.mergeMaps(map2.getMap());
-		assertFalse(isUpdated);
+		// Nothing new added, so merging again should lead to no triggering of
+		// update flag
+		mergeMapUpdate = map1.mergeMaps(map2.getMap());
+		assertFalse(mergeMapUpdate);
 
+		// Making sure food is updated correctly
 		map2.setCell(new Cell(CELLTYPE.FOOD, 2, 2));
-		isUpdated = map1.mergeMaps(map2.getMap());
-		assertEquals(map1.numKnownCells(), 3);
+		mergeMapUpdate = map1.mergeMaps(map2.getMap());
+		assertEquals(map1.numKnownCells(), 3); // known cells should be 3
 		assertEquals(map2.numKnownCells(), 3);
-		assertTrue(isUpdated);
+		assertTrue(mergeMapUpdate);
 
-		isUpdated = map1.mergeMaps(map2.getMap());
-		assertFalse(isUpdated);
+		// Final test to merge, nothing new should be merged
+		mergeMapUpdate = map1.mergeMaps(map2.getMap());
+		assertFalse(mergeMapUpdate);
 
 	}
 
-	private MyAnt makeAntInSquareWorldWithGrass(int dimension) {
-		MyAnt ant = new MyAnt();
-		WorldMap worldMap = ant.getWorldMap();
-		for (int i = -1 * dimension / 2; i < dimension / 2; i++)
-			for (int j = -1 * dimension / 2; j < dimension / 2; j++)
-				worldMap.getCell(i, j).setCellType(CELLTYPE.GRASS);
-
-		return ant;
-	}
-
-	private class testSurroundings implements Surroundings {
+	// Below are used to testing purposes
+	private class DummySurroundings implements Surroundings {
 		@Override
 		public Tile getCurrentTile() {
 			// TODO Auto-generated method stub
-			return new TestTile();
+			return new DummyTile();
 		}
 
 		@Override
 		public Tile getTile(Direction direction) {
 			// TODO Auto-generated method stub
-			return new TestTile();
+			return new DummyTile();
 		}
 	}
 
-	private class TestTile implements Tile {
+	private class DummyTile implements Tile {
 		@Override
 		public int getAmountOfFood() {
 			// TODO Auto-generated method stub
