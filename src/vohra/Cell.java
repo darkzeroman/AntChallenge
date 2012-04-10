@@ -14,7 +14,9 @@ import ants.Direction;
 public class Cell implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	// Cell types help simplify the search
+	/**
+	 * Used to simplify the search
+	 */
 	public enum CELLTYPE {
 		FOOD, GRASS, HOME, UNEXPLORED, WATER
 	}

@@ -1,6 +1,9 @@
 Ant Challenge Project for Addepar Interview
 By: Vidhur Vohra
 Date of Completion: April 9th, 2012
+---
+
+Highly recommend to import project with Eclipse!
 
 ---
 
@@ -18,6 +21,7 @@ Enums are implicitly static but I used them anyway.  I figured the ants aren't a
 
 I have tended to comment only if something is unclear. I only use JavaDoc style comments for really important methods. In a work environment the rules are different, I know. 
 
+Made on UBUNTU machine with Eclipse.
 ---
 
 Implemented Ant Behaviors:
@@ -45,9 +49,6 @@ SCOUT
 EXPLORE
 	If foud source updated: ChangeMode(TOFOOD)
 	If plan exists: return nextAction
-	If more than 200 food on mound:
-		If at HOME: return HALT
-		Else ChangeMode(TOHOME)
 	If can find closest UNEXPLORED: return
 	If at home: return HALT
 	ChangeMode(TOHOME)

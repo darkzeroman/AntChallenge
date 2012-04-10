@@ -8,15 +8,8 @@ import java.util.Stack;
 
 import ants.Action;
 
-/**
- * @author dkz
- * 
- */
 public class ExtraMethods {
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
@@ -42,9 +35,9 @@ public class ExtraMethods {
 	}
 
 	public static void debugPrint(int num, String message) {
-		if (VohraAnt.DEBUGLEVEL == 0)
+		if (VohraAntWithDebugStatements.DEBUGLEVEL == 0)
 			return;
-		if (num >= VohraAnt.DEBUGLEVEL) {
+		if (num >= VohraAntWithDebugStatements.DEBUGLEVEL) {
 			System.out.println(num + ": " + message);
 			if (num == 2)
 				try {

@@ -8,8 +8,8 @@ import org.junit.Test;
 
 import vohra.Cell;
 import vohra.Cell.CELLTYPE;
-import vohra.VohraAnt;
 import vohra.Planner;
+import vohra.VohraAnt;
 import vohra.WorldMap;
 import vohra.searches.BFS;
 import ants.Direction;

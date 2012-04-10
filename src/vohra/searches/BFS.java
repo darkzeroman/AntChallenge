@@ -66,7 +66,8 @@ public class BFS implements Planner {
 			// shuffle the list if ant wants to explore a random portion of the
 			// map. Could have used a seed but decided not to
 			if (goalType == CELLTYPE.UNEXPLORED)
-				Collections.shuffle(neighbors);
+				Collections.shuffle(neighbors,
+						new Random(System.currentTimeMillis()));
 
 			for (Cell neighbor : neighbors)
 				if (!markedSet.contains(neighbor)) {

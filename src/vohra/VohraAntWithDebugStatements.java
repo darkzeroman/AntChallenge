@@ -16,7 +16,7 @@ import ants.Surroundings;
  * transitions, it would be beneficial to glance over the FSM part of the README
  * for a quick run-through of the FSM.
  */
-public class VohraAnt implements Ant {
+public class VohraAntWithDebugStatements implements Ant {
 
 	/**
 	 * Modes the ant can be in, used for the FSM, described in README
@@ -24,6 +24,10 @@ public class VohraAnt implements Ant {
 	public enum ANTMODE {
 		EXPLORE, SCOUT, TOFOOD, TOHOME
 	}
+
+	public static int order = 0;
+	public static final int DEBUGLEVEL = 1;
+	private final int antnum;
 
 	/**
 	 * Number of turns to take before switching TOFOOD mode from SCOUT
@@ -73,7 +77,8 @@ public class VohraAnt implements Ant {
 	// The type of search algorithm used, have implemented BFS
 	private Planner planner = BFS.getSingleInstance();
 
-	public VohraAnt() {
+	public VohraAntWithDebugStatements() {
+		this.antnum = order++; // TODO remove
 		this.worldMap = new WorldMap();
 		this.currentPlan = new Stack<Cell>();
 		this.fromHomePlan = new Stack<Cell>();
@@ -85,12 +90,20 @@ public class VohraAnt implements Ant {
 		this.surroundings = surroundings;
 		worldMap.surroundingsUpdate(surroundings, x, y);
 
+		ExtraMethods.debugPrint(1, "");
+		ExtraMethods.debugPrint(1, this.toString());
+		ExtraMethods.debugPrint(1, toString());
+		ExtraMethods.debugPrint(1, getCurrentCell().toString());
+
 		// If ant spawns before any food on HOME, force SCOUT mode
 		if (getCell(0, 0).getNumFood() == 0 && !isScout) {
 			isScout = true;
 			mode = ANTMODE.SCOUT;
+			ExtraMethods.debugPrint(1, "Initial Scout Mode");
 			return Action.HALT;
 		}
+
+		ExtraMethods.debugPrint(1, "Starting in Mode: " + mode);
 
 		// Determine next action using FSMs
 		Action action = null;
@@ -112,9 +125,13 @@ public class VohraAnt implements Ant {
 		}
 
 		if (isActionValid(action)) {
-			// Directional actions need to update location
 			if (action.getDirection() != null)
+				// directional actions need to update location
 				updateLocation(action.getDirection());
+			else
+				// Action is a non-direction move
+				ExtraMethods.debugPrint(1,
+						"Action: " + ExtraMethods.actionToString(action));
 			return action;
 		}
 		throw new RuntimeException("Invalid Action");
@@ -138,6 +155,7 @@ public class VohraAnt implements Ant {
 			else if (canFindValidPlanTo(CELLTYPE.UNEXPLORED))
 				return nextCurrentPlanAction();
 		} else {
+			ExtraMethods.debugPrint(1, "Resetting Countdown");
 			scoutModeTurnsCounter = scoutModeCounterResetValue;
 		}
 		// Not in scout mode anymore, transition to Food mode
@@ -151,7 +169,8 @@ public class VohraAnt implements Ant {
 		if (worldMap.isFoodUpdatedAndReset() && !currentPlan.isEmpty()
 				&& currentPlan.firstElement().getNumFood() == 0) {
 			currentPlan.clear(); // clearing, so re-planning is neeeded
-
+			ExtraMethods.debugPrint(1,
+					"Target doesn't have food, need to replan");
 		}
 
 		// Continue a plan if it exists
@@ -163,6 +182,7 @@ public class VohraAnt implements Ant {
 		if (!isAtHome() && currentCellNumFood > 0 && !carryingFood) {
 			carryingFood = true;
 			getCurrentCell().decrementFood();
+			ExtraMethods.debugPrint(1, "GATHERING");
 			return changeModeWithAction(ANTMODE.TOHOME, Action.GATHER);
 		}
 
@@ -170,6 +190,7 @@ public class VohraAnt implements Ant {
 		if (canFindValidPlanTo(CELLTYPE.FOOD))
 			return nextCurrentPlanAction();
 
+		ExtraMethods.debugPrint(1, "Can't find food, going to explore");
 		return changeMode(ANTMODE.EXPLORE);
 	}
 
@@ -193,10 +214,13 @@ public class VohraAnt implements Ant {
 		// for another ant to hopefully share info
 		if (isAtHome()) {
 			if (getCurrentCell().getNumAnts() < numAntsMaxOnHOME) {
+				ExtraMethods.debugPrint(1, "AtHome");
 				return Action.HALT;
 			} else {
 				// If more than the numAntsMAX are on HOME, force SCOUT mode
 				isScout = true;
+				ExtraMethods.debugPrint(1, "CHANGING SCOUT");
+				ExtraMethods.waitForReturn();
 				changeModeWithAction(ANTMODE.SCOUT, Action.HALT);
 			}
 
@@ -258,6 +282,8 @@ public class VohraAnt implements Ant {
 	 * transition
 	 */
 	private Action changeMode(ANTMODE nextMode) {
+		ExtraMethods.debugPrint(1, "Changing from: " + this.mode + " to: "
+				+ nextMode);
 
 		// Clear current plan when changing modes
 		currentPlan.clear();
@@ -277,6 +303,8 @@ public class VohraAnt implements Ant {
 	}
 
 	private Action changeModeWithAction(ANTMODE nextMode, Action action) {
+		ExtraMethods.debugPrint(1, "Changing to Mode: " + nextMode
+				+ " and Action: " + ExtraMethods.actionToString(action));
 
 		// Set a new mode with action
 		currentPlan.clear();
@@ -305,12 +333,16 @@ public class VohraAnt implements Ant {
 	}
 
 	public byte[] send() {
+		long start = System.currentTimeMillis();
 		byte[] arr = ObjectIO.toByteArray(worldMap.getMap());
+		ExtraMethods.debugPrint(1, "To Serialize: " + worldMap.numKnownCells()
+				+ " " + (System.currentTimeMillis() - start));
 		return arr;
 	}
 
 	public void receive(byte[] data) {
 		Hashtable<Point, Cell> otherWorldMap = ObjectIO.fromByteArray(data);
+		ExtraMethods.debugPrint(1, " Merging on: " + otherWorldMap.size());
 		worldMap.mergeMaps(otherWorldMap);
 	}
 
@@ -372,7 +404,7 @@ public class VohraAnt implements Ant {
 
 	// Below methods are either trivial, mutators, or used for JUnit tests
 	public String toString() {
-		return "Ant at: [" + x + ", " + y + "] ";
+		return "Ant Num: " + antnum + " at: [" + x + ", " + y + "] ";
 	}
 
 	public Cell getCurrentCell() {
