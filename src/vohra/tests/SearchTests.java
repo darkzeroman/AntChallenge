@@ -8,14 +8,14 @@ import org.junit.Test;
 
 import vohra.Cell;
 import vohra.Cell.CELLTYPE;
-import vohra.MyAnt;
+import vohra.VohraAnt;
 import vohra.Planner;
 import vohra.WorldMap;
 import vohra.searches.BFS;
 import ants.Direction;
 
 public class SearchTests {
-	MyAnt ant = new MyAnt();
+	VohraAnt ant = new VohraAnt();
 	Planner planner = BFS.getSingleInstance();
 
 	@Test
@@ -143,8 +143,8 @@ public class SearchTests {
 	 * Makes an ant in a world of given dimension centered around origin.
 	 * Example: 5 leads to a world with coordinates -2 to 2 for both x and y
 	 */
-	private MyAnt makeAntInSquareWorldWithGrass(int dimension) {
-		MyAnt ant = new MyAnt();
+	private VohraAnt makeAntInSquareWorldWithGrass(int dimension) {
+		VohraAnt ant = new VohraAnt();
 		WorldMap worldMap = ant.getWorldMap();
 		for (int i = -1 * dimension / 2; i < dimension / 2; i++)
 			for (int j = -1 * dimension / 2; j < dimension / 2; j++)

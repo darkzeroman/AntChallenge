@@ -42,9 +42,9 @@ public class ExtraMethods {
 	}
 
 	public static void debugPrint(int num, String message) {
-		if (MyAnt.DEBUGLEVEL == 0)
+		if (VohraAnt.DEBUGLEVEL == 0)
 			return;
-		if (num >= MyAnt.DEBUGLEVEL) {
+		if (num >= VohraAnt.DEBUGLEVEL) {
 			System.out.println(num + ": " + message);
 			if (num == 2)
 				try {
