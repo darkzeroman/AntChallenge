@@ -7,7 +7,7 @@ This is my code for the Ant Challenge. I have included JUnit tests which I used 
 
 During the design phase I coded BFS/Djikstra/A* to use as a search algorithm. For the final submission I have decided to use the BFS algorithm.
 
-NOTE: The engine can slow down a good amount if there are many ants on top of each other. I did try to reduce the lag through the use of profilers but could not reduce it to a satisfying amount.
+NOTE: The engine can slow down a good amount if there are many ants on top of each other. I did try to reduce the lag through the use of profilers but could not reduce it to a satisfactory amount.
 
 ---
 
