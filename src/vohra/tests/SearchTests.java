@@ -139,8 +139,10 @@ public class SearchTests {
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 	}
 
-	// Makes an ant in a world of given dimension centered around origin.
-	// Example: 5 leads to a world with coordinates -2 to 2 for both x and y
+	/**
+	 * Makes an ant in a world of given dimension centered around origin.
+	 * Example: 5 leads to a world with coordinates -2 to 2 for both x and y
+	 */
 	private MyAnt makeAntInSquareWorldWithGrass(int dimension) {
 		MyAnt ant = new MyAnt();
 		WorldMap worldMap = ant.getWorldMap();
@@ -151,6 +153,9 @@ public class SearchTests {
 		return ant;
 	}
 
+	/**
+	 * Gets the direction from the ant's current plan action
+	 */
 	private Direction nextPlanDir(Stack<Cell> plan, Cell from) {
 		// Gets plan's next step direction
 		if (plan.size() > 0) {

@@ -16,11 +16,16 @@ public class WorldMap {
 	 * all elements during the merging process
 	 */
 	private final Hashtable<Point, Cell> map;
+
+	/**
+	 * Relative coordinates to each cardinal direction. NESW
+	 */
 	final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
 	/**
-	 * When adding or deleting cells that have food, set this flag because a new
-	 * food search is only required if food sources have changed
+	 * When adding/deleting/updating cells that have food, set this flag because
+	 * a new food search is only required if food sources have changed. This is
+	 * done for efficiency
 	 */
 	private boolean foodUpdated = true;
 
@@ -44,14 +49,14 @@ public class WorldMap {
 		}
 	}
 
-	public void updateCell(Cell cell, Tile tile) {
+	private void updateCell(Cell cell, Tile tile) {
 		// CELL = local copy, TILE = given by engine
 
 		// Takes in a CELL and TILE and checks if there is new info from TILE
 
 		// Doing a full food search when only the immediate surroundings is
-		// updated is wasteful, so set "foodUpdated" flag to true if food
-		// sources have changed
+		// updated is wasteful, so set "foodUpdated" flag to true if a food
+		// source has changed
 
 		int tileNumFood = tile.getAmountOfFood();
 		cell.setNumAnts(tile.getNumAnts()); // always set number of ants
@@ -94,11 +99,11 @@ public class WorldMap {
 
 		while (e.hasMoreElements()) {
 			Cell otherCell = e.nextElement();
-			// Only explored "other cells" are of interest
+			// Only explored "otherCells" are of interest
 			if (otherCell.getCellType() != CELLTYPE.UNEXPLORED) {
 				Cell localCell = getCell(otherCell.getX(), otherCell.getY());
 
-				// If local cell is unexplored and other isn't, copy
+				// If local cell is unexplored and other isn't, copy over local
 				if (localCell.getCellType() == CELLTYPE.UNEXPLORED) {
 
 					// if either the localCell or otherCell are food there was a
@@ -143,7 +148,7 @@ public class WorldMap {
 		return sum;
 	}
 
-	public boolean checkAndToggleFoodUpdated() {
+	public boolean isFoodUpdatedAndReset() {
 		if (this.foodUpdated) {
 			this.foodUpdated = false;
 			return true;

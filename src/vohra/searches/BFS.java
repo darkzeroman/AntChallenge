@@ -12,30 +12,20 @@ import vohra.Cell.CELLTYPE;
 import vohra.Planner;
 import vohra.WorldMap;
 
+/**
+ * Pretty much standard BFS algorithm. I'm leaving out anything obvious assuming
+ * any one looking at this already knows BFS (or general implementation).
+ * 
+ */
 public class BFS implements Planner {
+	/**
+	 * Reference to singleton object
+	 */
 	static BFS BFSPlanner;
 
-	@Override
-	public Stack<Cell> makePlan(WorldMap worldMap, Cell start, CELLTYPE goalType) {
-
-		// holds cell references which is used to backtrack for route plan
-		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
-
-		Cell target = breadthFirstSearch(worldMap, start, goalType, prev);
-
-		// If target is null, the search wasn't able to find desired goal type
-		if (target == null)
-			return null;
-
-		// Returning a Stack<Cell> for the route plan
-		return constructPlan(worldMap, target, prev);
-
-	}
-
-	private BFS() {
-
-	}
-
+	/**
+	 * Returns singleton for of BFS, design decision is explained in README
+	 */
 	public static BFS getSingleInstance() {
 		if (BFSPlanner == null)
 			BFSPlanner = new BFS();
@@ -47,6 +37,52 @@ public class BFS implements Planner {
 	// {x,y}
 	private final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
+	private BFS() {
+	}
+
+	/**
+	 * Standard BFS algorithm implementation, fills the "prev" hashtable of the
+	 * previous references for a plan to the desired goal type from the
+	 * source/start cell
+	 */
+	private Cell breadthFirstSearch(WorldMap worldMap, Cell startCell,
+			CELLTYPE goalType, Hashtable<Cell, Cell> prev) {
+
+		// Using markedSet to avoid re-checking already visited nodes
+		HashSet<Cell> markedSet = new HashSet<Cell>();
+		LinkedList<Cell> queue = new LinkedList<Cell>();
+
+		markedSet.add(startCell);
+		queue.add(startCell);
+
+		while (!queue.isEmpty()) {
+			Cell cell = queue.remove();
+			if (cell.getCellType() == goalType)
+				return cell;
+			LinkedList<Cell> neighbors = listNeighbors(worldMap, cell, goalType);
+
+			// if looking for unexplored, shuffle list
+			// Since the neighbors are always returned NESW, it's best to
+			// shuffle the list if ant wants to explore a random portion of the
+			// map. Could have used a seed but decided not to
+			if (goalType == CELLTYPE.UNEXPLORED)
+				Collections.shuffle(neighbors);
+
+			for (Cell neighbor : neighbors)
+				if (!markedSet.contains(neighbor)) {
+					markedSet.add(neighbor);
+					queue.add(neighbor);
+					prev.put(neighbor, cell);
+				}
+		}
+		// If reached here, goal type doesn't exist
+		return null;
+	}
+
+	/**
+	 * Reconstructs a plan to desired target by using the prev references for
+	 * the cells
+	 */
 	public Stack<Cell> constructPlan(WorldMap worldMap, Cell target,
 			Hashtable<Cell, Cell> prev) {
 
@@ -62,14 +98,15 @@ public class BFS implements Planner {
 	}
 
 	protected LinkedList<Cell> listNeighbors(WorldMap worldMap, Cell cell,
-			CELLTYPE goalType) {
-		// If searching for unexplored, add that type to list of neighbors.
+			CELLTYPE goalCellType) {
+		// If searching for unexplored, need to add make sure the list of
+		// neighbors includes unexplored
+
 		// Food/home searches do not check unexplored cells for efficiency
-		boolean addUnexplored = (goalType == CELLTYPE.UNEXPLORED);
+		boolean addUnexplored = (goalCellType == CELLTYPE.UNEXPLORED);
 
 		LinkedList<Cell> neighbors = new LinkedList<Cell>();
-	
-		
+
 		// for each cardinal direction find the neighbor
 		for (int i = 0; i < 4; i++) {
 			int xPos = cell.getX() + offsets[i][0];
@@ -83,42 +120,27 @@ public class BFS implements Planner {
 					neighbors.add(neighborCell);
 
 				else if (neighborCell.getCellType() != CELLTYPE.UNEXPLORED)
-					neighbors.add(neighborCell); // only traversable cells
+					neighbors.add(neighborCell);
 			}
 		}
 		return neighbors;
 	}
 
-	private Cell breadthFirstSearch(WorldMap worldMap, Cell startCell,
-			CELLTYPE goalType, Hashtable<Cell, Cell> prev) {
-		// Standard BFS algorithm
-		// Using markedSet to avoid re-checking already visited nodes
+	@Override
+	public Stack<Cell> makePlan(WorldMap worldMap, Cell start,
+			CELLTYPE goalCellType) {
 
-		HashSet<Cell> markedSet = new HashSet<Cell>();
-		LinkedList<Cell> queue = new LinkedList<Cell>();
+		// holds cell references which is used to backtrack for route plan
+		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();
 
-		markedSet.add(startCell);
-		queue.add(startCell);
-		while (!queue.isEmpty()) {
-			Cell cell = queue.remove();
-			if (cell.getCellType() == goalType)
-				return cell;
-			LinkedList<Cell> neighbors = listNeighbors(worldMap, cell, goalType);
+		Cell target = breadthFirstSearch(worldMap, start, goalCellType, prev);
 
-			// if looking for unexplored, shuffle list
-			if (goalType == CELLTYPE.UNEXPLORED)
-				Collections.shuffle(neighbors,
-						new Random(System.currentTimeMillis()));
+		// If target is null, the search wasn't able to find desired goal type
+		if (target == null)
+			return null;
 
-			for (Cell neighbor : neighbors)
-				if (!markedSet.contains(neighbor)) {
-					markedSet.add(neighbor);
-					queue.add(neighbor);
-					prev.put(neighbor, cell);
-				}
-		}
-		// If reached here, goal type doesn't exist
-		return null;
+		// Returning a Stack<Cell> for the route plan
+		return constructPlan(worldMap, target, prev);
+
 	}
-
 }

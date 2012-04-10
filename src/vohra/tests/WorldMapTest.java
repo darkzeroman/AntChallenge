@@ -35,11 +35,11 @@ public class WorldMapTest extends WorldMap {
 		assertEquals(map2.numKnownCells(), 1);
 
 		// On creation, flag should be set
-		assertTrue(map1.checkAndToggleFoodUpdated());
+		assertTrue(map1.isFoodUpdatedAndReset());
 
 		// Merging now should not yield any new information
 		map1.mergeMaps(map2.getMap());
-		assertFalse(map1.checkAndToggleFoodUpdated());
+		assertFalse(map1.isFoodUpdatedAndReset());
 		assertEquals(map1.numKnownCells(), 1);
 		assertEquals(map2.numKnownCells(), 1);
 
@@ -47,25 +47,25 @@ public class WorldMapTest extends WorldMap {
 		// source map 1's foodupdate should not be set
 		map2.setCell(new Cell(CELLTYPE.GRASS, 0, 1));
 		map1.mergeMaps(map2.getMap());
-		assertFalse(map1.checkAndToggleFoodUpdated());
+		assertFalse(map1.isFoodUpdatedAndReset());
 		assertEquals(map1.numKnownCells(), 2);
 		assertEquals(map2.numKnownCells(), 2);
 
 		// Nothing new added, so merging again should lead to no triggering of
 		// update flag
 		map1.mergeMaps(map2.getMap());
-		assertFalse(map1.checkAndToggleFoodUpdated());
+		assertFalse(map1.isFoodUpdatedAndReset());
 
 		// Making sure food is updated correctly
 		map2.setCell(new Cell(CELLTYPE.FOOD, 2, 2));
 		map1.mergeMaps(map2.getMap());
 		assertEquals(map1.numKnownCells(), 3); // known cells should be 3
 		assertEquals(map2.numKnownCells(), 3);
-		assertTrue(map1.checkAndToggleFoodUpdated());
+		assertTrue(map1.isFoodUpdatedAndReset());
 
 		// Final test to merge, nothing new should be merged
 		map1.mergeMaps(map2.getMap());
-		assertFalse(map1.checkAndToggleFoodUpdated());
+		assertFalse(map1.isFoodUpdatedAndReset());
 
 	}
 

@@ -4,6 +4,13 @@ import java.io.Serializable;
 
 import ants.Direction;
 
+/**
+ * World Map contains a hashtable of Cells, this holds the information provided
+ * for each tile in the world.
+ * 
+ * @author dkz
+ * 
+ */
 public class Cell implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -12,8 +19,14 @@ public class Cell implements Serializable {
 		FOOD, GRASS, HOME, UNEXPLORED, WATER
 	}
 
+	/**
+	 * Always taking the max of any number given because the highest number ever
+	 * is used to track how much food was at this cell. Used to track
+	 * totalNumFood
+	 */
+	private int initialNumFood = 0;
+
 	// Properties of the cell
-	private int initialNumFood = 0; // used to track total numFood
 	private int numFood = 0;
 	private int numAnts = 0;
 	private long timeStamp; // To track which info is newer
@@ -53,13 +66,22 @@ public class Cell implements Serializable {
 
 	}
 
-	// Copy the otherCell's data into this one
+	/**
+	 * Copy the contents of otherCell into this one
+	 */
 	public void copyCell(Cell otherCell) {
 		this.cellType = otherCell.getCellType();
 		this.timeStamp = otherCell.timeStamp;
 		this.numFood = otherCell.numFood;
 		this.initialNumFood = Math.max(initialNumFood,
 				otherCell.getInitialNumFood());
+	}
+
+	public void setNumFood(int numFood) {
+		initialNumFood = Math.max(numFood, initialNumFood);
+		this.numFood = numFood;
+		// Need to track when the food info was updated
+		timeStamp = System.currentTimeMillis();
 	}
 
 	public int getNumFood() {
@@ -88,12 +110,6 @@ public class Cell implements Serializable {
 
 	public long getTimeStamp() {
 		return timeStamp;
-	}
-
-	public void setNumFood(int numFood) {
-		initialNumFood = Math.max(numFood, initialNumFood);
-		this.numFood = numFood;
-		timeStamp = System.currentTimeMillis();
 	}
 
 	public void setNumAnts(int numAnts) {
