@@ -1,11 +1,10 @@
-
 import vohra.MyAnt;
 import ants.Action;
 import ants.Ant;
 import ants.Surroundings;
 
 public class TestAnt implements Ant {
-	// Needed to use this because the engine complains if the class is in a
+	// Needed to use this because the engine complains if this class is in a
 	// package but I needed packages for JUnit tests
 	MyAnt ant = new MyAnt();
 
@@ -19,7 +18,18 @@ public class TestAnt implements Ant {
 
 	@Override
 	public Action getAction(Surroundings surroundings) {
-		return ant.getAction(surroundings);
+		// Since there are runtime exceptions
+		// Need to account for if they trigger
+		Action action = null;
+		try {
+			action = ant.getAction(surroundings);
+		} catch (RuntimeException e) {
+			System.out.println("Runtime Error");
+			e.printStackTrace();
+			action = Action.HALT;
+		}
+		return action;
+
 	}
 
 	@Override

@@ -1,8 +1,8 @@
-FSM
 
-If A
 
-Modes:
+
+
+Ant Modes: 
 
 SCOUT
 	If scoutModeCounter is > 0.

@@ -5,7 +5,7 @@ import java.util.Hashtable;
 import java.util.Stack;
 
 import vohra.Cell.CELLTYPE;
-import vohra.Planner.SEARCHTYPE;
+import vohra.searches.BFS;
 import ants.Action;
 import ants.Ant;
 import ants.Direction;
@@ -61,7 +61,7 @@ public class MyAnt implements Ant {
 	// this allows for just the immediate cells to be searched
 
 	// The type of search algorithm used, have implemented BFS
-	private Planner planner = Planner.getSingleInstance(SEARCHTYPE.BFS);
+	private Planner planner = BFS.getSingleInstance();
 
 	public MyAnt() {
 		this.antnum = order++; // TODO remove
@@ -72,17 +72,6 @@ public class MyAnt implements Ant {
 	}
 
 	public Action getAction(Surroundings surroundings) {
-		Action action = null;
-		try {
-			action = makeAction(surroundings);
-		} catch (RuntimeException e) {
-			System.out.println("Runtime Error");
-			e.printStackTrace();
-		}
-		return action;
-	}
-
-	public Action makeAction(Surroundings surroundings) {
 
 		this.surroundings = surroundings;
 		worldMap.surroundingsUpdate(surroundings, x, y);

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import ants.Direction;
 
-public class Cell implements Comparable<Cell>, Serializable {
+public class Cell implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	// Cell types help simplify the search
@@ -12,14 +12,11 @@ public class Cell implements Comparable<Cell>, Serializable {
 		FOOD, GRASS, HOME, UNEXPLORED, WATER
 	}
 
-	// used by Djikstra, public because meant to be overwritten
-	public int dist = 0;
-
 	// Properties of the cell
 	private int initialNumFood = 0; // used to track total numFood
 	private int numFood = 0;
 	private int numAnts = 0;
-	private long timeStamp; // When the i
+	private long timeStamp; // To track which info is newer
 	private CELLTYPE cellType;
 	private final int x, y; // location
 
@@ -28,11 +25,6 @@ public class Cell implements Comparable<Cell>, Serializable {
 		this.y = y;
 		this.cellType = cellType;
 		timeStamp = System.currentTimeMillis();
-	}
-
-	// From Comparable interface, used for Djikstra
-	public int compareTo(Cell cell) {
-		return (this.dist - cell.dist);
 	}
 
 	public void decrementFood() {
@@ -61,7 +53,7 @@ public class Cell implements Comparable<Cell>, Serializable {
 
 	}
 
-	// Copy the otherCell's data to this one
+	// Copy the otherCell's data into this one
 	public void copyCell(Cell otherCell) {
 		this.cellType = otherCell.getCellType();
 		this.timeStamp = otherCell.timeStamp;
@@ -106,19 +98,17 @@ public class Cell implements Comparable<Cell>, Serializable {
 
 	public void setNumAnts(int numAnts) {
 		this.numAnts = numAnts;
-
 	}
 
 	public void setCellType(CELLTYPE type) {
 		this.cellType = type;
-
 	}
 
 	public String toString() {
-		String temp = "[" + this.x + "," + this.y + "], type: " + this.cellType;
-		temp += ", Amount of Food: " + this.numFood + ", NumAnts: "
+		String retString = "[" + this.x + "," + this.y + "], type: "
+				+ this.cellType;
+		retString += ", Amount of Food: " + this.numFood + ", NumAnts: "
 				+ this.numAnts;
-		return temp.substring(0, 6).concat(this.dist + "");
-		// cost: " + this.dist + " ";
+		return retString;
 	}
 }

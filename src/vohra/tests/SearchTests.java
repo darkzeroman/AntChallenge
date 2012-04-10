@@ -10,13 +10,13 @@ import vohra.Cell;
 import vohra.Cell.CELLTYPE;
 import vohra.MyAnt;
 import vohra.Planner;
-import vohra.Planner.SEARCHTYPE;
 import vohra.WorldMap;
+import vohra.searches.BFS;
 import ants.Direction;
 
 public class SearchTests {
 	MyAnt ant = new MyAnt();
-	Planner planner = Planner.getSingleInstance(SEARCHTYPE.BFS);
+	Planner planner = BFS.getSingleInstance();
 
 	@Test
 	public void testSearchFood() {
@@ -28,25 +28,29 @@ public class SearchTests {
 		ant.getCell(0, 1).setCellType(CELLTYPE.FOOD);
 		Stack<Cell> plan = planner.makePlan(ant.getWorldMap(),
 				ant.getCurrentCell(), CELLTYPE.FOOD);
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
+		Direction direction = nextPlanDir(plan, ant.getCurrentCell());
+		assertEquals(Direction.NORTH, direction);
 
 		ant = makeAntInSquareWorldWithGrass(3);
 		ant.getCell(1, 0).setCellType(CELLTYPE.FOOD);
 		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
 				CELLTYPE.FOOD);
-		assertEquals(Direction.EAST, nextPlanDir(plan, ant.getCurrentCell()));
+		direction = nextPlanDir(plan, ant.getCurrentCell());
+		assertEquals(Direction.EAST, direction);
 
 		ant = makeAntInSquareWorldWithGrass(3);
 		ant.getCell(0, -1).setCellType(CELLTYPE.FOOD);
 		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
 				CELLTYPE.FOOD);
-		assertEquals(Direction.SOUTH, nextPlanDir(plan, ant.getCurrentCell()));
+		direction = nextPlanDir(plan, ant.getCurrentCell());
+		assertEquals(Direction.SOUTH, direction);
 
 		ant = makeAntInSquareWorldWithGrass(3);
 		ant.getCell(-1, 0).setCellType(CELLTYPE.FOOD);
 		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
 				CELLTYPE.FOOD);
-		assertEquals(Direction.WEST, nextPlanDir(plan, ant.getCurrentCell()));
+		direction = nextPlanDir(plan, ant.getCurrentCell());
+		assertEquals(Direction.WEST, direction);
 
 	}
 
@@ -60,25 +64,29 @@ public class SearchTests {
 		ant.getCell(0, 1).setCellType(CELLTYPE.UNEXPLORED);
 		Stack<Cell> plan = planner.makePlan(ant.getWorldMap(),
 				ant.getCurrentCell(), CELLTYPE.UNEXPLORED);
-		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
+		Direction direction = nextPlanDir(plan, ant.getCurrentCell());
+		assertEquals(Direction.NORTH, direction);
 
 		ant = makeAntInSquareWorldWithGrass(4);
 		ant.getCell(1, 0).setCellType(CELLTYPE.UNEXPLORED);
 		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
 				CELLTYPE.UNEXPLORED);
-		assertEquals(Direction.EAST, nextPlanDir(plan, ant.getCurrentCell()));
+		direction = nextPlanDir(plan, ant.getCurrentCell());
+		assertEquals(Direction.EAST, direction);
 
 		ant = makeAntInSquareWorldWithGrass(4);
 		ant.getCell(0, -1).setCellType(CELLTYPE.UNEXPLORED);
 		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
 				CELLTYPE.UNEXPLORED);
-		assertEquals(Direction.SOUTH, nextPlanDir(plan, ant.getCurrentCell()));
+		direction = nextPlanDir(plan, ant.getCurrentCell());
+		assertEquals(Direction.SOUTH, direction);
 
 		ant = makeAntInSquareWorldWithGrass(4);
 		ant.getCell(-1, 0).setCellType(CELLTYPE.UNEXPLORED);
 		plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(),
 				CELLTYPE.UNEXPLORED);
-		assertEquals(Direction.WEST, nextPlanDir(plan, ant.getCurrentCell()));
+		direction = nextPlanDir(plan, ant.getCurrentCell());
+		assertEquals(Direction.WEST, direction);
 
 	}
 
@@ -86,18 +94,20 @@ public class SearchTests {
 	public void testClosestType() {
 		ant = this.makeAntInSquareWorldWithGrass(10);
 		ant.getCell(0, 4).setCellType(CELLTYPE.UNEXPLORED);
+
 		// Test to check if plan can work for multiple cells away
 
 		// U: Unexplored, W: Water, G: Grass, A: Ant,
 		// X: Goal (Either Food or Unexplored)
 
-		// Map that is created: A is origin
+		// Relevant portion of map that is created: A is origin/ant
 		// U W X W U
 		// U W G W U
 		// U W G W U
 		// U W G W U
 		// U W A W U
 		// U W W W U
+		System.out.println(ant.getWorldMap().numKnownCells());
 
 		int[][] waterCellCoords = new int[][] { { 0, -1 }, { -1, 0 },
 				{ -1, 1 }, { -1, 2 }, { -1, 3 }, { -1, 4 }, { 0, -1 },
@@ -113,6 +123,7 @@ public class SearchTests {
 		System.out.println(ant.getWorldMap().numKnownCells());
 		Stack<Cell> plan = planner.makePlan(ant.getWorldMap(),
 				ant.getCurrentCell(), CELLTYPE.UNEXPLORED);
+
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
@@ -128,6 +139,8 @@ public class SearchTests {
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
 	}
 
+	// Makes an ant in a world of given dimension centered around origin.
+	// Example: 5 leads to a world with coordinates -2 to 2 for both x and y
 	private MyAnt makeAntInSquareWorldWithGrass(int dimension) {
 		MyAnt ant = new MyAnt();
 		WorldMap worldMap = ant.getWorldMap();
