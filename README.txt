@@ -47,7 +47,7 @@ SCOUT
 	ChangeMode(TOFOOD)
 
 EXPLORE
-	If foud source updated: ChangeMode(TOFOOD)
+	If food source updated: ChangeMode(TOFOOD)
 	If plan exists: return nextAction
 	If can find closest UNEXPLORED: return
 	If at home: return HALT
