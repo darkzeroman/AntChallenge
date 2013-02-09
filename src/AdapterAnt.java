@@ -9,7 +9,6 @@ public class AdapterAnt implements Ant {
 	VohraAnt ant = new VohraAnt();
 
 	public static void main(String[] args) {
-
 	}
 
 	@Override
@@ -20,6 +19,10 @@ public class AdapterAnt implements Ant {
 			action = ant.getAction(surroundings);
 		} catch (RuntimeException e) {
 			System.out.println("Runtime Error");
+			e.printStackTrace();
+			action = Action.HALT;
+		} catch (Exception e) {
+			System.out.println("Unexpected Error");
 			e.printStackTrace();
 			action = Action.HALT;
 		}
