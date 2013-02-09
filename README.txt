@@ -1,3 +1,7 @@
+I have some issues upladoing this and making changes. I did this project
+before I started to use Git. I wouldn't worry about the commit history.
+
+--
 Ant Challenge Project for Addepar Interview
 By: Vidhur Vohra
 Date of Completion: April 9th, 2012
