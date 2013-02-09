@@ -7,7 +7,7 @@ import java.util.Scanner;
 import java.util.Stack;
 
 import ants.Action;
-
+// Used for debugging purposes
 public class ExtraMethods {
 
 	public static void main(String[] args) {
