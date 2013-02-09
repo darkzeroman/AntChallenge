@@ -19,11 +19,11 @@ Game engine errors on non-default package classes. So I made adapter since JUnit
 
 During the design phase I coded BFS/Djikstra/A* to use as a path planning algorithm. For the final submission I have decided to use the BFS algorithm.
 
-Engine can be slow if many ants are on top of each other. I did try to reduce the lag by using profilers but could not reduce it to a satisfactory amount.
+Engine can be slow if many ants are on top of each other. I did try to reduce the lag but could not reduce it to a satisfactory amount.
 
 Enums are implicitly static but I used them anyway.  I figured the ants aren't allowed to talk to each other directly, which I did not do.
 
-I have tended to comment only if something is unclear. I only use JavaDoc style comments for really important methods. In a work environment the rules are different, I know. 
+My commenting can be a bit too much, but that's because this way it's not necessary to keep switching between the code and the FSM description below.
 
 Made on UBUNTU machine with Eclipse.
 ---
@@ -35,7 +35,7 @@ Implemented Ant Behaviors:
  
  - The initial 3 ants are 'scouts' that explore the world but do not bring food home immediately. Once a counter runs out they switch "EXPLORE" mode (which means they will find the closest food and return home). Scout ants will remain that mode until a certain amount of food has been found in the world.
 
- - If ant spawns and certain amount of food already exists on mound, spawned ant HALTS. It's probably better to wait for new information from another ant instead of wandering/exploring. 
+ - If ant spawns and certain amount of food already exists on mound, spawned ant HALTS. Because it's probably better to wait for new information from another ant instead of wandering/exploring. 
 
  - Only search for food when food sources are updated to lower the number of graph searches.
 
@@ -48,7 +48,7 @@ SCOUT
 	If scoutModeCounter is > 0:
 		If plan exists: return nextAction
 		If can find closest UNEXPLORED: return nextAction
-	ChangeMode(TOFOOD)
+	ChangeMode(EXPLORE)
 
 EXPLORE
 	If food source updated: ChangeMode(TOFOOD)

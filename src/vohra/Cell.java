@@ -8,8 +8,6 @@ import ants.Direction;
  * World Map contains a hashtable of Cells, this holds the information provided
  * for each tile in the world.
  * 
- * @author Vidhur Vohra
- * 
  */
 public class Cell implements Serializable {
 	private static final long serialVersionUID = 1L;

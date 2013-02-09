@@ -23,16 +23,14 @@ public class VohraAnt implements Ant {
 		EXPLORE, SCOUT, TOFOOD, TOHOME
 	}
 
-	// Initial value and reset value
+	// Initial and reset value
 	private final int scoutModeCounterResetValue = 25;
 
 	// Number of turns to take before switching TOFOOD mode from SCOUT
 	private int scoutModeTurnsCounter = scoutModeCounterResetValue;
 
-	/**
-	 * Scouts will be in scout mode until below number of food are found, more
-	 * than food needed to end game, which is 500
-	 */
+	// Scouts will be in scout mode until below number of food are found, more
+	// than food needed to end game, which is 500
 	private final int numFoodToFindForScouts = 600;
 
 	// If more than this amount of ants are on HOME, for everyone to SCOUT mode
@@ -68,7 +66,6 @@ public class VohraAnt implements Ant {
 
 	public Action getAction(Surroundings surroundings) {
 
-		// Saving this locally because it used frequently
 		this.surroundings = surroundings;
 		worldMap.surroundingsUpdate(surroundings, x, y);
 
@@ -127,7 +124,7 @@ public class VohraAnt implements Ant {
 		// Resetting turn counter for when the ant returns to scout mode
 		scoutModeTurnsCounter = scoutModeCounterResetValue;
 
-		// The ant at this point exits scout mode and goes to Explore Mode
+		// The ant at this point exits Scout mode and goes to Explore Mode
 		// Which means the ant will find the closest food and go home
 		return changeMode(ANTMODE.EXPLORE);
 	}
@@ -136,7 +133,7 @@ public class VohraAnt implements Ant {
 
 		// If food on target doesn't doesn't exist anymore, re-plan
 		if (worldMap.isFoodUpdatedAndReset() && !currentPlan.isEmpty() && currentPlan.firstElement().getNumFood() == 0) {
-			currentPlan.clear(); // clearing, so re-planning is necessary
+			currentPlan.clear(); // clearing, so re-planning will be necessary
 		}
 
 		// Continue a plan if it exists
