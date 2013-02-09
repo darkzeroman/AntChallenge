@@ -1,5 +1,13 @@
-I have some issues upladoing this and making changes. I did this project
+I have some issues uploadoing this and making changes. I did this project
 before I started to use Git. I wouldn't worry about the commit history.
+
+Things that need work:
+- Flesh out documentation, right now it's difficult because I wanted the
+  code to be understandable without looking at the documentation, but
+that leads to unnecessary comments.
+- I don't like I have to check for null. Thinking about passing an
+  object, then manipulate the object for desired results if possible.
+  Return true/false if the output is valid? Need to think about this more.
 
 --
 Ant Challenge Project for Addepar Interview

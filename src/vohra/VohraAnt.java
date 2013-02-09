@@ -18,22 +18,22 @@ import ants.Surroundings;
  */
 public class VohraAnt implements Ant {
 
-	// Modes the ant can be in, used for the FSM, described in README
+	/** Modes the ant can be in, used for the FSM, described in README */
 	public enum ANTMODE {
 		EXPLORE, SCOUT, TOFOOD, TOHOME
 	}
 
-	// Initial and reset value
+	/** Initial and reset value */
 	private final int scoutModeCounterResetValue = 25;
 
-	// Number of turns to take before switching from SCOUT to TOFOOD
+	/** Number of turns to take before switching from SCOUT to TOFOOD */
 	private int scoutModeTurnsCounter = scoutModeCounterResetValue;
 
 	// Scouts will be in scout mode until below number of food are found, more
 	// than food needed to end game, which is 500
 	private final int numFoodToFindForScouts = 600;
 
-	// If more than this amount of ants are on HOME, for everyone to SCOUT mode
+	/** If more than this amount of ants are on HOME, for everyone to SCOUT mode */
 	private final int numAntsMaxOnHOME = 10;
 
 	// Ant properties
@@ -44,17 +44,16 @@ public class VohraAnt implements Ant {
 	private Stack<Cell> currentPlan; // Pre-determined planned route to a target
 	private Stack<Cell> fromHomePlan; // Path from last time at home
 
-	// Holds the knowledge each ant has of the world
+	/** Holds the knowledge each ant has of the world */
 	private final WorldMap worldMap;
 
-	// Given by engine, making a class variable because it is used at various
-	// times, easier than passing it around
+	/** Given by engine. Saving it because it is easier than passing it around */
 	private Surroundings surroundings;
 
-	// Se/Deserializer object for communication
+	/** Se/Deserializer object for communication */
 	private final ObjectIO<Hashtable<Point, Cell>> ObjectIO = new ObjectIO<Hashtable<Point, Cell>>();
 
-	// The type of search algorithm used, have implemented BFS
+	/** The type of search algorithm used, have implemented BFS */
 	private Planner planner = BFS.getSingleInstance();
 
 	public VohraAnt() {
@@ -64,6 +63,7 @@ public class VohraAnt implements Ant {
 		this.mode = ANTMODE.EXPLORE;
 	}
 
+	@Override
 	public Action getAction(Surroundings surroundings) {
 
 		this.surroundings = surroundings;
@@ -75,7 +75,7 @@ public class VohraAnt implements Ant {
 			mode = ANTMODE.SCOUT;
 		}
 
-		// Determine next action using FSMs
+		// Determine next action using FSM
 		Action action = null;
 		switch (mode) {
 		case SCOUT:
@@ -104,6 +104,7 @@ public class VohraAnt implements Ant {
 	}
 
 	private Action modeScout() {
+
 		// If high amount of food has already been found, exit scout mode
 		if (worldMap.getNumFoodFound() >= numFoodToFindForScouts) {
 			isScout = false;
@@ -191,8 +192,8 @@ public class VohraAnt implements Ant {
 
 	private Action modeToHome() {
 
-		// If ant went to home because there is nothing left
-		// to explore, try to find explore
+		// If ant went to home because there is nothing left to explore, try to
+		// explore again
 		if (isAtHome() && !carryingFood)
 			return changeMode(ANTMODE.EXPLORE);
 
@@ -238,7 +239,7 @@ public class VohraAnt implements Ant {
 	}
 
 	/**
-	 * Useful for FSM transitions Deleting the current plan whenever there is a
+	 * Used for FSM transitions. Deleting the current plan whenever there is a
 	 * transition
 	 */
 	private Action changeMode(ANTMODE nextMode) {
@@ -260,6 +261,10 @@ public class VohraAnt implements Ant {
 
 	}
 
+	/**
+	 * Used for an action needs to accompany a change in state. Example: Drop
+	 * food before going back to TOFOOD mode to get the next food unit.
+	 */
 	private Action changeModeWithAction(ANTMODE nextMode, Action action) {
 		// Set a new mode with action
 		currentPlan.clear();
@@ -267,9 +272,7 @@ public class VohraAnt implements Ant {
 		return action;
 	}
 
-	/**
-	 * If a plan exists in currentPlan, get the next appropriate action
-	 */
+	/** If a plan exists in currentPlan, get the next appropriate action */
 	private Action nextCurrentPlanAction() {
 
 		// Get the next action from the current plan, plan isn't valid if empty

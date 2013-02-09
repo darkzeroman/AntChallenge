@@ -37,11 +37,17 @@ public class Cell implements Serializable {
 		timeStamp = System.currentTimeMillis();
 	}
 
+	/**
+	 * Use when ant has picked up a food unit from a cell.
+	 */
 	public void decrementFood() {
 		this.numFood--;
 		this.timeStamp = System.currentTimeMillis();
 	}
 
+	/**
+	 * Gives the direction needed to get from this cell to the argument cell.
+	 */
 	public Direction directionTo(Cell to) {
 		int fromX = this.x;
 		int fromY = this.y;
@@ -117,8 +123,8 @@ public class Cell implements Serializable {
 	}
 
 	public String toString() {
-		String retString = "[" + this.x + "," + this.y + "], type: " + this.cellType;
-		retString += ", Amount of Food: " + this.numFood + ", NumAnts: " + this.numAnts;
-		return retString;
+		String str = "[" + this.x + "," + this.y + "], type: " + this.cellType;
+		str += ", Amount of Food: " + this.numFood + ", NumAnts: " + this.numAnts;
+		return str;
 	}
 }
