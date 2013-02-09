@@ -26,7 +26,7 @@ public class VohraAnt implements Ant {
 	// Initial and reset value
 	private final int scoutModeCounterResetValue = 25;
 
-	// Number of turns to take before switching TOFOOD mode from SCOUT
+	// Number of turns to take before switching from SCOUT to TOFOOD
 	private int scoutModeTurnsCounter = scoutModeCounterResetValue;
 
 	// Scouts will be in scout mode until below number of food are found, more
@@ -51,7 +51,7 @@ public class VohraAnt implements Ant {
 	// times, easier than passing it around
 	private Surroundings surroundings;
 
-	// Se-Deserializer object for communication
+	// Se/Deserializer object for communication
 	private final ObjectIO<Hashtable<Point, Cell>> ObjectIO = new ObjectIO<Hashtable<Point, Cell>>();
 
 	// The type of search algorithm used, have implemented BFS
@@ -73,7 +73,6 @@ public class VohraAnt implements Ant {
 		if (getCell(0, 0).getNumFood() == 0 && !isScout) {
 			isScout = true;
 			mode = ANTMODE.SCOUT;
-			return Action.HALT;
 		}
 
 		// Determine next action using FSMs
@@ -106,8 +105,9 @@ public class VohraAnt implements Ant {
 
 	private Action modeScout() {
 		// If high amount of food has already been found, exit scout mode
-		if (worldMap.getNumFoodFound() >= numFoodToFindForScouts)
+		if (worldMap.getNumFoodFound() >= numFoodToFindForScouts) {
 			isScout = false;
+		}
 
 		scoutModeTurnsCounter--;
 
@@ -142,7 +142,7 @@ public class VohraAnt implements Ant {
 			return action;
 
 		int currentCellNumFood = getCurrentCell().getNumFood();
-		// Ant is on food cell (which is not home), gather
+		// Ant is on food cell (which is not home), so gather
 		if (!isAtHome() && currentCellNumFood > 0 && !carryingFood) {
 			carryingFood = true;
 			getCurrentCell().decrementFood();
@@ -154,7 +154,6 @@ public class VohraAnt implements Ant {
 			return nextCurrentPlanAction();
 
 		// If can't find food, go back to EXPLORE mode
-
 		return changeMode(ANTMODE.EXPLORE);
 	}
 
@@ -193,11 +192,11 @@ public class VohraAnt implements Ant {
 	private Action modeToHome() {
 
 		// If ant went to home because there is nothing left
-		// to explore, try to find food again
+		// to explore, try to find explore
 		if (isAtHome() && !carryingFood)
 			return changeMode(ANTMODE.EXPLORE);
 
-		// Drop off food
+		// Drop off food if ant has it
 		if (isAtHome() && carryingFood) {
 			carryingFood = false;
 			fromHomePlan.clear();
@@ -230,10 +229,11 @@ public class VohraAnt implements Ant {
 			return nextCurrentPlanAction();
 		}
 
-		// When at home and can't find food or unexplored,
-		// happens when mound is on an island
+		// Halt when at home, no food or unexplored
+		// occurs if mound is on island
 		if (isAtHome() && !canFindValidPlanTo(CELLTYPE.UNEXPLORED) && !canFindValidPlanTo(CELLTYPE.FOOD))
 			return Action.HALT;
+
 		throw new RuntimeException("Can't find home, map error?");
 	}
 
@@ -245,6 +245,7 @@ public class VohraAnt implements Ant {
 
 		currentPlan.clear(); // Clear current plan when changing modes
 		this.mode = nextMode;
+
 		switch (this.mode) {
 		case SCOUT:
 			return modeScout();
@@ -266,6 +267,11 @@ public class VohraAnt implements Ant {
 		return action;
 	}
 
+	/**
+	 * If a plan exists in currentPlan, get the next appropriate action
+	 * 
+	 * @return plan or null if not valid
+	 */
 	private Action nextCurrentPlanAction() {
 
 		// Get the next action from the current plan, plan isn't valid if empty
@@ -286,20 +292,8 @@ public class VohraAnt implements Ant {
 		return null;
 	}
 
-	public byte[] send() {
-		byte[] arr = ObjectIO.toByteArray(worldMap.getMap());
-		return arr;
-	}
-
-	public void receive(byte[] data) {
-		Hashtable<Point, Cell> otherWorldMap = ObjectIO.fromByteArray(data);
-		worldMap.mergeMaps(otherWorldMap);
-	}
-
 	/**
 	 * Tries to find a plan to goalType and writes the path to currentPlan
-	 * 
-	 * @param goalType
 	 */
 	private boolean canFindValidPlanTo(CELLTYPE goalType) {
 		// Try to find the requested cell type, return false if not valid
@@ -316,7 +310,6 @@ public class VohraAnt implements Ant {
 	}
 
 	private void updateLocation(Direction direction) {
-		// Depending on the direction, update location
 		switch (direction) {
 		case NORTH:
 			this.y++;
@@ -363,6 +356,16 @@ public class VohraAnt implements Ant {
 
 	public Cell getCurrentCell() {
 		return getCell(this.x, this.y);
+	}
+
+	public byte[] send() {
+		byte[] arr = ObjectIO.toByteArray(worldMap.getMap());
+		return arr;
+	}
+
+	public void receive(byte[] data) {
+		Hashtable<Point, Cell> otherWorldMap = ObjectIO.fromByteArray(data);
+		worldMap.mergeMaps(otherWorldMap);
 	}
 
 	private void copyStack(Stack<Cell> from, Stack<Cell> to) {
