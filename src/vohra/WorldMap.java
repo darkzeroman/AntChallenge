@@ -18,7 +18,7 @@ public class WorldMap {
 	private final Hashtable<Point, Cell> map;
 
 	/**
-	 * Relative coordinates to each cardinal direction. NESW
+	 * Relative coordinates for each cardinal direction. NESW
 	 */
 	final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
