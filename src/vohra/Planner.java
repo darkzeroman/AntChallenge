@@ -6,8 +6,7 @@ import vohra.Cell.CELLTYPE;
 
 public interface Planner {
 	public enum SEARCHTYPE {
-		BFS, // Djikstra, AStar
-		// Used to be implemented, but chose BFS to final implementation
+		BFS
 	}
 
 	/**
@@ -18,8 +17,6 @@ public interface Planner {
 	 * classes instantiated for each search type. And using an interface allowed
 	 * me to easily switch between any search type during design/testing phase.
 	 */
-
-	public Stack<Cell> makePlan(WorldMap worldMap, Cell startCell,
-			CELLTYPE goalCellType);
+	public Stack<Cell> makePlan(WorldMap worldMap, Cell startCell, CELLTYPE goalCellType);
 
 }

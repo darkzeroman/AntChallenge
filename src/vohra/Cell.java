@@ -5,9 +5,8 @@ import java.io.Serializable;
 import ants.Direction;
 
 /**
- * World Map contains a hashtable of Cells, this holds the information provided
+ * World Map contains a hash table of Cells, this holds the information provided
  * for each tile in the world.
- * 
  */
 public class Cell implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -17,9 +16,8 @@ public class Cell implements Serializable {
 	}
 
 	/**
-	 * Always taking the max of any number given because the highest number ever
-	 * is used to track how much food was at this cell. Used to track
-	 * totalNumFood
+	 * Always taking the max of any number given of how much food was in cell.
+	 * Used to track how much food was at this cell. Used to track totalNumFood.
 	 */
 	private int initialNumFood = 0;
 
@@ -37,17 +35,13 @@ public class Cell implements Serializable {
 		timeStamp = System.currentTimeMillis();
 	}
 
-	/**
-	 * Use when ant has picked up a food unit from a cell.
-	 */
+	/** Use when ant has picked up a food unit from a cell. */
 	public void decrementFood() {
 		this.numFood--;
 		this.timeStamp = System.currentTimeMillis();
 	}
 
-	/**
-	 * Gives the direction needed to get from this cell to the argument cell.
-	 */
+	/** Gives the direction needed to get from this cell to the argument cell. */
 	public Direction directionTo(Cell to) {
 		int fromX = this.x;
 		int fromY = this.y;
@@ -69,9 +63,7 @@ public class Cell implements Serializable {
 
 	}
 
-	/**
-	 * Copy the contents of otherCell into this one
-	 */
+	/** Copy the contents of otherCell into this one */
 	public void copyCell(Cell otherCell) {
 		this.cellType = otherCell.getCellType();
 		this.timeStamp = otherCell.timeStamp;
