@@ -18,31 +18,24 @@ import ants.Surroundings;
  */
 public class VohraAnt implements Ant {
 
-	/**
-	 * Modes the ant can be in, used for the FSM, described in README
-	 */
+	// Modes the ant can be in, used for the FSM, described in README
 	public enum ANTMODE {
 		EXPLORE, SCOUT, TOFOOD, TOHOME
 	}
 
-	/**
-	 * Number of turns to take before switching TOFOOD mode from SCOUT
-	 */
-	private int scoutModeTurnsCounter = 20;
-
-	/**
-	 * The reset number for the scout mode counter
-	 */
+	// Initial value and reset value
 	private final int scoutModeCounterResetValue = 25;
+
+	// Number of turns to take before switching TOFOOD mode from SCOUT
+	private int scoutModeTurnsCounter = scoutModeCounterResetValue;
 
 	/**
 	 * Scouts will be in scout mode until below number of food are found, more
 	 * than food needed to end game, which is 500
 	 */
 	private final int numFoodToFindForScouts = 600;
-	/**
-	 * If more than this amount of ants are on HOME, for everyone to SCOUT mode
-	 */
+
+	// If more than this amount of ants are on HOME, for everyone to SCOUT mode
 	private final int numAntsMaxOnHOME = 10;
 
 	// Ant properties
@@ -63,13 +56,6 @@ public class VohraAnt implements Ant {
 	// Se-Deserializer object for communication
 	private final ObjectIO<Hashtable<Point, Cell>> ObjectIO = new ObjectIO<Hashtable<Point, Cell>>();
 
-	// Flag for indicating new info has been merged in the world map from
-	// another ant
-
-	// Flag for when world map receives new information from surroundings
-	// Instead of searching whole map when just surroundings have been updated
-	// this allows for just the immediate cells to be searched
-
 	// The type of search algorithm used, have implemented BFS
 	private Planner planner = BFS.getSingleInstance();
 
@@ -82,10 +68,11 @@ public class VohraAnt implements Ant {
 
 	public Action getAction(Surroundings surroundings) {
 
+		// saving this locally because it used frequently
 		this.surroundings = surroundings;
 		worldMap.surroundingsUpdate(surroundings, x, y);
 
-		// If ant spawns before any food on HOME, force SCOUT mode
+		// If ant spawns before any food is on HOME, force SCOUT mode
 		if (getCell(0, 0).getNumFood() == 0 && !isScout) {
 			isScout = true;
 			mode = ANTMODE.SCOUT;
@@ -125,8 +112,6 @@ public class VohraAnt implements Ant {
 		if (worldMap.getNumFoodFound() >= numFoodToFindForScouts)
 			isScout = false;
 
-		// Number of turns before exiting scout mode and changing to explore
-		// mode
 		scoutModeTurnsCounter--;
 
 		if (scoutModeTurnsCounter > 0) { // Still in scout mode
@@ -137,10 +122,11 @@ public class VohraAnt implements Ant {
 			// If not, make one to closest unexplored
 			else if (canFindValidPlanTo(CELLTYPE.UNEXPLORED))
 				return nextCurrentPlanAction();
-		} else {
-			scoutModeTurnsCounter = scoutModeCounterResetValue;
 		}
-		// Not in scout mode anymore, transition to Food mode
+		// resetting turn counter if this ant ever goes back into scout mode
+		scoutModeTurnsCounter = scoutModeCounterResetValue;
+
+		// Not in scout mode anymore, transition to Explore mode
 		return changeMode(ANTMODE.EXPLORE);
 	}
 
@@ -148,10 +134,8 @@ public class VohraAnt implements Ant {
 		int currentCellNumFood = getCurrentCell().getNumFood();
 
 		// If food on target doesn't doesn't exist anymore, re-plan
-		if (worldMap.isFoodUpdatedAndReset() && !currentPlan.isEmpty()
-				&& currentPlan.firstElement().getNumFood() == 0) {
+		if (worldMap.isFoodUpdatedAndReset() && !currentPlan.isEmpty() && currentPlan.firstElement().getNumFood() == 0) {
 			currentPlan.clear(); // clearing, so re-planning is neeeded
-
 		}
 
 		// Continue a plan if it exists
@@ -175,7 +159,7 @@ public class VohraAnt implements Ant {
 
 	private Action modeExplore() {
 
-		// WorldMap was recently updated, see if food source exists nearby
+		// If worldMap was recently updated, see if food source exists nearby
 		if (worldMap.isFoodUpdatedAndReset()) {
 			return changeMode(ANTMODE.TOFOOD);
 		}
@@ -216,7 +200,7 @@ public class VohraAnt implements Ant {
 		if (isAtHome() && carryingFood) {
 			carryingFood = false;
 			fromHomePlan.clear(); // reseting path
-			System.out.println("isScout: " + isScout);
+
 			// If scout, go back to scout mode
 			if (isScout) {
 				return changeModeWithAction(ANTMODE.SCOUT, Action.DROP_OFF);
@@ -247,8 +231,7 @@ public class VohraAnt implements Ant {
 
 		// When at home and can't find food or unexplored,
 		// happens when mound is on an island
-		if (isAtHome() && !canFindValidPlanTo(CELLTYPE.UNEXPLORED)
-				&& !canFindValidPlanTo(CELLTYPE.FOOD))
+		if (isAtHome() && !canFindValidPlanTo(CELLTYPE.UNEXPLORED) && !canFindValidPlanTo(CELLTYPE.FOOD))
 			return Action.HALT;
 		throw new RuntimeException("Can't find home, map error?");
 	}
@@ -259,8 +242,7 @@ public class VohraAnt implements Ant {
 	 */
 	private Action changeMode(ANTMODE nextMode) {
 
-		// Clear current plan when changing modes
-		currentPlan.clear();
+		currentPlan.clear(); // Clear current plan when changing modes
 		this.mode = nextMode;
 		switch (this.mode) {
 		case SCOUT:
@@ -277,7 +259,6 @@ public class VohraAnt implements Ant {
 	}
 
 	private Action changeModeWithAction(ANTMODE nextMode, Action action) {
-
 		// Set a new mode with action
 		currentPlan.clear();
 		this.mode = nextMode;
@@ -316,8 +297,7 @@ public class VohraAnt implements Ant {
 
 	private boolean canFindValidPlanTo(CELLTYPE goalType) {
 		// Try to find the requested cell type, return false if not valid
-		Stack<Cell> newPlan = planner.makePlan(worldMap, this.getCurrentCell(),
-				goalType);
+		Stack<Cell> newPlan = planner.makePlan(worldMap, this.getCurrentCell(), goalType);
 
 		// If newPlan is not valid, return false because no path can be found
 		if (newPlan == null || newPlan.size() == 0)

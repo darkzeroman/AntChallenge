@@ -108,16 +108,14 @@ public class WorldMap {
 
 					// if either the localCell or otherCell are food there was a
 					// food update
-					if (otherCell.getCellType() == CELLTYPE.FOOD
-							|| localCell.getCellType() == CELLTYPE.FOOD)
+					if (otherCell.getCellType() == CELLTYPE.FOOD || localCell.getCellType() == CELLTYPE.FOOD)
 						this.foodUpdated = true;
 					localCell.copyCell(otherCell);
 
 					// If local cell info is older, copy over
 				} else if (localCell.getTimeStamp() < otherCell.getTimeStamp()) {
 
-					if (otherCell.getCellType() == CELLTYPE.FOOD
-							|| localCell.getCellType() == CELLTYPE.FOOD)
+					if (otherCell.getCellType() == CELLTYPE.FOOD || localCell.getCellType() == CELLTYPE.FOOD)
 						this.foodUpdated = true;
 
 					localCell.copyCell(otherCell);
@@ -160,8 +158,7 @@ public class WorldMap {
 		int sum = cell.getNumAnts();
 		// Checking the neighbors
 		for (int i = 0; i < 4; i++) {
-			sum += getCell((cell.getX() + offsets[i][0]),
-					(cell.getY() + offsets[i][1])).getNumAnts();
+			sum += getCell((cell.getX() + offsets[i][0]), (cell.getY() + offsets[i][1])).getNumAnts();
 		}
 		return sum;
 	}
