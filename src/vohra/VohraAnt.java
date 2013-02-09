@@ -114,7 +114,7 @@ public class VohraAnt implements Ant {
 
 		scoutModeTurnsCounter--;
 
-		if (scoutModeTurnsCounter > 0) { // Still in scout mode
+		if (scoutModeTurnsCounter > 0) {
 			// If plan exists, continue with it
 			Action action = nextCurrentPlanAction();
 			if (action != null)
@@ -123,7 +123,8 @@ public class VohraAnt implements Ant {
 			else if (canFindValidPlanTo(CELLTYPE.UNEXPLORED))
 				return nextCurrentPlanAction();
 		}
-		// resetting turn counter if this ant ever goes back into scout mode
+		// The ant at this point exits scout mode and returns home.
+		// resetting turn counter for when the ant returns to scout mode
 		scoutModeTurnsCounter = scoutModeCounterResetValue;
 
 		// Not in scout mode anymore, transition to Explore mode
@@ -199,7 +200,7 @@ public class VohraAnt implements Ant {
 		// Drop off food
 		if (isAtHome() && carryingFood) {
 			carryingFood = false;
-			fromHomePlan.clear(); // reseting path
+			fromHomePlan.clear();
 
 			// If scout, go back to scout mode
 			if (isScout) {

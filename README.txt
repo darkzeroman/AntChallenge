@@ -33,11 +33,11 @@ Implemented Ant Behaviors:
  
  - If the path an ant has taken to a food source is same length as the path back, prefer the path it came on. Taking the same path back hopefully means ants are met along the way home.
  
- - The initial 3 ants are 'scouts' that explore the world but do not bring food home immediately. Once a counter runs out they switch "TOFOOD" mode.
+ - The initial 3 ants are 'scouts' that explore the world but do not bring food home immediately. Once a counter runs out they switch "EXPLORE" mode (which means they will find the closest food and return home). Scout ants will remain that mode until a certain amount of food has been found in the world.
 
  - If ant spawns and certain amount of food already exists on mound, spawned ant HALTS. It's probably better to wait for new information from another ant instead of wandering/exploring. 
 
-- Only search for food when food sources are updated for increasing efficiency in graph searches.
+ - Only search for food when food sources are updated for increasing efficiency in graph searches.
 
 ---
 
