@@ -68,7 +68,7 @@ public class VohraAnt implements Ant {
 
 	public Action getAction(Surroundings surroundings) {
 
-		// saving this locally because it used frequently
+		// Saving this locally because it used frequently
 		this.surroundings = surroundings;
 		worldMap.surroundingsUpdate(surroundings, x, y);
 
@@ -123,20 +123,20 @@ public class VohraAnt implements Ant {
 			else if (canFindValidPlanTo(CELLTYPE.UNEXPLORED))
 				return nextCurrentPlanAction();
 		}
-		// The ant at this point exits scout mode and returns home.
-		// resetting turn counter for when the ant returns to scout mode
+
+		// Resetting turn counter for when the ant returns to scout mode
 		scoutModeTurnsCounter = scoutModeCounterResetValue;
 
-		// Not in scout mode anymore, transition to Explore mode
+		// The ant at this point exits scout mode and goes to Explore Mode
+		// Which means the ant will find the closest food and go home
 		return changeMode(ANTMODE.EXPLORE);
 	}
 
 	private Action modeToFood() {
-		int currentCellNumFood = getCurrentCell().getNumFood();
 
 		// If food on target doesn't doesn't exist anymore, re-plan
 		if (worldMap.isFoodUpdatedAndReset() && !currentPlan.isEmpty() && currentPlan.firstElement().getNumFood() == 0) {
-			currentPlan.clear(); // clearing, so re-planning is neeeded
+			currentPlan.clear(); // clearing, so re-planning is necessary
 		}
 
 		// Continue a plan if it exists
@@ -144,6 +144,7 @@ public class VohraAnt implements Ant {
 		if (action != null)
 			return action;
 
+		int currentCellNumFood = getCurrentCell().getNumFood();
 		// Ant is on food cell (which is not home), gather
 		if (!isAtHome() && currentCellNumFood > 0 && !carryingFood) {
 			carryingFood = true;
@@ -154,6 +155,8 @@ public class VohraAnt implements Ant {
 		// Make plan to closest food source
 		if (canFindValidPlanTo(CELLTYPE.FOOD))
 			return nextCurrentPlanAction();
+
+		// If can't find food, go back to EXPLORE mode
 
 		return changeMode(ANTMODE.EXPLORE);
 	}
@@ -296,6 +299,11 @@ public class VohraAnt implements Ant {
 		worldMap.mergeMaps(otherWorldMap);
 	}
 
+	/**
+	 * Tries to find a plan to goalType and writes the path to currentPlan
+	 * 
+	 * @param goalType
+	 */
 	private boolean canFindValidPlanTo(CELLTYPE goalType) {
 		// Try to find the requested cell type, return false if not valid
 		Stack<Cell> newPlan = planner.makePlan(worldMap, this.getCurrentCell(), goalType);

@@ -37,7 +37,7 @@ Implemented Ant Behaviors:
 
  - If ant spawns and certain amount of food already exists on mound, spawned ant HALTS. It's probably better to wait for new information from another ant instead of wandering/exploring. 
 
- - Only search for food when food sources are updated for increasing efficiency in graph searches.
+ - Only search for food when food sources are updated to lower the number of graph searches.
 
 ---
 
@@ -53,7 +53,7 @@ SCOUT
 EXPLORE
 	If food source updated: ChangeMode(TOFOOD)
 	If plan exists: return nextAction
-	If can find closest UNEXPLORED: return
+	If can find closest UNEXPLORED: return nextAction
 	If at home: return HALT
 	ChangeMode(TOHOME)
 	
@@ -67,10 +67,10 @@ TOFOOD
 TOHOME
 	If at HOME and not carrying food: ChangeMode(Explore)
 	If at HOME and carrying food:
-		If scout: ChangeModeWithAction(SCOUT,DROPOFF)
+		If Scout: ChangeModeWithAction(SCOUT,DROPOFF)
 		Else ChangeModeWithAction(DROPOFF,TOFOOD)
-	If plan exists: continue with it
-	If can find closest HOME:
+	If plan exists: return nextAction
+	If can find HOME:
 		If plan to home and plan from home is same: switch them.
 		return nextAction
 	If at HOME and can't find closest food or unexplored: return HALT

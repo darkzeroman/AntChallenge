@@ -8,15 +8,12 @@ import ants.Direction;
  * World Map contains a hashtable of Cells, this holds the information provided
  * for each tile in the world.
  * 
- * @author dkz
+ * @author Vidhur Vohra
  * 
  */
 public class Cell implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Used to simplify the search
-	 */
 	public enum CELLTYPE {
 		FOOD, GRASS, HOME, UNEXPLORED, WATER
 	}
@@ -75,8 +72,7 @@ public class Cell implements Serializable {
 		this.cellType = otherCell.getCellType();
 		this.timeStamp = otherCell.timeStamp;
 		this.numFood = otherCell.numFood;
-		this.initialNumFood = Math.max(initialNumFood,
-				otherCell.getInitialNumFood());
+		this.initialNumFood = Math.max(initialNumFood, otherCell.getInitialNumFood());
 	}
 
 	public void setNumFood(int numFood) {
@@ -123,10 +119,8 @@ public class Cell implements Serializable {
 	}
 
 	public String toString() {
-		String retString = "[" + this.x + "," + this.y + "], type: "
-				+ this.cellType;
-		retString += ", Amount of Food: " + this.numFood + ", NumAnts: "
-				+ this.numAnts;
+		String retString = "[" + this.x + "," + this.y + "], type: " + this.cellType;
+		retString += ", Amount of Food: " + this.numFood + ", NumAnts: " + this.numAnts;
 		return retString;
 	}
 }

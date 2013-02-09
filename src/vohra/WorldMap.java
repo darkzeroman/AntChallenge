@@ -25,7 +25,7 @@ public class WorldMap {
 	/**
 	 * When adding/deleting/updating cells that have food, set this flag because
 	 * a new food search is only required if food sources have changed. This is
-	 * done for efficiency
+	 * done for efficiency.
 	 */
 	private boolean foodUpdated = true;
 
@@ -37,10 +37,10 @@ public class WorldMap {
 
 	public void surroundingsUpdate(Surroundings surroundings, int x, int y) {
 
-		// Checking the current tile
+		// Update current cell
 		updateCell(getCell(x, y), surroundings.getCurrentTile());
 
-		// Checking the neighbors
+		// Update neighbors
 		for (int i = 0; i < Direction.values().length; i++) {
 			Tile tile = surroundings.getTile(Direction.values()[i]);
 			Cell cell = getCell((x + offsets[i][0]), (y + offsets[i][1]));
@@ -106,7 +106,7 @@ public class WorldMap {
 				// If local cell is unexplored and other isn't, copy over local
 				if (localCell.getCellType() == CELLTYPE.UNEXPLORED) {
 
-					// if either the localCell or otherCell are food there was a
+					// if either the localCell or otherCell has food there was a
 					// food update
 					if (otherCell.getCellType() == CELLTYPE.FOOD || localCell.getCellType() == CELLTYPE.FOOD)
 						this.foodUpdated = true;
@@ -125,6 +125,7 @@ public class WorldMap {
 		}
 	}
 
+	// Only used for testing purposes
 	public int numKnownCells() {
 		// Number of known cells in the world
 		return map.keySet().size();
