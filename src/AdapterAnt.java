@@ -8,18 +8,13 @@ public class AdapterAnt implements Ant {
 	// package but I needed packages for JUnit tests
 	VohraAnt ant = new VohraAnt();
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public Action getAction(Surroundings surroundings) {
-		// Since there are runtime exceptions
-		// Need to account for if they trigger
+		// Need to check if there are runtime exceptions
 		Action action = null;
 		try {
 			action = ant.getAction(surroundings);

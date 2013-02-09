@@ -5,6 +5,7 @@ import java.util.Stack;
 import vohra.Cell.CELLTYPE;
 
 public interface Planner {
+	
 	public enum SEARCHTYPE {
 		BFS
 	}
