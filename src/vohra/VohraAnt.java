@@ -269,8 +269,6 @@ public class VohraAnt implements Ant {
 
 	/**
 	 * If a plan exists in currentPlan, get the next appropriate action
-	 * 
-	 * @return plan or null if not valid
 	 */
 	private Action nextCurrentPlanAction() {
 
@@ -309,6 +307,12 @@ public class VohraAnt implements Ant {
 		return true;
 	}
 
+	/**
+	 * This updates the internal location of the ant depending on the direction
+	 * of the next action
+	 * 
+	 * @param direction
+	 */
 	private void updateLocation(Direction direction) {
 		switch (direction) {
 		case NORTH:

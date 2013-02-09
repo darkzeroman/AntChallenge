@@ -33,8 +33,9 @@ public class BFS implements Planner {
 
 	}
 
-	// Offsets in each cardinal direction that helps to find neighbors, NESW,
-	// {x,y}
+	/**
+	 * Offsets for cardinal direction that helps to find neighbors, NESW, {x,y}
+	 */
 	private final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
 	private BFS() {
@@ -45,8 +46,7 @@ public class BFS implements Planner {
 	 * previous references for a plan to the desired goal type from the
 	 * source/start cell
 	 */
-	private Cell breadthFirstSearch(WorldMap worldMap, Cell startCell,
-			CELLTYPE goalType, Hashtable<Cell, Cell> prev) {
+	private Cell breadthFirstSearch(WorldMap worldMap, Cell startCell, CELLTYPE goalType, Hashtable<Cell, Cell> prev) {
 
 		// Using markedSet to avoid re-checking already visited nodes
 		HashSet<Cell> markedSet = new HashSet<Cell>();
@@ -66,8 +66,7 @@ public class BFS implements Planner {
 			// shuffle the list if ant wants to explore a random portion of the
 			// map. Could have used a seed but decided not to
 			if (goalType == CELLTYPE.UNEXPLORED)
-				Collections.shuffle(neighbors,
-						new Random(System.currentTimeMillis()));
+				Collections.shuffle(neighbors, new Random(System.currentTimeMillis()));
 
 			for (Cell neighbor : neighbors)
 				if (!markedSet.contains(neighbor)) {
@@ -84,8 +83,7 @@ public class BFS implements Planner {
 	 * Reconstructs a plan to desired target by using the prev references for
 	 * the cells
 	 */
-	public Stack<Cell> constructPlan(WorldMap worldMap, Cell target,
-			Hashtable<Cell, Cell> prev) {
+	public Stack<Cell> constructPlan(WorldMap worldMap, Cell target, Hashtable<Cell, Cell> prev) {
 
 		// Starting from the target and backtracking to find the route plan
 		Stack<Cell> newPlan = new Stack<Cell>();
@@ -98,8 +96,7 @@ public class BFS implements Planner {
 		return newPlan;
 	}
 
-	protected LinkedList<Cell> listNeighbors(WorldMap worldMap, Cell cell,
-			CELLTYPE goalCellType) {
+	protected LinkedList<Cell> listNeighbors(WorldMap worldMap, Cell cell, CELLTYPE goalCellType) {
 		// If searching for unexplored, need to add make sure the list of
 		// neighbors includes unexplored
 
@@ -128,8 +125,7 @@ public class BFS implements Planner {
 	}
 
 	@Override
-	public Stack<Cell> makePlan(WorldMap worldMap, Cell start,
-			CELLTYPE goalCellType) {
+	public Stack<Cell> makePlan(WorldMap worldMap, Cell start, CELLTYPE goalCellType) {
 
 		// holds cell references which is used to backtrack for route plan
 		Hashtable<Cell, Cell> prev = new Hashtable<Cell, Cell>();

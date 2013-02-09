@@ -14,7 +14,11 @@ import ants.Surroundings;
 import ants.Tile;
 
 public class WorldMapTest extends WorldMap {
-
+	/**
+	 * Starting with fresh world map, check if updating with surroundings
+	 * increases number of known cells. Basically making sure the world is being
+	 * tracked correctly.
+	 */
 	@Test
 	public void testUpdatingMap() {
 		// Starting with fresh world map, check if updating with a surroundings
@@ -24,9 +28,11 @@ public class WorldMapTest extends WorldMap {
 		assertEquals(5, worldMap.numKnownCells());
 	}
 
+	/**
+	 * Testing various parts of a merge between two world maps
+	 */
 	@Test
 	public void testMapMerge() {
-		// Testing various parts of a merge between two world maps
 		WorldMap map1 = new WorldMap();
 		WorldMap map2 = new WorldMap();
 
