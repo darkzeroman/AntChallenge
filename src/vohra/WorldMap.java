@@ -116,17 +116,6 @@ public class WorldMap {
 		}
 	}
 
-	// Only used for testing purposes
-	public int numKnownCells() {
-		// Number of known cells in the world
-		return map.keySet().size();
-	}
-
-	/** Used for merging */
-	public Enumeration<Cell> elements() {
-		return map.elements();
-	}
-
 	/**
 	 * Returns the total number of food found, useful to check if scout mode
 	 * should be exited
@@ -150,15 +139,6 @@ public class WorldMap {
 		return this.foodUpdated;
 	}
 
-	public int getNumAntsAroundCell(Cell cell) {
-		int sum = cell.getNumAnts();
-		// Checking the neighbors
-		for (int i = 0; i < offsets.length; i++) {
-			sum += getCell((cell.getX() + offsets[i][0]), (cell.getY() + offsets[i][1])).getNumAnts();
-		}
-		return sum;
-	}
-
 	public Cell getCell(int row, int col) {
 		// If requested cell doesn't exist, create it and return
 		Point coord = new Point(row, col);
@@ -168,6 +148,12 @@ public class WorldMap {
 	}
 
 	// Below used for JUnit tests
+
+	// Only used for testing purposes
+	public int numKnownCells() {
+		// Number of known cells in the world
+		return map.keySet().size();
+	}
 
 	public Hashtable<Point, Cell> getMap() {
 		return map;
