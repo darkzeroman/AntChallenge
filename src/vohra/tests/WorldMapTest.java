@@ -28,9 +28,7 @@ public class WorldMapTest extends WorldMap {
 		assertEquals(5, worldMap.numKnownCells());
 	}
 
-	/**
-	 * Testing various parts of a merge between two world maps
-	 */
+	/** Testing various parts of a merge between two world maps. */
 	@Test
 	public void testMapMerge() {
 		WorldMap map1 = new WorldMap();
@@ -50,7 +48,7 @@ public class WorldMapTest extends WorldMap {
 		assertEquals(map2.numKnownCells(), 1);
 
 		// Setting a new type of cell in map 2, but since this isn't a food
-		// source map 1's foodupdate should not be set
+		// source map 1's foodUpdate should not be set
 		map2.setCell(new Cell(CELLTYPE.GRASS, 0, 1));
 		map1.mergeMaps(map2.getMap());
 		assertFalse(map1.isFoodUpdatedAndReset());

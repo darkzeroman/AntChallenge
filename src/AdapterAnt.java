@@ -4,8 +4,10 @@ import ants.Ant;
 import ants.Surroundings;
 
 public class AdapterAnt implements Ant {
-	// Needed to use this because engine complains if this class is in a
-	// package but I needed packages for JUnit tests
+	/*
+	 * Needed to use this because engine complains if this class is in a package
+	 * but I needed packages for JUnit tests.
+	 */
 	VohraAnt ant = new VohraAnt();
 
 	public static void main(String[] args) {

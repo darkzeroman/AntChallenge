@@ -5,7 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-/** Used for converting the objects to/from byte array. */
+/** Used for converting the objects to/from byte array. Standard code */
 class ObjectIO<T> {
 	public byte[] toByteArray(T obj) {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();

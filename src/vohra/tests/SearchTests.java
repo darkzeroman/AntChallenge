@@ -16,7 +16,7 @@ import ants.Direction;
 
 public class SearchTests {
 	VohraAnt ant = new VohraAnt();
-	Planner planner = BFS.getSingleInstance();
+	final Planner planner = BFS.getSingleInstance();
 
 	/**
 	 * Creating an ant in a square world with food one square away for all of
@@ -104,7 +104,6 @@ public class SearchTests {
 		// U W G W U
 		// U W A W U
 		// U W W W U
-		System.out.println(ant.getWorldMap().numKnownCells());
 
 		int[][] waterCellCoords = new int[][] { { 0, -1 }, { -1, 0 }, { -1, 1 }, { -1, 2 }, { -1, 3 }, { -1, 4 },
 				{ 0, -1 }, { 1, 0 }, { 1, 1 }, { 1, 2 }, { 1, 3 }, { 1, 4 }, { 0, 5 } };
@@ -115,7 +114,6 @@ public class SearchTests {
 		for (int[] arr : grassCellCoords)
 			ant.getCell(arr[0], arr[1]).setCellType(CELLTYPE.GRASS);
 
-		System.out.println(ant.getWorldMap().numKnownCells());
 		Stack<Cell> plan = planner.makePlan(ant.getWorldMap(), ant.getCurrentCell(), CELLTYPE.UNEXPLORED);
 
 		assertEquals(Direction.NORTH, nextPlanDir(plan, ant.getCurrentCell()));
@@ -146,11 +144,8 @@ public class SearchTests {
 		return ant;
 	}
 
-	/**
-	 * Gets the direction from the ant's current plan action
-	 */
+	/** Gets the direction from the ant's current plan action */
 	private Direction nextPlanDir(Stack<Cell> plan, Cell from) {
-		// Gets plan's next step direction
 		if (plan.size() > 0) {
 			Cell to = plan.pop();
 			return from.directionTo(to);
