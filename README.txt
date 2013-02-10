@@ -1,4 +1,4 @@
-I have some issues uploadoing this and making changes. I did this project
+I have some issues uploading this and making changes. I did this project
 before I started to use Git. I wouldn't worry about the commit history.
 
 Things that need work:
@@ -10,7 +10,7 @@ that leads to unnecessary comments.
   Return true/false if the output is valid? Need to think about this more.
 
 --
-Ant Challenge Project for Addepar Interview
+Ant Challenge Project for Addepar
 By: Vidhur Vohra
 Date of Completion: April 9th, 2012
 ---
