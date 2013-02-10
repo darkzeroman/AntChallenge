@@ -36,7 +36,7 @@ public class VohraAnt implements Ant {
 	private final int numFoodToFindForScouts = 600;
 
 	/** If more than this amount of ants are on HOME, for everyone to SCOUT mode */
-	private final int numAntsMaxOnHOME = 10;
+	private final int numAntsMaxOnHOME = 20;
 
 	// Ant properties
 	private boolean carryingFood = false;
@@ -61,6 +61,8 @@ public class VohraAnt implements Ant {
 	/** The type of search algorithm used, have implemented BFS */
 	private Planner planner = BFS.getSingleInstance();
 
+	Action action;
+
 	public VohraAnt() {
 		this.worldMap = new WorldMap();
 		this.currentPlan = new Stack<Cell>();
@@ -81,19 +83,19 @@ public class VohraAnt implements Ant {
 		}
 
 		// Determine next action using FSM
-		Action action = null;
+		action = null;
 		switch (mode) {
 		case SCOUT:
-			action = modeScout();
+			modeScout();
 			break;
 		case TOFOOD:
-			action = modeToFood();
+			modeToFood();
 			break;
 		case EXPLORE:
-			action = modeExplore();
+			modeExplore();
 			break;
 		case TOHOME:
-			action = modeToHome();
+			modeToHome();
 			break;
 		default:
 			throw new RuntimeException("Undefined state");
@@ -108,7 +110,7 @@ public class VohraAnt implements Ant {
 		throw new RuntimeException("Invalid Action");
 	}
 
-	private Action modeScout() {
+	private void modeScout() {
 
 		// If high amount of food has already been found, exit scout mode
 		if (worldMap.getNumFoodFound() >= numFoodToFindForScouts) {
@@ -119,12 +121,15 @@ public class VohraAnt implements Ant {
 
 		if (scoutModeTurnsCounter > 0) {
 			// If plan exists, continue with it
-			Action action = nextCurrentPlanAction();
-			if (action != null)
-				return action;
+			if (nextCurrentPlanAction()) {
+				return;
+			}
 			// If not, make one to closest unexplored
-			else if (canFindValidPlanTo(CELLTYPE.UNEXPLORED))
-				return nextCurrentPlanAction();
+			else if (canFindValidPlanTo(CELLTYPE.UNEXPLORED)) {
+				nextCurrentPlanAction();
+				return;
+
+			}
 		}
 
 		// Resetting turn counter for when the ant returns to scout mode
@@ -132,10 +137,11 @@ public class VohraAnt implements Ant {
 
 		// The ant at this point exits Scout mode and goes to Explore Mode
 		// Which means the ant will find the closest food and go home
-		return changeMode(ANTMODE.EXPLORE);
+		changeMode(ANTMODE.EXPLORE);
+		return;
 	}
 
-	private Action modeToFood() {
+	private void modeToFood() {
 
 		// If food on target doesn't doesn't exist anymore, re-plan
 		if (worldMap.isFoodUpdatedAndReset() && !currentPlan.isEmpty() && currentPlan.firstElement().getNumFood() == 0) {
@@ -143,47 +149,53 @@ public class VohraAnt implements Ant {
 		}
 
 		// Continue a plan if it exists
-		Action action = nextCurrentPlanAction();
-		if (action != null)
-			return action;
+
+		if (nextCurrentPlanAction())
+			return;
 
 		int currentCellNumFood = getCurrentCell().getNumFood();
 		// Ant is on food cell (which is not home), so gather
 		if (!isAtHome() && currentCellNumFood > 0 && !carryingFood) {
 			carryingFood = true;
 			getCurrentCell().decrementFood();
-			return changeModeWithAction(ANTMODE.TOHOME, Action.GATHER);
+			changeModeWithAction(ANTMODE.TOHOME, Action.GATHER);
+			return;
 		}
 
 		// Make plan to closest food source
-		if (canFindValidPlanTo(CELLTYPE.FOOD))
-			return nextCurrentPlanAction();
-
+		if (canFindValidPlanTo(CELLTYPE.FOOD)) {
+			nextCurrentPlanAction();
+			return;
+		}
 		// If can't find food, go back to EXPLORE mode
-		return changeMode(ANTMODE.EXPLORE);
+		changeMode(ANTMODE.EXPLORE);
+		return;
 	}
 
-	private Action modeExplore() {
+	private void modeExplore() {
 
 		// If worldMap was recently updated, see if food source exists nearby
 		if (worldMap.isFoodUpdatedAndReset()) {
-			return changeMode(ANTMODE.TOFOOD);
+			changeMode(ANTMODE.TOFOOD);
+			return;
 		}
 
 		// Continue a plan if it exists
-		Action action = nextCurrentPlanAction();
-		if (action != null)
-			return action;
+		if (nextCurrentPlanAction())
+			return;
 
 		// Try to find closest unexplored
-		if (canFindValidPlanTo(CELLTYPE.UNEXPLORED))
-			return nextCurrentPlanAction();
+		if (canFindValidPlanTo(CELLTYPE.UNEXPLORED)) {
+			nextCurrentPlanAction();
+			return;
+		}
 
 		// If can't find anything new to explore wait at home
 		// for another ant to hopefully share info
 		if (isAtHome()) {
 			if (getCurrentCell().getNumAnts() < numAntsMaxOnHOME) {
-				return Action.HALT;
+				action = Action.HALT;
+				return;
 			} else {
 				// If more than the numAntsMAX are on HOME, force SCOUT mode
 				isScout = true;
@@ -192,15 +204,18 @@ public class VohraAnt implements Ant {
 
 		}
 		// Everything is explored, go home
-		return changeMode(ANTMODE.TOHOME);
+		changeMode(ANTMODE.TOHOME);
+		return;
 	}
 
-	private Action modeToHome() {
+	private void modeToHome() {
 
 		// If ant went to home because there is nothing left to explore, try to
 		// explore again
-		if (isAtHome() && !carryingFood)
-			return changeMode(ANTMODE.EXPLORE);
+		if (isAtHome() && !carryingFood) {
+			changeMode(ANTMODE.EXPLORE);
+			return;
+		}
 
 		// Drop off food if ant has it
 		if (isAtHome() && carryingFood) {
@@ -209,16 +224,18 @@ public class VohraAnt implements Ant {
 
 			// If scout, go back to scout mode
 			if (isScout) {
-				return changeModeWithAction(ANTMODE.SCOUT, Action.DROP_OFF);
+				changeModeWithAction(ANTMODE.SCOUT, Action.DROP_OFF);
+				return;
 			}
 			// Not scout, so go back to food
-			return changeModeWithAction(ANTMODE.TOFOOD, Action.DROP_OFF);
+			changeModeWithAction(ANTMODE.TOFOOD, Action.DROP_OFF);
+			return;
 		}
 
 		// Continue a plan if it exists
-		Action action = nextCurrentPlanAction();
-		if (action != null)
-			return action;
+		if (nextCurrentPlanAction()) {
+			return;
+		}
 
 		// Attempt to make plan to go home
 		if (canFindValidPlanTo(CELLTYPE.HOME)) {
@@ -232,34 +249,40 @@ public class VohraAnt implements Ant {
 			}
 			// Since at home, clear path
 			fromHomePlan.clear();
-			return nextCurrentPlanAction();
+			nextCurrentPlanAction();
+			return;
 		}
 
 		// Halt when at home, no food or unexplored
 		// occurs if mound is on island
-		if (isAtHome() && !canFindValidPlanTo(CELLTYPE.UNEXPLORED) && !canFindValidPlanTo(CELLTYPE.FOOD))
-			return Action.HALT;
-
+		if (isAtHome() && !canFindValidPlanTo(CELLTYPE.UNEXPLORED) && !canFindValidPlanTo(CELLTYPE.FOOD)) {
+			action = Action.HALT;
+			return;
+		}
 		throw new RuntimeException("Can't find home, map error?");
 	}
 
 	/** Used for FSM transitions. Also deletes current plan. */
-	private Action changeMode(ANTMODE nextMode) {
+	private void changeMode(ANTMODE nextMode) {
 
 		currentPlan.clear(); // Clear current plan when changing modes
 		this.mode = nextMode;
 
 		switch (this.mode) {
 		case SCOUT:
-			return modeScout();
+			modeScout();
+			break;
 		case TOFOOD:
-			return modeToFood();
+			modeToFood();
+			break;
 		case EXPLORE:
-			return modeExplore();
+			modeExplore();
+			break;
 		case TOHOME:
-			return modeToHome();
+			modeToHome();
+			break;
 		}
-		throw new IllegalArgumentException("UnrecognizedMode: " + nextMode);
+		return;
 
 	}
 
@@ -267,15 +290,16 @@ public class VohraAnt implements Ant {
 	 * Used for an action needs to accompany a FSM transition. Example: Drop
 	 * food before going back to TOFOOD mode to get the next food unit.
 	 */
-	private Action changeModeWithAction(ANTMODE nextMode, Action action) {
+	private void changeModeWithAction(ANTMODE nextMode, Action action) {
 		// Set a new mode with action
+		this.action = action;
 		currentPlan.clear();
 		this.mode = nextMode;
-		return action;
+		return;
 	}
 
 	/** If a plan exists in currentPlan, get the next appropriate action */
-	private Action nextCurrentPlanAction() {
+	private boolean nextCurrentPlanAction() {
 
 		// Get the next action from the current plan, plan isn't valid if empty
 		if (currentPlan.size() > 0) {
@@ -287,12 +311,12 @@ public class VohraAnt implements Ant {
 			fromHomePlan.push(from);
 			Cell to = currentPlan.pop();
 			Direction dir = from.directionTo(to);
-			Action action = Action.move(dir);
+			action = Action.move(dir);
+			return true;
 
-			if (isActionValid(action))
-				return action;
 		}
-		return null;
+		return false;
+
 	}
 
 	/** Tries to find a plan to goalType and writes the path to currentPlan. */
