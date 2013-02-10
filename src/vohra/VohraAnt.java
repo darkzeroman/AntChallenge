@@ -29,8 +29,10 @@ public class VohraAnt implements Ant {
 	/** Number of turns to take before switching from SCOUT to TOFOOD */
 	private int scoutModeTurnsCounter = scoutModeCounterResetValue;
 
-	// Scouts will be in scout mode until below number of food are found, more
-	// than food needed to end game, which is 500
+	/**
+	 * Scouts will exit scout mode after finding this amount of food. Game ends
+	 * at 500.
+	 */
 	private final int numFoodToFindForScouts = 600;
 
 	/** If more than this amount of ants are on HOME, for everyone to SCOUT mode */
@@ -39,10 +41,13 @@ public class VohraAnt implements Ant {
 	// Ant properties
 	private boolean carryingFood = false;
 	private boolean isScout = false;
-	private int x, y; // location of the ant
 	private ANTMODE mode;
-	private Stack<Cell> currentPlan; // Pre-determined planned route to a target
-	private Stack<Cell> fromHomePlan; // Path from last time at home
+	/** Location of ant */
+	private int x, y;
+	/** Predetermined planned route to a target */
+	private Stack<Cell> currentPlan;
+	/** Path from last time at home */
+	private Stack<Cell> fromHomePlan;
 
 	/** Holds the knowledge each ant has of the world */
 	private final WorldMap worldMap;
@@ -165,7 +170,7 @@ public class VohraAnt implements Ant {
 			return changeMode(ANTMODE.TOFOOD);
 		}
 
-		// If a plan exists, follow it
+		// Continue a plan if it exists
 		Action action = nextCurrentPlanAction();
 		if (action != null)
 			return action;
@@ -210,7 +215,7 @@ public class VohraAnt implements Ant {
 			return changeModeWithAction(ANTMODE.TOFOOD, Action.DROP_OFF);
 		}
 
-		// If a plan exists, follow it
+		// Continue a plan if it exists
 		Action action = nextCurrentPlanAction();
 		if (action != null)
 			return action;
@@ -238,10 +243,7 @@ public class VohraAnt implements Ant {
 		throw new RuntimeException("Can't find home, map error?");
 	}
 
-	/**
-	 * Used for FSM transitions. Deleting the current plan whenever there is a
-	 * transition
-	 */
+	/** Used for FSM transitions. Also deletes current plan. */
 	private Action changeMode(ANTMODE nextMode) {
 
 		currentPlan.clear(); // Clear current plan when changing modes
@@ -262,7 +264,7 @@ public class VohraAnt implements Ant {
 	}
 
 	/**
-	 * Used for an action needs to accompany a change in state. Example: Drop
+	 * Used for an action needs to accompany a FSM transition. Example: Drop
 	 * food before going back to TOFOOD mode to get the next food unit.
 	 */
 	private Action changeModeWithAction(ANTMODE nextMode, Action action) {
@@ -293,9 +295,7 @@ public class VohraAnt implements Ant {
 		return null;
 	}
 
-	/**
-	 * Tries to find a plan to goalType and writes the path to currentPlan
-	 */
+	/** Tries to find a plan to goalType and writes the path to currentPlan. */
 	private boolean canFindValidPlanTo(CELLTYPE goalType) {
 		// Try to find the requested cell type, return false if not valid
 		Stack<Cell> newPlan = planner.makePlan(worldMap, this.getCurrentCell(), goalType);
@@ -313,8 +313,6 @@ public class VohraAnt implements Ant {
 	/**
 	 * This updates the internal location of the ant depending on the direction
 	 * of the next action
-	 * 
-	 * @param direction
 	 */
 	private void updateLocation(Direction direction) {
 		switch (direction) {

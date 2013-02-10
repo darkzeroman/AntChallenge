@@ -17,9 +17,7 @@ public class WorldMap {
 	 */
 	private final Hashtable<Point, Cell> map;
 
-	/**
-	 * Relative coordinates for each cardinal direction. NESW
-	 */
+	/** Relative coordinates for each cardinal direction. (NESW) */
 	final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
 	/**
@@ -37,10 +35,9 @@ public class WorldMap {
 
 	public void surroundingsUpdate(Surroundings surroundings, int x, int y) {
 
-		// Update current cell
 		updateCell(getCell(x, y), surroundings.getCurrentTile());
 
-		// Update neighbors
+		// Update from neighboring tiles
 		for (int i = 0; i < Direction.values().length; i++) {
 			Tile tile = surroundings.getTile(Direction.values()[i]);
 			Cell cell = getCell((x + offsets[i][0]), (y + offsets[i][1]));
@@ -49,51 +46,51 @@ public class WorldMap {
 		}
 	}
 
+	/**
+	 * Takes in a CELL and TILE and checks if there is new info from TILE
+	 * 
+	 * @param cell
+	 *            Local copy
+	 * @param tile
+	 *            Given by engine
+	 */
 	private void updateCell(Cell cell, Tile tile) {
-		// CELL = local copy, TILE = given by engine
-
-		// Takes in a CELL and TILE and checks if there is new info from TILE
-
-		// Doing a full food search when only the immediate surroundings is
-		// updated is wasteful, so set "foodUpdated" flag to true if a food
-		// source has changed
 
 		int tileNumFood = tile.getAmountOfFood();
 		cell.setNumAnts(tile.getNumAnts()); // always set number of ants
 
-		// If the CELL is unexplored, anything given is new info
+		// If the cell (local) is unexplored, anything given is new info
 		if (cell.getCellType() == CELLTYPE.UNEXPLORED) {
-			if (tileNumFood > 0) { // Checking for food TILE
+			if (tileNumFood > 0) { // Checking if food tile
 				cell.setNumFood(tileNumFood);
 				cell.setCellType(CELLTYPE.FOOD);
 				foodUpdated = true;
 
-			} else if (tileNumFood == 0 && tile.isTravelable())
+			} else if (tileNumFood == 0 && tile.isTravelable()) {
 				cell.setCellType(CELLTYPE.GRASS); // Only grass can be this
-
-			else if (!tile.isTravelable())
+			} else if (!tile.isTravelable()) {
 				cell.setCellType(CELLTYPE.WATER);
+			}
 
 		} else if (cell.getCellType() == CELLTYPE.FOOD) {
 			if (tileNumFood == 0) {
-				// CELL had food, not anymore
+				// Cell had food, not anymore
 				cell.setNumFood(tileNumFood);
 				cell.setCellType(CELLTYPE.GRASS);
 				foodUpdated = true;
 
 			} else if (tileNumFood != cell.getNumFood()) {
-				// Need to update numfood on CELL
+				// Need to update numFood on CELL
 				cell.setNumFood(tileNumFood);
 				foodUpdated = true;
 			}
 		} else if (cell.getCellType() == CELLTYPE.HOME) {
-			// Updating HOME's numFood
 			cell.setNumFood(tileNumFood);
 		}
 	}
 
+	/** Merges local map with other ant's Map */
 	public void mergeMaps(Hashtable<Point, Cell> otherMap) {
-		// Merges local and other ant's Map
 
 		Enumeration<Cell> e = otherMap.elements();
 
@@ -103,24 +100,18 @@ public class WorldMap {
 			if (otherCell.getCellType() != CELLTYPE.UNEXPLORED) {
 				Cell localCell = getCell(otherCell.getX(), otherCell.getY());
 
-				// If local cell is unexplored and other isn't, copy over local
-				if (localCell.getCellType() == CELLTYPE.UNEXPLORED) {
+				// If localCell is unexplored and otherCell isn't.
+				// Or if localCell info is older, Copy over
+				if (localCell.getCellType() == CELLTYPE.UNEXPLORED
+						|| localCell.getTimeStamp() < otherCell.getTimeStamp()) {
 
-					// if either the localCell or otherCell has food there was a
-					// food update
-					if (otherCell.getCellType() == CELLTYPE.FOOD || localCell.getCellType() == CELLTYPE.FOOD)
+					// Set foodUpdated flag is either cells have food.
+					if (otherCell.getCellType() == CELLTYPE.FOOD || localCell.getCellType() == CELLTYPE.FOOD) {
 						this.foodUpdated = true;
+					}
 					localCell.copyCell(otherCell);
-
-					// If local cell info is older, copy over
-				} else if (localCell.getTimeStamp() < otherCell.getTimeStamp()) {
-
-					if (otherCell.getCellType() == CELLTYPE.FOOD || localCell.getCellType() == CELLTYPE.FOOD)
-						this.foodUpdated = true;
-
-					localCell.copyCell(otherCell);
-
 				}
+
 			}
 		}
 	}
@@ -131,14 +122,17 @@ public class WorldMap {
 		return map.keySet().size();
 	}
 
+	/** Used for merging */
 	public Enumeration<Cell> elements() {
-		// Used for merging
 		return map.elements();
 	}
 
+	/**
+	 * Returns the total number of food found, useful to check if scout mode
+	 * should be exited
+	 */
 	public int getNumFoodFound() {
-		// Returns the total of food found
-		// Useful to check to stop scouting mode
+
 		int sum = 0;
 		Enumeration<Cell> e = getMap().elements();
 		while (e.hasMoreElements()) {
@@ -147,6 +141,7 @@ public class WorldMap {
 		return sum;
 	}
 
+	/** Checks if there was a food update and resets it. */
 	public boolean isFoodUpdatedAndReset() {
 		if (this.foodUpdated) {
 			this.foodUpdated = false;
@@ -158,7 +153,7 @@ public class WorldMap {
 	public int getNumAntsAroundCell(Cell cell) {
 		int sum = cell.getNumAnts();
 		// Checking the neighbors
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < offsets.length; i++) {
 			sum += getCell((cell.getX() + offsets[i][0]), (cell.getY() + offsets[i][1])).getNumAnts();
 		}
 		return sum;
@@ -172,11 +167,12 @@ public class WorldMap {
 		return map.get(coord);
 	}
 
+	// Below used for JUnit tests
+
 	public Hashtable<Point, Cell> getMap() {
 		return map;
 	}
 
-	// Used for JUnit tests
 	public void setCell(Cell cell) {
 		map.put(new Point(cell.getX(), cell.getY()), cell);
 	}
