@@ -18,7 +18,7 @@ public class WorldMap {
 	private final Hashtable<Point, Cell> map;
 
 	/** Relative coordinates for each cardinal direction. (NESW) */
-	final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+	static final int[][] offsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
 	/**
 	 * When adding/deleting/updating cells that have food, set this flag because

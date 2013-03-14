@@ -35,8 +35,6 @@ public class VohraAnt implements Ant {
 	 */
 	private final int numFoodToFindForScouts = 600;
 
-	private final int numToWaitFor = 200;
-
 	/** If more than this amount of ants are on HOME, for everyone to SCOUT mode */
 	private final int numAntsMaxOnHOME = 100;
 
@@ -61,10 +59,10 @@ public class VohraAnt implements Ant {
 	private final ObjectIO<Hashtable<Point, Cell>> ObjectIO = new ObjectIO<Hashtable<Point, Cell>>();
 
 	/** The type of search algorithm used, have implemented BFS */
-	private Planner planner = BFS.getSingleInstance();
+	private final Planner planner = BFS.getSingleInstance();
 
 	/** Holds the next action */
-	Action action;
+	private Action action;
 
 	public VohraAnt() {
 		this.worldMap = new WorldMap();
@@ -171,6 +169,7 @@ public class VohraAnt implements Ant {
 		if (canFindValidPlanTo(CELLTYPE.FOOD) && nextCurrentPlanAction()) {
 			return;
 		}
+
 		// If can't find food, go back to EXPLORE mode
 		changeMode(ANTMODE.EXPLORE);
 		return;
@@ -185,16 +184,19 @@ public class VohraAnt implements Ant {
 		}
 
 		// Continue a plan if it exists
-		if (nextCurrentPlanAction())
+		if (nextCurrentPlanAction()) {
 			return;
+		}
 
 		// Try to find closest unexplored
 		if (canFindValidPlanTo(CELLTYPE.UNEXPLORED) && nextCurrentPlanAction()) {
 			return;
 		}
 
-		// If can't find anything new to explore then wait at home
-		// for another ant to hopefully share info
+		/*
+		 * If can't find anything new to explore then wait at home for another
+		 * ant to hopefully share info
+		 */
 		if (isAtHome()) {
 			if (getCurrentCell().getNumAnts() < numAntsMaxOnHOME) {
 				action = Action.HALT;
@@ -301,21 +303,23 @@ public class VohraAnt implements Ant {
 
 	/** If a plan exists in currentPlan, get the next appropriate action */
 	private boolean nextCurrentPlanAction() {
-
-		// Get the next action from the current plan, plan isn't valid if empty
+		// currentPlan isn't valid if empty
 		if (currentPlan.size() > 0) {
 			// "From" is the current location of the ant
 			Cell from = getCurrentCell();
 
-			// Keep track of all the movements since last at home, useful for
-			// taking the same route back to home that was taken to food
+			/*
+			 * Keep track of all the movements since last at home, useful for
+			 * taking the same route back to home that was taken to food
+			 */
 			fromHomePlan.push(from);
 			Cell to = currentPlan.pop();
 			Direction dir = from.directionTo(to);
 			action = Action.move(dir);
 
-			if (isActionValid())
+			if (isActionValid()) {
 				return true;
+			}
 
 		}
 		return false;
